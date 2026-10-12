@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buildEmployeeContractPdf } from "@/lib/pdf/build";
-import { pdfContentDisposition, pdfDownloadLanguage } from "@/lib/pdf/language";
+import { pdfContentDisposition } from "@/lib/pdf/language";
+import { pdfLanguageFromRequest } from "@/lib/i18n/downloadLanguage";
 
 export async function GET(request: NextRequest, { params }: { params: { token: string } }) {
-  const language = pdfDownloadLanguage(request.nextUrl.searchParams.get("lang"));
+  const language = pdfLanguageFromRequest(request);
   const contract = await prisma.employeeContract.findUnique({
     where: { signingToken: params.token },
     select: { employeeId: true },

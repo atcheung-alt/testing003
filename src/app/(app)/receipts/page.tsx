@@ -9,10 +9,12 @@ import SearchBox from "@/components/SearchBox";
 import DateRangeFilter from "@/components/DateRangeFilter";
 import DownloadPdfButton from "@/components/DownloadPdfButton";
 import DeleteButton from "@/components/DeleteButton";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 async function ReceiptList({ q, from, to }: { q?: string; from?: string; to?: string }) {
+  const t = getT();
   const receipts = await prisma.receipt.findMany({
     where: {
       issueDate: dateRangeFilter(from, to),
@@ -35,8 +37,10 @@ async function ReceiptList({ q, from, to }: { q?: string; from?: string; to?: st
     return (
       <EmptyState
         icon={ReceiptIcon}
-        title="No receipts found"
-        description="Try adjusting your filters. Receipts are generated automatically once an invoice is verified as Paid."
+        title={t("No receipts found")}
+        description={t(
+          "Try adjusting your filters. Receipts are generated automatically once an invoice is verified as Paid."
+        )}
       />
     );
   }
@@ -52,11 +56,11 @@ async function ReceiptList({ q, from, to }: { q?: string; from?: string; to?: st
             <div className="flex items-center gap-2">
               <span className="font-mono text-sm font-medium">{r.number}</span>
               {r.invoice && (
-                <span className="text-xs text-ink-faint">for {r.invoice.number}</span>
+                <span className="text-xs text-ink-faint">{t("for {number}", { number: r.invoice.number })}</span>
               )}
             </div>
             <p className="text-xs text-ink-muted truncate mt-0.5">
-              {r.invoice?.customerName || "—"} · Issued {formatDate(r.issueDate)}
+              {r.invoice?.customerName || "—"} · {t("Issued {date}", { date: formatDate(r.issueDate) })}
             </p>
           </Link>
           <div className="flex items-center gap-3 shrink-0">
@@ -67,7 +71,7 @@ async function ReceiptList({ q, from, to }: { q?: string; from?: string; to?: st
             <DeleteButton
               url={`/api/receipts/${r.id}`}
               confirmNumber={r.number}
-              itemLabel="receipt"
+              itemLabel={t("receipt")}
             />
           </div>
         </div>
@@ -81,6 +85,7 @@ export default function ReceiptsPage({
 }: {
   searchParams: { q?: string; from?: string; to?: string };
 }) {
+  const t = getT();
   const exportParams = new URLSearchParams();
   if (searchParams.q) exportParams.set("q", searchParams.q);
   if (searchParams.from) exportParams.set("from", searchParams.from);
@@ -91,13 +96,13 @@ export default function ReceiptsPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink mb-1">Receipts</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Receipts")}</h1>
           <p className="text-sm text-ink-muted">
-            Generated automatically whenever an invoice is verified as paid.
+            {t("Generated automatically whenever an invoice is verified as paid.")}
           </p>
         </div>
         <a href={exportHref} className="btn-secondary shrink-0">
-          <Download size={15} /> Export CSV
+          <Download size={15} /> {t("Export CSV")}
         </a>
       </div>
 
@@ -106,7 +111,7 @@ export default function ReceiptsPage({
         <DateRangeFilter />
       </div>
 
-      <Suspense fallback={<div className="text-sm text-ink-muted">Loading…</div>}>
+      <Suspense fallback={<div className="text-sm text-ink-muted">{t("Loading…")}</div>}>
         <ReceiptList q={searchParams.q} from={searchParams.from} to={searchParams.to} />
       </Suspense>
     </div>

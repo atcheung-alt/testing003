@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Search, X, Building2, UserRound, Library } from "lucide-react";
 import Portal from "@/components/Portal";
 import type { CustomerDetails } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 export function emptyCustomer(): CustomerDetails {
   return {
@@ -29,6 +30,7 @@ function ClientPicker({
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const t = useT();
 
   useEffect(() => {
     fetch("/api/customers")
@@ -46,21 +48,21 @@ function ClientPicker({
       <div className="absolute inset-0 bg-brand-950/30 backdrop-blur-sm animate-fade-in" onClick={onClose} />
       <div className="relative w-full max-w-lg card p-6 max-h-[85vh] flex flex-col animate-scale-in">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-lg font-semibold">Choose from client library</h2>
-          <button type="button" onClick={onClose} className="text-ink-faint hover:text-ink" aria-label="Close">
+          <h2 className="font-display text-lg font-semibold">{t("Choose from client library")}</h2>
+          <button type="button" onClick={onClose} className="text-ink-faint hover:text-ink" aria-label={t("Close")}>
             <X size={18} />
           </button>
         </div>
 
         {loading ? (
-          <p className="text-sm text-ink-muted">Loading…</p>
+          <p className="text-sm text-ink-muted">{t("Loading…")}</p>
         ) : customers.length === 0 ? (
           <p className="text-sm text-ink-muted">
-            No clients saved yet. Add one from the{" "}
+            {t("No clients saved yet. Add one from the")}{" "}
             <a href="/clients" target="_blank" className="text-brand-500 hover:underline">
-              Clients
+              {t("Clients")}
             </a>{" "}
-            page to pick them from here.
+            {t("page to pick them from here.")}
           </p>
         ) : (
           <>
@@ -69,7 +71,7 @@ function ClientPicker({
               <input
                 type="text"
                 className="input pl-9"
-                placeholder="Search client library…"
+                placeholder={t("Search client library…")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 autoFocus
@@ -78,7 +80,7 @@ function ClientPicker({
 
             <div className="flex-1 overflow-y-auto -mx-2 px-2 flex flex-col gap-1">
               {filtered.length === 0 ? (
-                <p className="text-sm text-ink-faint py-6 text-center">No clients match &ldquo;{search}&rdquo;.</p>
+                <p className="text-sm text-ink-faint py-6 text-center">{t("No clients match “{search}”.", { search })}</p>
               ) : (
                 filtered.map((c) => (
                   <div key={c.id} className="rounded-lg overflow-hidden">
@@ -91,7 +93,9 @@ function ClientPicker({
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium truncate">{c.name}</p>
                         <p className="text-xs text-ink-muted truncate">
-                          {c.contacts.length} contact{c.contacts.length === 1 ? "" : "s"}
+                          {c.contacts.length === 1
+                            ? t("{count} contact", { count: c.contacts.length })
+                            : t("{count} contacts", { count: c.contacts.length })}
                         </p>
                       </div>
                     </button>
@@ -107,7 +111,7 @@ function ClientPicker({
                             <UserRound size={13} className="text-ink-faint shrink-0" />
                             <div className="min-w-0">
                               <p className="text-sm truncate">
-                                {contact.name || contact.email || "(no name or email)"}
+                                {contact.name || contact.email || t("(no name or email)")}
                               </p>
                               {contact.name && contact.email && (
                                 <p className="text-xs text-ink-faint truncate">{contact.email}</p>
@@ -140,6 +144,7 @@ export default function CustomerFields({
   showContactAndPhone?: boolean;
 }) {
   const [pickerOpen, setPickerOpen] = useState(false);
+  const t = useT();
 
   function set(patch: Partial<CustomerDetails>) {
     onChange({ ...value, ...patch });
@@ -162,59 +167,59 @@ export default function CustomerFields({
         onClick={() => setPickerOpen(true)}
         className="btn-secondary self-start"
       >
-        <Library size={15} /> Choose from client library
+        <Library size={15} /> {t("Choose from client library")}
       </button>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="label">Company name *</label>
+          <label className="label">{t("Company name *")}</label>
           <input
             type="text"
             className="input"
-            placeholder="e.g. TechVision Limited"
+            placeholder={t("e.g. TechVision Limited")}
             value={value.customerName}
             onChange={(e) => set({ customerName: e.target.value })}
           />
         </div>
         {showContactAndPhone && (
           <div>
-            <label className="label">Contact person</label>
+            <label className="label">{t("Contact person")}</label>
             <input
               type="text"
               className="input"
-              placeholder="e.g. Sarah Chen"
+              placeholder={t("e.g. Sarah Chen")}
               value={value.customerContact || ""}
               onChange={(e) => set({ customerContact: e.target.value })}
             />
           </div>
         )}
         <div>
-          <label className="label">Email</label>
+          <label className="label">{t("Email")}</label>
           <input
             type="email"
             className="input"
-            placeholder="accounts@example.com"
+            placeholder={t("accounts@example.com")}
             value={value.customerEmail || ""}
             onChange={(e) => set({ customerEmail: e.target.value })}
           />
         </div>
         {showContactAndPhone && (
           <div>
-            <label className="label">Phone</label>
+            <label className="label">{t("Phone")}</label>
             <input
               type="text"
               className="input"
-              placeholder="+1 (555) 000-0000"
+              placeholder={t("+1 (555) 000-0000")}
               value={value.customerPhone || ""}
               onChange={(e) => set({ customerPhone: e.target.value })}
             />
           </div>
         )}
         <div className="sm:col-span-2">
-          <label className="label">Address</label>
+          <label className="label">{t("Address")}</label>
           <textarea
             className="input min-h-[80px]"
-            placeholder="Street, city, state/province, postal code, country"
+            placeholder={t("Street, city, state/province, postal code, country")}
             value={value.customerAddress || ""}
             onChange={(e) => set({ customerAddress: e.target.value })}
           />

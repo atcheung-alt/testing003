@@ -1,4 +1,7 @@
+"use client";
+
 import { formatCurrency, lineTotalWithFee } from "@/lib/calculations";
+import { useT } from "@/lib/i18n/client";
 import type { LineItem } from "@/types";
 
 export default function DocumentItemsTable({
@@ -24,15 +27,16 @@ export default function DocumentItemsTable({
   repeatCount?: number;
   rawSubtotal?: number;
 }) {
+  const t = useT();
   const showRepeatBreakdown = Boolean(repeatCount && repeatCount > 1 && rawSubtotal !== undefined);
   return (
     <div className="card p-5">
       <div className="hidden sm:grid grid-cols-[1fr_70px_90px_110px_110px] gap-3 px-1 pb-2 border-b border-ink text-xs font-semibold uppercase tracking-wide text-ink-muted">
-        <span>Description</span>
-        <span className="text-right">Qty</span>
-        <span className="text-right">Duration</span>
-        <span className="text-right">Unit price</span>
-        <span className="text-right">Amount</span>
+        <span>{t("Description")}</span>
+        <span className="text-right">{t("Qty")}</span>
+        <span className="text-right">{t("Duration")}</span>
+        <span className="text-right">{t("Unit price")}</span>
+        <span className="text-right">{t("Amount")}</span>
       </div>
       <div className="divide-y divide-line">
         {items.map((item, i) => (
@@ -57,7 +61,7 @@ export default function DocumentItemsTable({
                 </div>
               </div>
               <span className="text-right font-mono text-ink-muted sm:text-ink">
-                <span className="sm:hidden text-ink-faint">Qty </span>
+                <span className="sm:hidden text-ink-faint">{t("Qty")} </span>
                 {item.quantity}
                 {item.unit ? <span className="text-ink-faint"> {item.unit}</span> : null}
                 {(item.multipliers || []).map((m, mi) => (
@@ -84,7 +88,7 @@ export default function DocumentItemsTable({
             </div>
             {(item.fees || []).map((fee, fi) => (
               <div key={fi} className="flex items-center justify-between text-xs text-ink-muted mt-1.5 pl-1">
-                <span>{fee.label || "Additional fee"}</span>
+                <span>{fee.label || t("Additional fee")}</span>
                 <span className="font-mono">{formatCurrency(fee.amount)}</span>
               </div>
             ))}
@@ -97,32 +101,32 @@ export default function DocumentItemsTable({
           {showRepeatBreakdown ? (
             <>
               <div className="flex justify-between text-ink-muted">
-                <span>Subtotal (per session)</span>
+                <span>{t("Subtotal (per session)")}</span>
                 <span className="font-mono text-ink">{formatCurrency(rawSubtotal as number)}</span>
               </div>
               <div className="flex justify-between text-ink-muted">
-                <span>× {repeatCount} sessions</span>
+                <span>{t("× {count} sessions", { count: repeatCount as number })}</span>
               </div>
             </>
           ) : null}
           <div className="flex justify-between text-ink-muted">
-            <span>Subtotal</span>
+            <span>{t("Subtotal")}</span>
             <span className="font-mono text-ink">{formatCurrency(subtotal)}</span>
           </div>
           {discount > 0 && (
             <div className="flex justify-between text-ink-muted">
-              <span>Discount</span>
+              <span>{t("Discount")}</span>
               <span className="font-mono text-ink">-{formatCurrency(discount)}</span>
             </div>
           )}
           {taxRate > 0 && (
             <div className="flex justify-between text-ink-muted">
-              <span>Tax ({taxRate}%)</span>
+              <span>{t("Tax ({rate}%)", { rate: taxRate })}</span>
               <span className="font-mono text-ink">{formatCurrency(taxAmount)}</span>
             </div>
           )}
           <div className="flex justify-between pt-2 mt-1 border-t border-brand-500/40">
-            <span className="font-semibold text-brand-600">Total</span>
+            <span className="font-semibold text-brand-600">{t("Total")}</span>
             <span className="font-mono font-semibold text-brand-600 text-base">
               {formatCurrency(total)}
             </span>

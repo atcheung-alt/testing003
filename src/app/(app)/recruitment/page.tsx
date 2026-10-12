@@ -8,6 +8,7 @@ import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import SearchBox from "@/components/SearchBox";
 import DateRangeFilter from "@/components/DateRangeFilter";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ async function RecruitmentList({
   from?: string;
   to?: string;
 }) {
+  const t = getT();
   const agreements = await prisma.recruitmentAgreement.findMany({
     where: {
       status: status || undefined,
@@ -42,10 +44,10 @@ async function RecruitmentList({
     return (
       <EmptyState
         icon={Briefcase}
-        title="No recruitment agreements found"
-        description="Try adjusting your filters, or create a new agreement."
+        title={t("No recruitment agreements found")}
+        description={t("Try adjusting your filters, or create a new agreement.")}
         actionHref="/recruitment/new"
-        actionLabel="New agreement"
+        actionLabel={t("New agreement")}
       />
     );
   }
@@ -64,10 +66,10 @@ async function RecruitmentList({
               <StatusBadge status={a.status} />
             </div>
             <p className="text-xs text-ink-muted truncate mt-0.5">
-              {a.companyName} · Created {formatDate(a.createdAt)}
+              {a.companyName} · {t("Created {date}", { date: formatDate(a.createdAt) })}
             </p>
           </div>
-          <span className="text-xs text-ink-faint shrink-0">Net {a.paymentDueDays} days</span>
+          <span className="text-xs text-ink-faint shrink-0">{t("Net {days} days", { days: a.paymentDueDays })}</span>
         </Link>
       ))}
     </div>
@@ -79,6 +81,7 @@ export default function RecruitmentPage({
 }: {
   searchParams: { q?: string; status?: string; from?: string; to?: string };
 }) {
+  const t = getT();
   function statusHref(status?: string) {
     const params = new URLSearchParams();
     if (searchParams.q) params.set("q", searchParams.q);
@@ -92,17 +95,17 @@ export default function RecruitmentPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink mb-1">Recruitment Agreements</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Recruitment Agreements")}</h1>
           <p className="text-sm text-ink-muted">
-            Recruitment services terms — a separate system from quotations/invoices/receipts.
+            {t("Recruitment services terms — a separate system from quotations/invoices/receipts.")}
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
           <Link href="/recruitment/fee-scale" className="btn-secondary">
-            <Table2 size={15} /> Fee scale library
+            <Table2 size={15} /> {t("Fee scale library")}
           </Link>
           <Link href="/recruitment/new" className="btn-primary">
-            <Plus size={15} /> New agreement
+            <Plus size={15} /> {t("New agreement")}
           </Link>
         </div>
       </div>
@@ -117,7 +120,7 @@ export default function RecruitmentPage({
             href={statusHref(undefined)}
             className={`stamp ${!searchParams.status ? "border-brand-500 text-brand-500" : "border-line text-ink-muted"}`}
           >
-            All
+            {t("All")}
           </Link>
           {STATUSES.map((s) => (
             <Link
@@ -125,13 +128,13 @@ export default function RecruitmentPage({
               href={statusHref(s)}
               className={`stamp ${searchParams.status === s ? "border-brand-500 text-brand-500" : "border-line text-ink-muted"}`}
             >
-              {s}
+              {t(s)}
             </Link>
           ))}
         </div>
       </div>
 
-      <Suspense fallback={<div className="text-sm text-ink-muted">Loading…</div>}>
+      <Suspense fallback={<div className="text-sm text-ink-muted">{t("Loading…")}</div>}>
         <RecruitmentList
           q={searchParams.q}
           status={searchParams.status}

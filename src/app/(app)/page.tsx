@@ -7,10 +7,12 @@ import { getCurrentMonthFinance } from "@/lib/finance";
 import StatCard from "@/components/StatCard";
 import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const t = getT();
   const [quotations, invoices, recentQuotations, recentInvoices, thisMonth] =
     await Promise.all([
       prisma.quotation.findMany({ select: { status: true, total: true } }),
@@ -37,61 +39,61 @@ export default async function DashboardPage() {
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink mb-1">Dashboard</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Dashboard")}</h1>
         <p className="text-sm text-ink-muted">
-          A quick look at your pipeline of quotations and invoices.
+          {t("A quick look at your pipeline of quotations and invoices.")}
         </p>
       </div>
 
       <div>
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display text-lg font-semibold">This month</h2>
+          <h2 className="font-display text-lg font-semibold">{t("This month")}</h2>
           <Link
             href="/analysis"
             className="text-sm text-brand-500 hover:text-brand-600 flex items-center gap-1"
           >
-            Full analysis <ArrowRight size={14} />
+            {t("Full analysis")} <ArrowRight size={14} />
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <StatCard
-            label="Revenue"
+            label={t("Revenue")}
             value={formatCurrency(thisMonth.revenue)}
             icon={TrendingUp}
             accent="brand"
           />
           <StatCard
-            label="Expenses"
+            label={t("Expenses")}
             value={formatCurrency(thisMonth.expenses)}
             icon={TrendingDown}
             accent="danger"
           />
           <StatCard
-            label="Net profit"
+            label={t("Net profit")}
             value={formatCurrency(thisMonth.profit)}
             icon={PiggyBank}
             accent={thisMonth.profit < 0 ? "danger" : "accent"}
           />
         </div>
         <p className="text-xs text-ink-faint mt-2">
-          Based on invoices paid this calendar month, minus their logged expenses.
+          {t("Based on invoices paid this calendar month, minus their logged expenses.")}
         </p>
       </div>
 
       <div className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
-          <StatCard label="Quotations" value={String(quotations.length)} icon={FileText} />
-          <StatCard label="Invoices" value={String(invoices.length)} icon={ReceiptText} />
+          <StatCard label={t("Quotations")} value={String(quotations.length)} icon={FileText} />
+          <StatCard label={t("Invoices")} value={String(invoices.length)} icon={ReceiptText} />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <StatCard
-            label="Outstanding"
+            label={t("Outstanding")}
             value={formatCurrency(outstanding)}
             icon={Wallet}
             accent="accent"
           />
           <StatCard
-            label="Overdue"
+            label={t("Overdue")}
             value={formatCurrency(overdueAmount)}
             icon={AlertTriangle}
             accent="danger"
@@ -102,21 +104,21 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg font-semibold">Recent quotations</h2>
+            <h2 className="font-display text-lg font-semibold">{t("Recent quotations")}</h2>
             <Link
               href="/quotations"
               className="text-sm text-brand-500 hover:text-brand-600 flex items-center gap-1"
             >
-              View all <ArrowRight size={14} />
+              {t("View all")} <ArrowRight size={14} />
             </Link>
           </div>
           {recentQuotations.length === 0 ? (
             <EmptyState
               icon={FileText}
-              title="No quotations yet"
-              description="Create your first quotation to start quoting customers for work."
+              title={t("No quotations yet")}
+              description={t("Create your first quotation to start quoting customers for work.")}
               actionHref="/quotations/new"
-              actionLabel="New quotation"
+              actionLabel={t("New quotation")}
             />
           ) : (
             <div className="card divide-y divide-line">
@@ -144,21 +146,21 @@ export default async function DashboardPage() {
 
         <section>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="font-display text-lg font-semibold">Recent invoices</h2>
+            <h2 className="font-display text-lg font-semibold">{t("Recent invoices")}</h2>
             <Link
               href="/invoices"
               className="text-sm text-brand-500 hover:text-brand-600 flex items-center gap-1"
             >
-              View all <ArrowRight size={14} />
+              {t("View all")} <ArrowRight size={14} />
             </Link>
           </div>
           {recentInvoices.length === 0 ? (
             <EmptyState
               icon={ReceiptText}
-              title="No invoices yet"
-              description="Convert an accepted quotation, or create an invoice directly."
+              title={t("No invoices yet")}
+              description={t("Convert an accepted quotation, or create an invoice directly.")}
               actionHref="/invoices/new"
-              actionLabel="New invoice"
+              actionLabel={t("New invoice")}
             />
           ) : (
             <div className="card divide-y divide-line">
@@ -189,13 +191,22 @@ export default async function DashboardPage() {
         <div className="flex flex-col gap-1">
           {overdueCount > 0 && (
             <p className="text-xs text-danger-500">
-              {overdueCount} invoice{overdueCount === 1 ? "" : "s"} overdue, totalling{" "}
-              {formatCurrency(overdueAmount)}.
+              {overdueCount === 1
+                ? t("{count} invoice overdue, totalling {amount}.", {
+                    count: overdueCount,
+                    amount: formatCurrency(overdueAmount),
+                  })
+                : t("{count} invoices overdue, totalling {amount}.", {
+                    count: overdueCount,
+                    amount: formatCurrency(overdueAmount),
+                  })}
             </p>
           )}
           {quotedValue > 0 && (
             <p className="text-xs text-ink-muted">
-              {formatCurrency(quotedValue)} in open quotations awaiting a response.
+              {t("{amount} in open quotations awaiting a response.", {
+                amount: formatCurrency(quotedValue),
+              })}
             </p>
           )}
         </div>

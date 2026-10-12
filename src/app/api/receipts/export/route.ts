@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/calculations";
 import { dateRangeFilter } from "@/lib/dateRange";
 import { buildCsv, csvResponseHeaders } from "@/lib/csv";
+import { appLanguageFromRequest } from "@/lib/i18n/downloadLanguage";
+import { translate } from "@/lib/i18n/translate";
 
 /**
  * CSV export for the receipts list — takes the same `q`/`from`/`to` query
@@ -14,6 +16,8 @@ import { buildCsv, csvResponseHeaders } from "@/lib/csv";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const language = appLanguageFromRequest(request);
+  const t = (key: string) => translate(language, key);
   const q = request.nextUrl.searchParams.get("q") || undefined;
   const from = request.nextUrl.searchParams.get("from") || undefined;
   const to = request.nextUrl.searchParams.get("to") || undefined;
@@ -39,17 +43,18 @@ export async function GET(request: NextRequest) {
   const rows = receipts.map((r) => [
     r.number,
     r.invoice?.customerName || "",
-    "PAID",
+    t("PAID"),
     formatDate(r.issueDate),
     formatDate(r.invoice?.dueDate || null),
     (r.invoice?.total || 0).toFixed(2),
-    "Paid",
+    t("Paid"),
   ]);
 
   const csv = buildCsv(
-    ["Number", "Customer", "Status", "Issue Date", "Due Date", "Total", "Payment Status"],
+    ["Number", "Customer", "Status", "Issue Date", "Due Date", "Total", "Payment Status"].map(t),
     rows
   );
+  const body = language === "zh" ? `\uFEFF${csv}` : csv;
 
-  return new NextResponse(csv, { headers: csvResponseHeaders("receipts.csv") });
+  return new NextResponse(body, { headers: csvResponseHeaders("receipts.csv") });
 }

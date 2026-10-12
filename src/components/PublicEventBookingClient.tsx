@@ -6,6 +6,7 @@ import clsx from "clsx";
 import PublicCompanyHeader, { type PublicCompany } from "@/components/PublicCompanyHeader";
 import PublicEventCalendar from "@/components/PublicEventCalendar";
 import { formatTimeRangeLabel, formatSlotLabel, readJsonOrThrow } from "@/lib/bookingFormat";
+import { useT } from "@/lib/i18n/client";
 
 type EventInfo = {
   id: string;
@@ -19,6 +20,7 @@ type EventInfo = {
 type SlotOption = { id: string; startTime: string; durationMins: number; quota: number; available: number };
 
 export default function PublicEventBookingClient({ event, company }: { event: EventInfo; company: PublicCompany }) {
+  const t = useT();
   const [date, setDate] = useState<string | null>(null);
   const [slots, setSlots] = useState<SlotOption[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
@@ -115,16 +117,20 @@ export default function PublicEventBookingClient({ event, company }: { event: Ev
         <div className="card p-6 flex flex-col items-center text-center gap-3">
           <CheckCircle2 size={40} className={isPending ? "text-amber-500" : "text-emerald-500"} />
           <h1 className="font-display text-xl font-semibold text-ink">
-            {isPending ? "Booking request received" : "Booking confirmed"}
+            {isPending ? t("Booking request received") : t("Booking confirmed")}
           </h1>
           <p className="text-sm text-ink-muted">
             {event.name} — {formatSlotLabel(confirmed.date, confirmed.startTime, confirmed.durationMins)}.{" "}
             {isPending
-              ? "This isn't confirmed yet — we'll follow up shortly. We've emailed you the details, along with a link to withdraw your request if needed."
-              : "We've sent a confirmation email with your booking details and a link to cancel if your plans change."}
+              ? t(
+                  "This isn't confirmed yet — we'll follow up shortly. We've emailed you the details, along with a link to withdraw your request if needed."
+                )
+              : t(
+                  "We've sent a confirmation email with your booking details and a link to cancel if your plans change."
+                )}
           </p>
           <button type="button" onClick={() => setConfirmed(null)} className="btn-secondary mt-2">
-            Make another booking
+            {t("Make another booking")}
           </button>
         </div>
       </div>
@@ -144,7 +150,7 @@ export default function PublicEventBookingClient({ event, company }: { event: Ev
 
       <form onSubmit={submit} className="card p-5 sm:p-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div>
-          <label className="label mb-2">Pick a date</label>
+          <label className="label mb-2">{t("Pick a date")}</label>
           <PublicEventCalendar
             eventId={event.id}
             minDate={new Date(event.startDate)}
@@ -156,20 +162,20 @@ export default function PublicEventBookingClient({ event, company }: { event: Ev
 
         <div className="flex flex-col gap-4 pt-4 border-t border-line lg:pt-0 lg:border-t-0 lg:border-l lg:pl-6">
           {!date ? (
-            <p className="text-sm text-ink-muted">Select a date on the calendar to see available times.</p>
+            <p className="text-sm text-ink-muted">{t("Select a date on the calendar to see available times.")}</p>
           ) : (
             <div>
               <label className="label flex items-center gap-1.5">
-                <Clock size={13} /> Available times
+                <Clock size={13} /> {t("Available times")}
               </label>
               {loadingSlots ? (
                 <div className="flex items-center gap-2 text-sm text-ink-muted py-3">
-                  <Loader2 size={15} className="animate-spin" /> Loading times…
+                  <Loader2 size={15} className="animate-spin" /> {t("Loading times…")}
                 </div>
               ) : slotsError ? (
-                <p className="text-sm text-danger-600 py-2">{slotsError}</p>
+                <p className="text-sm text-danger-600 py-2">{t(slotsError)}</p>
               ) : slots.length === 0 ? (
-                <p className="text-sm text-ink-muted py-2">No times available that day — please pick another date on the calendar.</p>
+                <p className="text-sm text-ink-muted py-2">{t("No times available that day — please pick another date on the calendar.")}</p>
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   {slots.map((slot) => {
@@ -192,7 +198,7 @@ export default function PublicEventBookingClient({ event, company }: { event: Ev
                       >
                         <div>{formatTimeRangeLabel(slot.startTime, slot.durationMins)}</div>
                         <div className={clsx("text-xs font-normal", isSelected ? "text-brand-50" : "text-ink-faint")}>
-                          {full ? "Full" : `${slot.available} spot${slot.available === 1 ? "" : "s"} left`}
+                          {full ? t("Full") : t(slot.available === 1 ? "{count} spot left" : "{count} spots left", { count: slot.available })}
                         </div>
                       </button>
                     );
@@ -211,41 +217,41 @@ export default function PublicEventBookingClient({ event, company }: { event: Ev
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="label">Your name *</label>
+                  <label className="label">{t("Your name *")}</label>
                   <input type="text" className="input" value={clientName} onChange={(e) => setClientName(e.target.value)} required />
                 </div>
                 <div>
-                  <label className="label">Phone (optional)</label>
+                  <label className="label">{t("Phone (optional)")}</label>
                   <input type="tel" className="input" value={clientPhone} onChange={(e) => setClientPhone(e.target.value)} />
                 </div>
               </div>
 
               <div>
-                <label className="label">Email *</label>
+                <label className="label">{t("Email *")}</label>
                 <input type="email" className="input" value={clientEmail} onChange={(e) => setClientEmail(e.target.value)} required />
-                <p className="mt-1 text-xs text-ink-faint">We&apos;ll email you a confirmation with your booking details.</p>
+                <p className="mt-1 text-xs text-ink-faint">{t("We'll email you a confirmation with your booking details.")}</p>
               </div>
 
               <div>
-                <label className="label">Notes (optional)</label>
+                <label className="label">{t("Notes (optional)")}</label>
                 <textarea
                   className="input min-h-[70px]"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Anything else we should know"
+                  placeholder={t("Anything else we should know")}
                 />
               </div>
 
               {submitError && (
                 <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                  <span>{submitError}</span>
+                  <span>{t(submitError)}</span>
                 </div>
               )}
 
               <button type="submit" disabled={submitting} className="btn-primary self-start">
                 {submitting && <Loader2 size={15} className="animate-spin" />}
-                {submitting ? "Submitting…" : event.requiresConfirmation ? "Request booking" : "Confirm booking"}
+                {submitting ? t("Submitting…") : event.requiresConfirmation ? t("Request booking") : t("Confirm booking")}
               </button>
             </>
           )}

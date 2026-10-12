@@ -3,12 +3,14 @@ import { notFound } from "next/navigation";
 import { getEffectiveCompany } from "@/lib/appSettings";
 import { getBookingEvent } from "@/lib/bookings";
 import PublicEventBookingClient from "@/components/PublicEventBookingClient";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const t = getT();
   const event = await getBookingEvent(params.id);
-  return { title: event ? `Book: ${event.name}` : "Book an appointment" };
+  return { title: event ? t("Book: {name}", { name: event.name }) : t("Book an appointment") };
 }
 
 /**

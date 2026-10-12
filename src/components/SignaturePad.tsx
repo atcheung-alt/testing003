@@ -4,6 +4,7 @@ import { useRef, useState } from "react";
 import { Pen, Upload, Type, Trash2, Check } from "lucide-react";
 import SignatureCanvas from "@/components/SignatureCanvas";
 import { typedSignatureToDataUrl } from "@/lib/signatureImage";
+import { useT } from "@/lib/i18n/client";
 
 type Mode = "draw" | "upload" | "type";
 
@@ -16,6 +17,7 @@ type Props = {
 };
 
 export default function SignaturePad({ value, name, onChange }: Props) {
+  const t = useT();
   const [mode, setMode] = useState<Mode>("draw");
   const [typedName, setTypedName] = useState(name || "");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -43,19 +45,19 @@ export default function SignaturePad({ value, name, onChange }: Props) {
   return (
     <div className="flex flex-col gap-3">
       <div className="inline-flex rounded-full border border-line bg-white p-0.5 self-start">
-        {tabs.map((t) => {
-          const Icon = t.icon;
-          const active = mode === t.id;
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const active = mode === tab.id;
           return (
             <button
-              key={t.id}
+              key={tab.id}
               type="button"
-              onClick={() => setMode(t.id)}
+              onClick={() => setMode(tab.id)}
               className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
                 active ? "bg-brand-gradient text-white shadow-soft" : "text-ink-muted hover:text-ink"
               }`}
             >
-              <Icon size={13} /> {t.label}
+              <Icon size={13} /> {t(tab.label)}
             </button>
           );
         })}
@@ -80,8 +82,8 @@ export default function SignaturePad({ value, name, onChange }: Props) {
             className="w-full rounded-xl border border-dashed border-line bg-white py-8 flex flex-col items-center gap-2 text-ink-muted hover:text-brand-600 hover:border-brand-500/60 transition-colors"
           >
             <Upload size={20} />
-            <span className="text-sm">Click to upload a signature image</span>
-            <span className="text-xs text-ink-faint">PNG or JPEG, transparent background works best</span>
+            <span className="text-sm">{t("Click to upload a signature image")}</span>
+            <span className="text-xs text-ink-faint">{t("PNG or JPEG, transparent background works best")}</span>
           </button>
         </div>
       )}
@@ -91,7 +93,7 @@ export default function SignaturePad({ value, name, onChange }: Props) {
           <input
             type="text"
             className="input"
-            placeholder="Type your full name"
+            placeholder={t("Type your full name")}
             value={typedName}
             onChange={(e) => applyTyped(e.target.value)}
           />
@@ -109,12 +111,12 @@ export default function SignaturePad({ value, name, onChange }: Props) {
       {value ? (
         <div className="rounded-xl border border-brand-200 bg-brand-50/50 p-3">
           <div className="flex items-center gap-2 text-xs font-medium text-brand-700 mb-2">
-            <Check size={14} /> Signature captured
+            <Check size={14} /> {t("Signature captured")}
           </div>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={value}
-            alt="Signature"
+            alt={t("Signature")}
             className="max-h-24 bg-white rounded-lg border border-line"
           />
           <button
@@ -122,19 +124,19 @@ export default function SignaturePad({ value, name, onChange }: Props) {
             onClick={() => onChange(null, null)}
             className="btn-ghost mt-2 !px-2 text-xs text-danger-500 hover:text-danger-600"
           >
-            <Trash2 size={13} /> Remove signature
+            <Trash2 size={13} /> {t("Remove signature")}
           </button>
         </div>
       ) : (
-        <p className="text-xs text-ink-faint">No signature captured yet.</p>
+        <p className="text-xs text-ink-faint">{t("No signature captured yet.")}</p>
       )}
 
       <div>
-        <label className="label">Signatory name (optional)</label>
+        <label className="label">{t("Signatory name (optional)")}</label>
         <input
           type="text"
           className="input"
-          placeholder="Name shown beneath the signature on the PDF"
+          placeholder={t("Name shown beneath the signature on the PDF")}
           value={typedName}
           onChange={(e) => {
             setTypedName(e.target.value);

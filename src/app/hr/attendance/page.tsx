@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/auth";
 import AttendanceCalendar, { type LeaveEvent } from "@/components/AttendanceCalendar";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -14,6 +15,7 @@ export const dynamic = "force-dynamic";
  * rendering, modeled on the quotation-events /calendar page.
  */
 export default async function AttendancePage() {
+  const t = getT();
   await requireAdminPage();
 
   const requests = await prisma.leaveRequest.findMany({
@@ -42,10 +44,11 @@ export default async function AttendancePage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink mb-1">Attendance</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Attendance")}</h1>
         <p className="text-sm text-ink-muted">
-          Every approved leave request, laid out day by day — click a name or a busy day to see
-          who&apos;s out.
+          {t(
+            "Every approved leave request, laid out day by day — click a name or a busy day to see who's out."
+          )}
         </p>
       </div>
 

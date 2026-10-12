@@ -5,6 +5,7 @@ import { CalendarDays, Send, Loader2, AlertCircle } from "lucide-react";
 import { formatDate } from "@/lib/calculations";
 import LeaveStatusBadge from "@/components/LeaveStatusBadge";
 import type { MyProfileLeaveView } from "@/lib/myProfile";
+import { useT } from "@/lib/i18n/client";
 
 /**
  * The /hr/profile tab's leave section — entitlement/used/remaining stat
@@ -16,6 +17,7 @@ import type { MyProfileLeaveView } from "@/lib/myProfile";
  * already renders inside the HR shell's own layout/sidebar.
  */
 export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView }) {
+  const t = useT();
   const [view, setView] = useState(initial);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -72,7 +74,7 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
   if (!view.hasLeaveEntitlement) {
     return (
       <div className="card p-5 text-sm text-ink-muted text-center">
-        Annual leave doesn&apos;t apply to your employment type, so there&apos;s nothing to track here.
+        {t("Annual leave doesn't apply to your employment type, so there's nothing to track here.")}
       </div>
     );
   }
@@ -82,26 +84,26 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
       <div className="card p-5 grid grid-cols-3 gap-4 text-center">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-1">
-            Entitlement
+            {t("Entitlement")}
           </p>
           <p className="font-mono text-xl font-semibold text-ink">{view.annualLeaveDays}</p>
-          <p className="text-xs text-ink-faint">days/year</p>
+          <p className="text-xs text-ink-faint">{t("days/year")}</p>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-1">Used</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-1">{t("Used")}</p>
           <p className="font-mono text-xl font-semibold text-ink">{view.leaveUsed}</p>
-          <p className="text-xs text-ink-faint">days</p>
+          <p className="text-xs text-ink-faint">{t("days")}</p>
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-1">
-            Remaining
+            {t("Remaining")}
           </p>
           <p
             className={`font-mono text-xl font-semibold ${view.leaveRemaining < 0 ? "text-danger-500" : "text-brand-600"}`}
           >
             {view.leaveRemaining}
           </p>
-          <p className="text-xs text-ink-faint">days</p>
+          <p className="text-xs text-ink-faint">{t("days")}</p>
         </div>
       </div>
 
@@ -109,24 +111,24 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
         <form onSubmit={submit} className="card p-5 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <CalendarDays size={18} className="text-brand-600" />
-            <h2 className="font-display text-lg font-semibold">Request leave</h2>
+            <h2 className="font-display text-lg font-semibold">{t("Request leave")}</h2>
           </div>
 
           {error && (
             <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
-              <span>{error}</span>
+              <span>{t(error)}</span>
             </div>
           )}
           {justSubmitted && (
             <div className="bg-emerald-50 border border-emerald-500/30 text-emerald-700 text-sm rounded-xl px-3 py-2">
-              Request submitted — a staff member will review it soon.
+              {t("Request submitted — a staff member will review it soon.")}
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">Start date *</label>
+              <label className="label">{t("Start date *")}</label>
               <input
                 type="date"
                 className="input"
@@ -136,7 +138,7 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
               />
             </div>
             <div>
-              <label className="label">End date</label>
+              <label className="label">{t("End date")}</label>
               <input
                 type="date"
                 className="input"
@@ -145,7 +147,7 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
                 disabled={isHalfDay}
                 onChange={(e) => setEndDate(e.target.value)}
               />
-              <p className="mt-1 text-xs text-ink-faint">Leave blank for a single day.</p>
+              <p className="mt-1 text-xs text-ink-faint">{t("Leave blank for a single day.")}</p>
             </div>
           </div>
 
@@ -159,7 +161,7 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
                   if (e.target.checked) setEndDate("");
                 }}
               />
-              <span>Half day (counts as 0.5 day)</span>
+              <span>{t("Half day (counts as 0.5 day)")}</span>
             </label>
             {isHalfDay && (
               <div className="flex gap-4 pl-6">
@@ -170,7 +172,7 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
                     checked={halfDayPeriod === "AM"}
                     onChange={() => setHalfDayPeriod("AM")}
                   />
-                  Morning (AM)
+                  {t("Morning (AM)")}
                 </label>
                 <label className="flex items-center gap-1.5 text-sm">
                   <input
@@ -179,57 +181,57 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
                     checked={halfDayPeriod === "PM"}
                     onChange={() => setHalfDayPeriod("PM")}
                   />
-                  Afternoon (PM)
+                  {t("Afternoon (PM)")}
                 </label>
               </div>
             )}
           </div>
 
           <div>
-            <label className="label">Reason (optional)</label>
+            <label className="label">{t("Reason (optional)")}</label>
             <textarea
               className="input min-h-[80px]"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g. Family trip"
+              placeholder={t("e.g. Family trip")}
             />
           </div>
 
           <button type="submit" disabled={submitting} className="btn-primary self-start">
             {submitting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-            {submitting ? "Submitting…" : "Submit request"}
+            {submitting ? t("Submitting…") : t("Submit request")}
           </button>
         </form>
       ) : (
         <div className="card p-5 text-sm text-ink-muted text-center">
-          New leave requests can no longer be submitted for this record.
+          {t("New leave requests can no longer be submitted for this record.")}
         </div>
       )}
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Request history</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Request history")}</h2>
         {view.leaveRequests.length === 0 ? (
-          <p className="text-sm text-ink-muted">No leave requests yet.</p>
+          <p className="text-sm text-ink-muted">{t("No leave requests yet.")}</p>
         ) : (
           <div className="flex flex-col divide-y divide-line">
             {view.leaveRequests.map((r) => (
               <div key={r.id} className="py-3 flex flex-col gap-1">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-sm font-medium text-ink">
-                    Leave: {formatDate(r.startDate)}
+                    {t("Leave: {date}", { date: formatDate(r.startDate) })}
                     {r.endDate !== r.startDate ? ` – ${formatDate(r.endDate)}` : ""}
                     {r.isHalfDay && (
                       <span className="text-xs font-normal text-ink-muted">
                         {" "}
-                        ({r.halfDayPeriod} half-day · 0.5 day)
+                        {t("({period} half-day · 0.5 day)", { period: r.halfDayPeriod })}
                       </span>
                     )}
                   </p>
                   <LeaveStatusBadge status={r.status} />
                 </div>
-                <p className="text-xs text-ink-faint">Requested on {formatDate(r.createdAt)}</p>
+                <p className="text-xs text-ink-faint">{t("Requested on {date}", { date: formatDate(r.createdAt) })}</p>
                 {r.reason && <p className="text-xs text-ink-muted">{r.reason}</p>}
-                {r.decidedNote && <p className="text-xs text-ink-faint italic">Note: {r.decidedNote}</p>}
+                {r.decidedNote && <p className="text-xs text-ink-faint italic">{t("Note: {note}", { note: r.decidedNote })}</p>}
               </div>
             ))}
           </div>

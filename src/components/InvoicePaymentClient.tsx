@@ -7,6 +7,8 @@ import DownloadPdfButton from "@/components/DownloadPdfButton";
 import CompanyLogo from "@/components/CompanyLogo";
 import { formatDate } from "@/lib/calculations";
 import type { PublicInvoiceView } from "@/lib/publicInvoice";
+import { useT } from "@/lib/i18n/client";
+import type { TFunction } from "@/lib/i18n/translate";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,10 +30,11 @@ function CompanyHeader({ company }: { company: PublicInvoiceView["company"] }) {
 }
 
 function BilledToCard({ customer }: { customer: PublicInvoiceView["customer"] }) {
+  const t = useT();
   return (
     <div className="card p-5">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-        Billed to
+        {t("Billed to")}
       </h2>
       <p className="font-medium text-sm">{customer.name}</p>
       {[customer.contact, customer.address, customer.email, customer.phone]
@@ -58,6 +61,7 @@ export default function InvoicePaymentClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSubmitted, setJustSubmitted] = useState(false);
+  const t = useT();
 
   const nameValid = fullName.trim().length > 0;
   const emailValid = EMAIL_RE.test(email.trim());
@@ -74,7 +78,7 @@ export default function InvoicePaymentClient({
         body: JSON.stringify({ name: fullName.trim(), email: email.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong. Please try again."));
       setJustSubmitted(true);
       setView((v) => ({ ...v, pendingVerification: true, payable: false }));
     } catch (err: any) {
@@ -90,7 +94,7 @@ export default function InvoicePaymentClient({
 
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink">Invoice {view.number}</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink">{t("Invoice {number}", { number: view.number })}</h1>
           {view.title && <p className="text-sm text-ink-muted mt-0.5">{view.title}</p>}
         </div>
         <DownloadPdfButton url={`/api/public/invoice/${token}/pdf`} />
@@ -100,11 +104,11 @@ export default function InvoicePaymentClient({
         <div className="card p-6 sm:p-8 flex flex-col items-center text-center gap-3">
           <CheckCircle2 size={44} className="text-emerald-500" />
           <h2 className="font-display text-xl font-semibold text-ink">
-            This invoice has been paid — thank you!
+            {t("This invoice has been paid — thank you!")}
           </h2>
           {view.receiptNumber && (
             <p className="text-sm text-ink-muted max-w-md">
-              A receipt ({view.receiptNumber}) has been emailed to you for your records.
+              {t("A receipt ({number}) has been emailed to you for your records.", { number: view.receiptNumber })}
             </p>
           )}
         </div>
@@ -112,9 +116,9 @@ export default function InvoicePaymentClient({
         <div className="card p-6 sm:p-8 flex flex-col items-center text-center gap-3">
           <Clock size={44} className="text-brand-500" />
           <h2 className="font-display text-xl font-semibold text-ink">
-            {justSubmitted ? "Thanks — payment noted!" : "Payment already submitted"}
+            {justSubmitted ? t("Thanks — payment noted!") : t("Payment already submitted")}
           </h2>
-          <p className="text-sm text-ink-muted max-w-md">{pendingVerificationNote(view)}</p>
+          <p className="text-sm text-ink-muted max-w-md">{pendingVerificationNote(view, t)}</p>
         </div>
       ) : null}
 
@@ -132,7 +136,7 @@ export default function InvoicePaymentClient({
       {view.poNumber && (
         <div className="card p-5">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-            PO Number
+            {t("PO Number")}
           </h2>
           <p className="text-sm text-ink">{view.poNumber}</p>
         </div>
@@ -142,12 +146,11 @@ export default function InvoicePaymentClient({
         <div className="card p-5 sm:p-6 flex flex-col gap-5">
           <div className="flex items-center gap-2">
             <BadgeDollarSign size={18} className="text-brand-600" />
-            <h2 className="font-display text-lg font-semibold">Mark as Paid</h2>
+            <h2 className="font-display text-lg font-semibold">{t("Mark as Paid")}</h2>
           </div>
 
           <p className="text-sm text-ink-muted">
-            Already settled this invoice? Let us know so we can verify the payment and send your
-            receipt.
+            {t("Already settled this invoice? Let us know so we can verify the payment and send your receipt.")}
           </p>
 
           {error && (
@@ -159,36 +162,37 @@ export default function InvoicePaymentClient({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">Full name *</label>
+              <label className="label">{t("Full name *")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="Your full name"
+                placeholder={t("Your full name")}
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
               />
             </div>
             <div>
-              <label className="label">Email *</label>
+              <label className="label">{t("Email *")}</label>
               <input
                 type="email"
                 className="input"
-                placeholder="you@example.com"
+                placeholder={t("you@example.com")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               {!emailValid && email.length > 0 && (
                 <p className="mt-1 text-xs text-danger-500">
-                  That doesn&apos;t look like a valid email.
+                  {t("That doesn't look like a valid email.")}
                 </p>
               )}
             </div>
           </div>
 
           <p className="text-xs text-ink-faint">
-            By clicking &ldquo;Mark as Paid&rdquo;, you confirm that payment for invoice{" "}
-            {view.number} has been sent. {view.company.shortName || view.company.name} will verify
-            and email you a receipt once confirmed.
+            {t("By clicking “Mark as Paid”, you confirm that payment for invoice {number} has been sent. {company} will verify and email you a receipt once confirmed.", {
+              number: view.number,
+              company: view.company.shortName || view.company.name,
+            })}
           </p>
 
           <button
@@ -199,11 +203,11 @@ export default function InvoicePaymentClient({
           >
             {submitting ? (
               <>
-                <Loader2 size={15} className="animate-spin" /> Submitting…
+                <Loader2 size={15} className="animate-spin" /> {t("Submitting…")}
               </>
             ) : (
               <>
-                <BadgeDollarSign size={15} /> Mark as Paid
+                <BadgeDollarSign size={15} /> {t("Mark as Paid")}
               </>
             )}
           </button>
@@ -213,8 +217,16 @@ export default function InvoicePaymentClient({
   );
 }
 
-function pendingVerificationNote(view: PublicInvoiceView): string {
+function pendingVerificationNote(view: PublicInvoiceView, t: TFunction): string {
   const who = view.company.shortName || view.company.name;
-  const when = view.paymentSubmittedAt ? ` on ${formatDate(view.paymentSubmittedAt)}` : "";
-  return `We've recorded your payment${when} and ${who} is verifying it. You'll receive a receipt by email once confirmed.`;
+  if (view.paymentSubmittedAt) {
+    return t(
+      "We've recorded your payment on {date} and {who} is verifying it. You'll receive a receipt by email once confirmed.",
+      { date: formatDate(view.paymentSubmittedAt), who }
+    );
+  }
+  return t(
+    "We've recorded your payment and {who} is verifying it. You'll receive a receipt by email once confirmed.",
+    { who }
+  );
 }

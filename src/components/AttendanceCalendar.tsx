@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, X, ExternalLink } from "lucide-react";
 import clsx from "clsx";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 // A read-only leave calendar — every APPROVED LeaveRequest, laid out month by
 // month so HR can see at a glance who's out on any given day. Deliberately
@@ -27,6 +28,10 @@ export type LeaveEvent = {
 type NormEvent = LeaveEvent & { start: Date; end: Date };
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
 
 const MAX_LANES = 3;
 const BAR_HEIGHT = 20;
@@ -155,6 +160,7 @@ function WeekRow({
   onEventClick: (ev: NormEvent) => void;
   onMoreClick: (day: Date, events: NormEvent[]) => void;
 }) {
+  const t = useT();
   const weekStart = week[0];
   const weekEnd = week[6];
 
@@ -211,7 +217,7 @@ function WeekRow({
             key={`${s.ev.id}-${s.startCol}`}
             type="button"
             onClick={() => onEventClick(s.ev)}
-            title={`${s.ev.employeeName} — on leave`}
+            title={t("{name} — on leave", { name: s.ev.employeeName })}
             className="absolute text-left text-[11px] font-medium leading-[20px] px-1.5 truncate hover:brightness-95 transition-[filter] duration-150 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden"
             style={{
               top: HEADER_HEIGHT + s.lane * (BAR_HEIGHT + BAR_GAP),
@@ -250,7 +256,7 @@ function WeekRow({
               left: `${(i / 7) * 100}%`,
             }}
           >
-            +{hiddenByDay[i].length} more
+            {t("+{count} more", { count: hiddenByDay[i].length })}
           </button>
         ) : null
       )}
@@ -259,6 +265,7 @@ function WeekRow({
 }
 
 function LeaveDetail({ ev }: { ev: NormEvent }) {
+  const t = useT();
   const spansDays = !isSameDay(ev.start, ev.end);
   const color = colorFor(ev.employeeId);
 
@@ -278,18 +285,18 @@ function LeaveDetail({ ev }: { ev: NormEvent }) {
 
       <div className="rounded-xl border border-line p-3 text-sm">
         <p className="text-ink">{formatEventDate(ev.start)}</p>
-        {spansDays && <p className="text-ink-muted mt-0.5">to {formatEventDate(ev.end)}</p>}
+        {spansDays && <p className="text-ink-muted mt-0.5">{t("to {date}", { date: formatEventDate(ev.end) })}</p>}
       </div>
 
       {ev.reason && (
         <div>
-          <p className="label mb-1">Reason</p>
+          <p className="label mb-1">{t("Reason")}</p>
           <p className="text-sm text-ink-muted">{ev.reason}</p>
         </div>
       )}
 
       <Link href={`/hr/employees/${ev.employeeId}`} className="btn-secondary self-start">
-        <ExternalLink size={15} /> View employee
+        <ExternalLink size={15} /> {t("View employee")}
       </Link>
     </div>
   );
@@ -304,6 +311,7 @@ export default function AttendanceCalendar({ events }: { events: LeaveEvent[] })
   const today = useMemo(() => startOfDay(new Date()), []);
   const [monthDate, setMonthDate] = useState(() => startOfDay(new Date(today.getFullYear(), today.getMonth(), 1)));
   const [modal, setModal] = useState<ModalState>(null);
+  const t = useT();
 
   const normalized = useMemo(() => normalizeEvents(events), [events]);
 
@@ -327,7 +335,10 @@ export default function AttendanceCalendar({ events }: { events: LeaveEvent[] })
     setMonthDate(new Date(today.getFullYear(), today.getMonth(), 1));
   }
 
-  const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(monthDate);
+  const monthLabel = t("{month} {year}", {
+    month: t(MONTH_NAMES[monthDate.getMonth()]),
+    year: monthDate.getFullYear(),
+  });
 
   return (
     <div className="card p-4 sm:p-5">
@@ -335,12 +346,12 @@ export default function AttendanceCalendar({ events }: { events: LeaveEvent[] })
         <h2 className="font-display text-lg font-semibold text-ink">{monthLabel}</h2>
         <div className="flex items-center gap-1.5">
           <button type="button" onClick={goToday} className="btn-secondary">
-            Today
+            {t("Today")}
           </button>
-          <button type="button" onClick={goPrevMonth} aria-label="Previous month" className="btn-secondary px-2.5">
+          <button type="button" onClick={goPrevMonth} aria-label={t("Previous month")} className="btn-secondary px-2.5">
             <ChevronLeft size={16} />
           </button>
-          <button type="button" onClick={goNextMonth} aria-label="Next month" className="btn-secondary px-2.5">
+          <button type="button" onClick={goNextMonth} aria-label={t("Next month")} className="btn-secondary px-2.5">
             <ChevronRight size={16} />
           </button>
         </div>
@@ -349,7 +360,7 @@ export default function AttendanceCalendar({ events }: { events: LeaveEvent[] })
       <div className="grid grid-cols-7 border-b border-line pb-2 mb-1">
         {WEEKDAY_LABELS.map((label) => (
           <div key={label} className="text-center text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            {label}
+            {t(label)}
           </div>
         ))}
       </div>
@@ -371,8 +382,7 @@ export default function AttendanceCalendar({ events }: { events: LeaveEvent[] })
 
       {normalized.length === 0 && (
         <p className="text-sm text-ink-muted mt-4">
-          No approved leave on file yet — once a leave request is approved (see an employee&apos;s
-          page, or their self-service link), it&apos;ll show up here.
+          {t("No approved leave on file yet — once a leave request is approved (see an employee's page, or their self-service link), it'll show up here.")}
         </p>
       )}
 
@@ -385,13 +395,13 @@ export default function AttendanceCalendar({ events }: { events: LeaveEvent[] })
             <div className="card p-6 max-w-sm w-full animate-scale-in" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-display text-lg font-semibold text-ink">
-                  {modal.mode === "event" ? "On leave" : formatEventDate(modal.date)}
+                  {modal.mode === "event" ? t("On leave") : formatEventDate(modal.date)}
                 </h2>
                 <button
                   type="button"
                   onClick={() => setModal(null)}
                   className="text-ink-faint hover:text-ink transition-colors"
-                  aria-label="Close"
+                  aria-label={t("Close")}
                 >
                   <X size={18} />
                 </button>

@@ -10,6 +10,7 @@ import ScrollRestorer from "@/components/ScrollRestorer";
 import EmptyState from "@/components/EmptyState";
 import SearchBox from "@/components/SearchBox";
 import DateRangeFilter from "@/components/DateRangeFilter";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ async function InvoiceList({
   from?: string;
   to?: string;
 }) {
+  const t = getT();
   const invoices = await prisma.invoice.findMany({
     where: {
       status: status === "OVERDUE" ? "UNPAID" : status || undefined,
@@ -54,10 +56,10 @@ async function InvoiceList({
     return (
       <EmptyState
         icon={ReceiptText}
-        title="No invoices found"
-        description="Try adjusting your filters, or create a new invoice."
+        title={t("No invoices found")}
+        description={t("Try adjusting your filters, or create a new invoice.")}
         actionHref="/invoices/new"
-        actionLabel="New invoice"
+        actionLabel={t("New invoice")}
       />
     );
   }
@@ -80,29 +82,29 @@ async function InvoiceList({
                 <InvoiceStatusToggle id={inv.id} displayStatus={getInvoiceDisplayStatus(inv)} />
               </div>
               <p className="text-xs text-ink-muted truncate mt-0.5">
-                {inv.customerName} · Issued {formatDate(inv.issueDate)}
-                {inv.dueDate ? ` · Due ${formatDate(inv.dueDate)}` : ""}
+                {inv.customerName} · {t("Issued {date}", { date: formatDate(inv.issueDate) })}
+                {inv.dueDate ? ` · ${t("Due {date}", { date: formatDate(inv.dueDate) })}` : ""}
               </p>
               {/* Always rendered (even blank) so every row reserves the same
                   vertical space regardless of item count — what keeps every
                   row's height consistent, per the design brief. */}
               <p className="text-xs text-ink-faint truncate mt-0.5">
-                {inv.items.length > 0 ? inv.items.map((item) => item.name || "Untitled item").join(" · ") : " "}
+                {inv.items.length > 0 ? inv.items.map((item) => item.name || t("Untitled item")).join(" · ") : " "}
               </p>
             </div>
             <div className="flex items-center gap-4 sm:gap-5 shrink-0">
               <div className="text-right">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Revenue</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{t("Revenue")}</p>
                 <p className="font-mono text-sm text-ink">{formatCurrency(revenue)}</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Expenses</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{t("Expenses")}</p>
                 <p className="font-mono text-sm text-ink-muted">
                   {expenses > 0 ? `−${formatCurrency(expenses)}` : formatCurrency(0)}
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">Net profit</p>
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{t("Net profit")}</p>
                 <p
                   className={`font-mono text-sm font-medium ${profit < 0 ? "text-danger-500" : "text-brand-600"}`}
                 >
@@ -122,6 +124,7 @@ export default function InvoicesPage({
 }: {
   searchParams: { q?: string; status?: string; from?: string; to?: string };
 }) {
+  const t = getT();
   const exportParams = new URLSearchParams();
   if (searchParams.q) exportParams.set("q", searchParams.q);
   if (searchParams.status) exportParams.set("status", searchParams.status);
@@ -147,15 +150,15 @@ export default function InvoicesPage({
       <ScrollRestorer restoreKey={restoreKey} />
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink mb-1">Invoices</h1>
-          <p className="text-sm text-ink-muted">Track what&rsquo;s owed and what&rsquo;s been paid.</p>
+          <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Invoices")}</h1>
+          <p className="text-sm text-ink-muted">{t("Track what's owed and what's been paid.")}</p>
         </div>
         <div className="flex gap-2 shrink-0">
           <a href={exportHref} className="btn-secondary">
-            <Download size={15} /> Export CSV
+            <Download size={15} /> {t("Export CSV")}
           </a>
           <Link href="/invoices/new" className="btn-primary">
-            <Plus size={15} /> New invoice
+            <Plus size={15} /> {t("New invoice")}
           </Link>
         </div>
       </div>
@@ -170,7 +173,7 @@ export default function InvoicesPage({
             href={statusHref(undefined)}
             className={`stamp ${!searchParams.status ? "border-brand-500 text-brand-500" : "border-line text-ink-muted"}`}
           >
-            All
+            {t("All")}
           </Link>
           {STATUSES.map((s) => (
             <Link
@@ -178,13 +181,13 @@ export default function InvoicesPage({
               href={statusHref(s)}
               className={`stamp ${searchParams.status === s ? "border-brand-500 text-brand-500" : "border-line text-ink-muted"}`}
             >
-              {s}
+              {t(s)}
             </Link>
           ))}
         </div>
       </div>
 
-      <Suspense fallback={<div className="text-sm text-ink-muted">Loading…</div>}>
+      <Suspense fallback={<div className="text-sm text-ink-muted">{t("Loading…")}</div>}>
         <InvoiceList
           q={searchParams.q}
           status={searchParams.status}

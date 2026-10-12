@@ -6,6 +6,7 @@ import { Check, X, Loader2 } from "lucide-react";
 import { formatDate } from "@/lib/calculations";
 import LeaveStatusBadge from "@/components/LeaveStatusBadge";
 import type { LeaveRequest } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 function RequestRow({
   employeeId,
@@ -20,6 +21,7 @@ function RequestRow({
   const [rejecting, setRejecting] = useState(false);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   async function decide(status: "APPROVED" | "REJECTED") {
     setBusy(true);
@@ -31,7 +33,7 @@ function RequestRow({
         body: JSON.stringify({ status, decidedNote: status === "REJECTED" ? note : undefined }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong."));
       onDecided();
     } catch (err: any) {
       setError(err.message);
@@ -48,14 +50,16 @@ function RequestRow({
           {request.isHalfDay && (
             <span className="text-xs font-normal text-ink-muted">
               {" "}
-              ({request.halfDayPeriod} half-day · 0.5 day)
+              ({t("{period} half-day · 0.5 day", { period: t(request.halfDayPeriod) })})
             </span>
           )}
         </p>
         <LeaveStatusBadge status={request.status} />
       </div>
       {request.reason && <p className="text-xs text-ink-muted">{request.reason}</p>}
-      {request.decidedNote && <p className="text-xs text-ink-faint italic">Note: {request.decidedNote}</p>}
+      {request.decidedNote && (
+        <p className="text-xs text-ink-faint italic">{t("Note: {note}", { note: request.decidedNote })}</p>
+      )}
 
       {request.status === "PENDING" && (
         <>
@@ -64,7 +68,7 @@ function RequestRow({
             <div className="flex flex-col gap-2 mt-1">
               <textarea
                 className="input text-xs min-h-[54px]"
-                placeholder="Optional note shown to the employee…"
+                placeholder={t("Optional note shown to the employee…")}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
               />
@@ -75,7 +79,7 @@ function RequestRow({
                   onClick={() => decide("REJECTED")}
                   className="btn-danger !py-1.5 !px-3 text-xs"
                 >
-                  {busy ? <Loader2 size={13} className="animate-spin" /> : <X size={13} />} Confirm reject
+                  {busy ? <Loader2 size={13} className="animate-spin" /> : <X size={13} />} {t("Confirm reject")}
                 </button>
                 <button
                   type="button"
@@ -83,7 +87,7 @@ function RequestRow({
                   onClick={() => setRejecting(false)}
                   className="btn-secondary !py-1.5 !px-3 text-xs"
                 >
-                  Cancel
+                  {t("Cancel")}
                 </button>
               </div>
             </div>
@@ -95,7 +99,7 @@ function RequestRow({
                 onClick={() => decide("APPROVED")}
                 className="btn-primary !py-1.5 !px-3 text-xs"
               >
-                {busy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} Approve
+                {busy ? <Loader2 size={13} className="animate-spin" /> : <Check size={13} />} {t("Approve")}
               </button>
               <button
                 type="button"
@@ -103,7 +107,7 @@ function RequestRow({
                 onClick={() => setRejecting(true)}
                 className="btn-secondary !py-1.5 !px-3 text-xs"
               >
-                <X size={13} /> Reject
+                <X size={13} /> {t("Reject")}
               </button>
             </div>
           )}
@@ -122,8 +126,10 @@ export default function LeaveRequestActions({
 }) {
   const router = useRouter();
 
+  const t = useT();
+
   if (requests.length === 0) {
-    return <p className="text-sm text-ink-muted">No leave requests yet.</p>;
+    return <p className="text-sm text-ink-muted">{t("No leave requests yet.")}</p>;
   }
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import ClickableTableRow from "@/components/ClickableTableRow";
+import { useT } from "@/lib/i18n/client";
 import { formatDateLabel } from "@/lib/bookingFormat";
 
 export type BookingEventListItem = {
@@ -21,14 +22,15 @@ function dateRangeLabel(startDate: string, endDate: string): string {
 }
 
 export default function BookingEventListClient({ events }: { events: BookingEventListItem[] }) {
+  const t = useT();
   return (
     <div className="card overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-line text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            <th className="px-5 py-3">Event</th>
-            <th className="hidden sm:table-cell px-5 py-3">Dates</th>
-            <th className="px-5 py-3 text-right">Status</th>
+            <th className="px-5 py-3">{t("Event")}</th>
+            <th className="hidden sm:table-cell px-5 py-3">{t("Dates")}</th>
+            <th className="px-5 py-3 text-right">{t("Status")}</th>
           </tr>
         </thead>
         <tbody>
@@ -53,7 +55,7 @@ export default function BookingEventListClient({ events }: { events: BookingEven
                     e.active ? "border-brand-500 text-brand-500 bg-brand-50" : "border-ink-faint text-ink-faint"
                   }`}
                 >
-                  {e.active ? "Active" : "Hidden"}
+                  {e.active ? t("Active") : t("Hidden")}
                 </span>
               </td>
             </ClickableTableRow>

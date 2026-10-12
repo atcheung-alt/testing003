@@ -17,6 +17,7 @@ import {
   type FeeScaleRowFields,
   type RecruitmentLanguage,
 } from "@/lib/recruitmentTerms";
+import { useT } from "@/lib/i18n/client";
 
 export type RecruitmentAgreementFormData = {
   id: string;
@@ -43,6 +44,7 @@ function InlineFeeScaleTable({
   onChange: (rows: FeeScaleRowFields[]) => void;
   language: RecruitmentLanguage;
 }) {
+  const t = useT();
   function updateRow(index: number, patch: Partial<FeeScaleRowFields>) {
     onChange(rows.map((r, i) => (i === index ? { ...r, ...patch } : r)));
   }
@@ -55,12 +57,12 @@ function InlineFeeScaleTable({
 
   return (
     <div>
-      <p className="text-xs font-medium text-ink-muted mb-2">{title}</p>
+      <p className="text-xs font-medium text-ink-muted mb-2">{t(title)}</p>
       {rows.length > 0 && (
         <div className="flex gap-2 mb-1 px-0.5">
-          <span className="flex-[2] text-[11px] text-ink-faint">Annual Remuneration Package</span>
-          <span className="flex-1 text-[11px] text-ink-faint">Fee</span>
-          <span className="flex-1 text-[11px] text-ink-faint">Guarantee Period</span>
+          <span className="flex-[2] text-[11px] text-ink-faint">{t("Annual Remuneration Package")}</span>
+          <span className="flex-1 text-[11px] text-ink-faint">{t("Fee")}</span>
+          <span className="flex-1 text-[11px] text-ink-faint">{t("Guarantee Period")}</span>
           <span className="w-9 shrink-0" />
         </div>
       )}
@@ -70,28 +72,28 @@ function InlineFeeScaleTable({
             <input
               type="text"
               className="input flex-[2]"
-              placeholder="e.g. HK$1 mil or below"
+              placeholder={t("e.g. HK$1 mil or below")}
               value={translateFeeScaleValue(row.packageLabel, language)}
               onChange={(e) => updateRow(i, { packageLabel: e.target.value })}
             />
             <input
               type="text"
               className="input flex-1"
-              placeholder="e.g. 20% of annual salary package"
+              placeholder={t("e.g. 20% of annual salary package")}
               value={translateFeeScaleValue(row.fee, language)}
               onChange={(e) => updateRow(i, { fee: e.target.value })}
             />
             <input
               type="text"
               className="input flex-1"
-              placeholder="e.g. 12 weeks"
+              placeholder={t("e.g. 12 weeks")}
               value={translateFeeScaleValue(row.guaranteePeriod, language)}
               onChange={(e) => updateRow(i, { guaranteePeriod: e.target.value })}
             />
             <button
               type="button"
               onClick={() => removeRow(i)}
-              aria-label="Remove row"
+              aria-label={t("Remove row")}
               className="p-2 text-ink-faint hover:text-danger-500 transition-colors shrink-0"
             >
               <Trash2 size={15} />
@@ -100,7 +102,7 @@ function InlineFeeScaleTable({
         ))}
       </div>
       <button type="button" onClick={addRow} className="btn-ghost !px-2 text-xs mt-2">
-        <Plus size={14} /> Add row
+        <Plus size={14} /> {t("Add row")}
       </button>
     </div>
   );
@@ -111,6 +113,7 @@ export default function RecruitmentAgreementForm({
 }: {
   agreement?: RecruitmentAgreementFormData;
 }) {
+  const t = useT();
   const router = useRouter();
   const [companyName, setCompanyName] = useState(agreement?.companyName || "");
   const [companyEmail, setCompanyEmail] = useState(agreement?.companyEmail || "");
@@ -278,7 +281,7 @@ export default function RecruitmentAgreementForm({
       setContractRows(contract);
       syncTerms(companyName, paymentDueDays, permanent, contract);
     } catch {
-      setError("Could not load the fee scale library right now.");
+      setError(t("Could not load the fee scale library right now."));
     }
   }
 
@@ -316,26 +319,26 @@ export default function RecruitmentAgreementForm({
       {error && (
         <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
-          <span>{error}</span>
+          <span>{t(error)}</span>
         </div>
       )}
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Client details</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Client details")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">Company name *</label>
+            <label className="label">{t("Company name *")}</label>
             <input
               type="text"
               className="input"
-              placeholder="e.g. TechVision Limited"
+              placeholder={t("e.g. TechVision Limited")}
               value={companyName}
               onChange={(e) => handleCompanyNameChange(e.target.value)}
               required
             />
           </div>
           <div>
-            <label className="label">Company email *</label>
+            <label className="label">{t("Company email *")}</label>
             <input
               type="email"
               className="input"
@@ -346,7 +349,7 @@ export default function RecruitmentAgreementForm({
             />
           </div>
           <div>
-            <label className="label">Payment due (days) *</label>
+            <label className="label">{t("Payment due (days) *")}</label>
             <input
               type="number"
               min={1}
@@ -356,11 +359,11 @@ export default function RecruitmentAgreementForm({
               required
             />
             <p className="text-xs text-ink-faint mt-1">
-              Replaces &ldquo;within {"{"}days{"}"} days&rdquo; in Clause 3 of the terms below.
+              {t("Replaces \"within {days} days\" in Clause 3 of the terms below.")}
             </p>
           </div>
           <div>
-            <label className="label">Terms language</label>
+            <label className="label">{t("Terms language")}</label>
             <select
               className="input"
               value={language}
@@ -368,12 +371,12 @@ export default function RecruitmentAgreementForm({
             >
               {VALID_RECRUITMENT_LANGUAGES.map((l) => (
                 <option key={l} value={l}>
-                  {RECRUITMENT_LANGUAGE_LABELS[l]}
+                  {t(RECRUITMENT_LANGUAGE_LABELS[l])}
                 </option>
               ))}
             </select>
             <p className="text-xs text-ink-faint mt-1">
-              Regenerates the terms below in the selected language — same commercial terms either way.
+              {t("Regenerates the terms below in the selected language — same commercial terms either way.")}
             </p>
           </div>
         </div>
@@ -381,19 +384,19 @@ export default function RecruitmentAgreementForm({
 
       <div className="card p-5">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="font-display text-lg font-semibold">Fee scale (Clause 13.b)</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Fee scale (Clause 13.b)")}</h2>
           <button
             type="button"
             onClick={restoreFeeScaleFromLibrary}
             className="flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600"
           >
-            <RotateCcw size={12} /> Restore library defaults
+            <RotateCcw size={12} /> {t("Restore library defaults")}
           </button>
         </div>
         <p className="text-xs text-ink-muted mb-4">
-          Pre-filled from the fee scale library&apos;s current rates — add, edit, or delete rows here
-          and they&apos;ll only apply to this agreement. Changes are reflected in the terms below
-          automatically.
+          {t(
+            "Pre-filled from the fee scale library's current rates — add, edit, or delete rows here and they'll only apply to this agreement. Changes are reflected in the terms below automatically."
+          )}
         </p>
         <div className="flex flex-col gap-5">
           <InlineFeeScaleTable
@@ -413,7 +416,7 @@ export default function RecruitmentAgreementForm({
 
       <div className="card p-5">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-display text-lg font-semibold">Terms of business</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Terms of business")}</h2>
           {termsDirty && (
             <button
               type="button"
@@ -425,13 +428,14 @@ export default function RecruitmentAgreementForm({
               }}
               className="text-xs text-brand-500 hover:text-brand-600"
             >
-              Reset to template
+              {t("Reset to template")}
             </button>
           )}
         </div>
         <p className="text-xs text-ink-muted mb-3">
-          Client company name, payment days, and the fee scale tables above are automatically
-          reflected here — editing this text directly stops that automatic sync.
+          {t(
+            "Client company name, payment days, and the fee scale tables above are automatically reflected here — editing this text directly stops that automatic sync."
+          )}
         </p>
         <textarea
           className="input min-h-[400px] font-mono text-xs leading-relaxed"
@@ -446,10 +450,10 @@ export default function RecruitmentAgreementForm({
       <div className="flex gap-3">
         <button type="submit" disabled={saving} className="btn-primary">
           {saving && <Loader2 size={15} className="animate-spin" />}
-          {saving ? "Saving…" : agreement ? "Save changes" : "Create agreement"}
+          {saving ? t("Saving…") : agreement ? t("Save changes") : t("Create agreement")}
         </button>
         <button type="button" onClick={() => router.back()} className="btn-secondary">
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
     </form>

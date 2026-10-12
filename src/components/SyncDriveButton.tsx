@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { RefreshCw } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export default function SyncDriveButton({ invoiceId }: { invoiceId: string }) {
+  const t = useT();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -29,10 +31,10 @@ export default function SyncDriveButton({ invoiceId }: { invoiceId: string }) {
     <div className="flex flex-col items-start gap-1">
       <button type="button" onClick={handleSync} disabled={busy} className="btn-secondary">
         <RefreshCw size={15} className={busy ? "animate-spin" : ""} />
-        {busy ? "Syncing…" : "Sync to Drive now"}
+        {busy ? t("Syncing…") : t("Sync to Drive now")}
       </button>
       {message && (
-        <span className="text-xs text-ink-muted max-w-md">{message}</span>
+        <span className="text-xs text-ink-muted max-w-md">{t(message)}</span>
       )}
     </div>
   );

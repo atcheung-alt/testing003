@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { CalendarRange, X } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export default function DateRangeFilter() {
   const router = useRouter();
@@ -9,6 +10,7 @@ export default function DateRangeFilter() {
   const searchParams = useSearchParams();
   const from = searchParams.get("from") || "";
   const to = searchParams.get("to") || "";
+  const t = useT();
 
   function update(nextFrom: string, nextTo: string) {
     const params = new URLSearchParams(searchParams.toString());
@@ -25,7 +27,7 @@ export default function DateRangeFilter() {
       <input
         type="date"
         className="input !w-auto"
-        aria-label="From date"
+        aria-label={t("From date")}
         value={from}
         max={to || undefined}
         onChange={(e) => update(e.target.value, to)}
@@ -34,7 +36,7 @@ export default function DateRangeFilter() {
       <input
         type="date"
         className="input !w-auto"
-        aria-label="To date"
+        aria-label={t("To date")}
         value={to}
         min={from || undefined}
         onChange={(e) => update(from, e.target.value)}
@@ -43,7 +45,7 @@ export default function DateRangeFilter() {
         <button
           type="button"
           onClick={() => update("", "")}
-          aria-label="Clear date range"
+          aria-label={t("Clear date range")}
           className="text-ink-faint hover:text-danger-500 transition-colors"
         >
           <X size={15} />

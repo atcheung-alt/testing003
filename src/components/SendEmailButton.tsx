@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Mail, X, CheckCircle2, AlertCircle, Loader2, Paperclip } from "lucide-react";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 // Mirrors the limits enforced server-side in src/lib/emailAttachments.ts —
 // duplicated as literals (rather than imported) so this client component
@@ -64,6 +65,7 @@ export default function SendEmailButton({
   label = "Send email",
   isFollowUp = false,
 }: Props) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [to, setTo] = useState(defaultTo);
   const [cc, setCc] = useState("");
@@ -91,12 +93,12 @@ export default function SendEmailButton({
     setAttachError(null);
 
     if (attachments.length + incoming.length > MAX_EMAIL_ATTACHMENTS) {
-      setAttachError(`You can attach up to ${MAX_EMAIL_ATTACHMENTS} files.`);
+      setAttachError(t("You can attach up to {count} files.", { count: MAX_EMAIL_ATTACHMENTS }));
       return;
     }
     const tooBig = incoming.find((f) => f.size > MAX_ATTACHMENT_BYTES);
     if (tooBig) {
-      setAttachError(`"${tooBig.name}" is larger than ${MAX_ATTACHMENT_BYTES / (1024 * 1024)}MB.`);
+      setAttachError(t("\"{name}\" is larger than {size}MB.", { name: tooBig.name, size: MAX_ATTACHMENT_BYTES / (1024 * 1024) }));
       return;
     }
 
@@ -106,7 +108,7 @@ export default function SendEmailButton({
       );
       setAttachments((prev) => [...prev, ...added]);
     } catch {
-      setAttachError("Could not read one of the selected files.");
+      setAttachError(t("Could not read one of the selected files."));
     }
   }
 
@@ -116,11 +118,11 @@ export default function SendEmailButton({
 
   async function send() {
     if (!toValid) {
-      setStatus({ type: "error", message: "Please enter a valid recipient email address." });
+      setStatus({ type: "error", message: t("Please enter a valid recipient email address.") });
       return;
     }
     if (!ccValid) {
-      setStatus({ type: "error", message: "One of the CC email addresses doesn't look valid." });
+      setStatus({ type: "error", message: t("One of the CC email addresses doesn't look valid.") });
       return;
     }
     setStatus({ type: "sending" });
@@ -156,9 +158,9 @@ export default function SendEmailButton({
           setOpen(true);
         }}
         className="btn-secondary"
-        title={emailValid ? "Send by email" : "Add a customer email to enable sending"}
+        title={emailValid ? t("Send by email") : t("Add a customer email to enable sending")}
       >
-        <Mail size={15} /> {label}
+        <Mail size={15} /> {t(label)}
       </button>
 
       {open && (
@@ -170,12 +172,12 @@ export default function SendEmailButton({
           />
           <div className="relative w-full max-w-lg card p-6 max-h-[90vh] overflow-y-auto animate-scale-in">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-semibold">{label}</h2>
+              <h2 className="font-display text-lg font-semibold">{t(label)}</h2>
               <button
                 type="button"
                 onClick={() => status.type !== "sending" && setOpen(false)}
                 className="text-ink-faint hover:text-ink"
-                aria-label="Close"
+                aria-label={t("Close")}
               >
                 <X size={18} />
               </button>
@@ -184,12 +186,12 @@ export default function SendEmailButton({
             {status.type === "success" ? (
               <div className="flex flex-col items-center text-center gap-3 py-6">
                 <CheckCircle2 size={40} className="text-emerald-500" />
-                <p className="font-medium">Email sent</p>
+                <p className="font-medium">{t("Email sent")}</p>
                 <p className="text-sm text-ink-muted">
-                  The PDF was sent to <span className="text-ink">{status.to}</span>.
+                  {t("The PDF was sent to {recipient}.", { recipient: status.to })}
                 </p>
                 <button type="button" onClick={() => setOpen(false)} className="btn-primary mt-2">
-                  Done
+                  {t("Done")}
                 </button>
               </div>
             ) : (
@@ -197,12 +199,12 @@ export default function SendEmailButton({
                 {status.type === "error" && (
                   <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
                     <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                    <span>{status.message}</span>
+                    <span>{t(status.message)}</span>
                   </div>
                 )}
 
                 <div>
-                  <label className="label">To</label>
+                  <label className="label">{t("To")}</label>
                   <input
                     type="email"
                     className="input"
@@ -211,13 +213,13 @@ export default function SendEmailButton({
                     placeholder="customer@example.com"
                   />
                   {!toValid && to.length > 0 && (
-                    <p className="mt-1 text-xs text-danger-500">That doesn&apos;t look like a valid email.</p>
+                    <p className="mt-1 text-xs text-danger-500">{t("That doesn't look like a valid email.")}</p>
                   )}
                 </div>
 
                 {showCc && (
                   <div>
-                    <label className="label">CC (optional)</label>
+                    <label className="label">{t("CC (optional)")}</label>
                     <input
                       type="text"
                       className="input"
@@ -227,14 +229,14 @@ export default function SendEmailButton({
                     />
                     {!ccValid && (
                       <p className="mt-1 text-xs text-danger-500">
-                        One of these doesn&apos;t look like a valid email.
+                        {t("One of these doesn't look like a valid email.")}
                       </p>
                     )}
                   </div>
                 )}
 
                 <div>
-                  <label className="label">Subject</label>
+                  <label className="label">{t("Subject")}</label>
                   <input
                     type="text"
                     className="input"
@@ -244,20 +246,21 @@ export default function SendEmailButton({
                 </div>
 
                 <div>
-                  <label className="label">Message</label>
+                  <label className="label">{t("Message")}</label>
                   <textarea
                     className="input min-h-[160px]"
                     value={body}
                     onChange={(e) => setBody(e.target.value)}
                   />
                   <p className="mt-1.5 text-xs text-ink-faint">
-                    The latest PDF is attached automatically, and an HR Plus signature is appended.
-                    You can also attach extra files below.
+                    {t(
+                      "The latest PDF is attached automatically, and an HR Plus signature is appended. You can also attach extra files below."
+                    )}
                   </p>
                 </div>
 
                 <div>
-                  <label className="label">Attachments (optional)</label>
+                  <label className="label">{t("Attachments (optional)")}</label>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -274,9 +277,9 @@ export default function SendEmailButton({
                     disabled={attachments.length >= MAX_EMAIL_ATTACHMENTS}
                     className="btn-secondary"
                   >
-                    <Paperclip size={14} /> Add files
+                    <Paperclip size={14} /> {t("Add files")}
                   </button>
-                  {attachError && <p className="mt-1.5 text-xs text-danger-500">{attachError}</p>}
+                  {attachError && <p className="mt-1.5 text-xs text-danger-500">{t(attachError)}</p>}
                   {attachments.length > 0 && (
                     <ul className="mt-2 flex flex-col gap-1.5">
                       {attachments.map((a, i) => (
@@ -287,14 +290,14 @@ export default function SendEmailButton({
                           <span className="truncate">
                             {a.name}{" "}
                             <span className="text-ink-faint text-xs">
-                              ({(a.size / 1024).toFixed(0)} KB)
+                              {t("({size} KB)", { size: (a.size / 1024).toFixed(0) })}
                             </span>
                           </span>
                           <button
                             type="button"
                             onClick={() => removeAttachment(i)}
                             className="text-ink-faint hover:text-danger-500 shrink-0"
-                            aria-label={`Remove ${a.name}`}
+                            aria-label={t("Remove {name}", { name: a.name })}
                           >
                             <X size={14} />
                           </button>
@@ -303,7 +306,10 @@ export default function SendEmailButton({
                     </ul>
                   )}
                   <p className="mt-1.5 text-xs text-ink-faint">
-                    Up to {MAX_EMAIL_ATTACHMENTS} files, {MAX_ATTACHMENT_BYTES / (1024 * 1024)}MB each.
+                    {t("Up to {count} files, {size}MB each.", {
+                      count: MAX_EMAIL_ATTACHMENTS,
+                      size: MAX_ATTACHMENT_BYTES / (1024 * 1024),
+                    })}
                   </p>
                 </div>
 
@@ -314,7 +320,7 @@ export default function SendEmailButton({
                     disabled={status.type === "sending"}
                     className="btn-secondary"
                   >
-                    Cancel
+                    {t("Cancel")}
                   </button>
                   <button
                     type="button"
@@ -324,11 +330,11 @@ export default function SendEmailButton({
                   >
                     {status.type === "sending" ? (
                       <>
-                        <Loader2 size={15} className="animate-spin" /> Sending…
+                        <Loader2 size={15} className="animate-spin" /> {t("Sending…")}
                       </>
                     ) : (
                       <>
-                        <Mail size={15} /> Send
+                        <Mail size={15} /> {t("Send")}
                       </>
                     )}
                   </button>

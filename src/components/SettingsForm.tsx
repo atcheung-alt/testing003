@@ -7,6 +7,7 @@ import clsx from "clsx";
 import CompanyLogoUpload from "@/components/CompanyLogoUpload";
 import ThemeModeControl from "@/components/ThemeModeControl";
 import type { AppSettings, ThemeMode } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 const emptySettings: AppSettings = {
   driveFolderId: "",
@@ -27,6 +28,7 @@ const THEME_OPTIONS: { value: ThemeMode; label: string; icon: typeof Sun }[] = [
 ];
 
 function ThemeModeToggle({ value, onChange }: { value: ThemeMode; onChange: (v: ThemeMode) => void }) {
+  const t = useT();
   return (
     <div className="inline-flex flex-wrap rounded-full border border-line bg-paper p-1 gap-1 self-start">
       {THEME_OPTIONS.map(({ value: v, label, icon: Icon }) => (
@@ -41,7 +43,7 @@ function ThemeModeToggle({ value, onChange }: { value: ThemeMode; onChange: (v: 
           )}
         >
           <Icon size={15} />
-          {label}
+          {t(label)}
         </button>
       ))}
     </div>
@@ -71,6 +73,7 @@ function Switch({ checked, onChange }: { checked: boolean; onChange: (value: boo
 }
 
 export default function SettingsForm() {
+  const t = useT();
   const router = useRouter();
   const [settings, setSettings] = useState<AppSettings>(emptySettings);
   const [loading, setLoading] = useState(true);
@@ -149,7 +152,7 @@ export default function SettingsForm() {
   }
 
   if (loading) {
-    return <p className="text-sm text-ink-muted">Loading…</p>;
+    return <p className="text-sm text-ink-muted">{t("Loading…")}</p>;
   }
 
   return (
@@ -158,11 +161,11 @@ export default function SettingsForm() {
         <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           {errors.length === 1 ? (
-            <span>{errors[0]}</span>
+            <span>{t(errors[0])}</span>
           ) : (
             <ul className="list-disc pl-4 flex flex-col gap-0.5">
               {errors.map((e, i) => (
-                <li key={i}>{e}</li>
+                <li key={i}>{t(e)}</li>
               ))}
             </ul>
           )}
@@ -172,14 +175,15 @@ export default function SettingsForm() {
       {/* Appearance */}
       <div className="card p-5 flex flex-col gap-3">
         <div>
-          <h2 className="font-display text-lg font-semibold">Appearance</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Appearance")}</h2>
           <p className="text-sm text-ink-muted mt-0.5">
-            Hover effects, page transitions, and other motion across the whole app. Turn off for a
-            fully static, instant-feeling interface.
+            {t(
+              "Hover effects, page transitions, and other motion across the whole app. Turn off for a fully static, instant-feeling interface."
+            )}
           </p>
         </div>
         <label className="flex items-center justify-between gap-3 text-sm font-medium max-w-sm">
-          <span>Enable animations</span>
+          <span>{t("Enable animations")}</span>
           <Switch
             checked={settings.animationsEnabled}
             onChange={(v) => update("animationsEnabled", v)}
@@ -187,20 +191,22 @@ export default function SettingsForm() {
         </label>
 
         <div className="pt-1">
-          <p className="text-sm font-medium mb-2">Default color theme</p>
+          <p className="text-sm font-medium mb-2">{t("Default color theme")}</p>
           <ThemeModeToggle value={settings.themeMode} onChange={(v) => update("themeMode", v)} />
           <p className="mt-1.5 text-xs text-ink-faint">
-            Used on the sign-in page and for any staff member who hasn&apos;t set their own theme
-            below. &ldquo;Automatic&rdquo; follows the visitor&apos;s own device setting.
+            {t(
+              "Used on the sign-in page and for any staff member who hasn't set their own theme below. \"Automatic\" follows the visitor's own device setting."
+            )}
           </p>
         </div>
 
         <div className="pt-3 border-t border-line">
-          <p className="text-sm font-medium mb-2">Your theme</p>
+          <p className="text-sm font-medium mb-2">{t("Your theme")}</p>
           <ThemeModeControl />
           <p className="mt-1.5 text-xs text-ink-faint">
-            Just for your account — overrides the default above whenever you&apos;re signed in,
-            on any device.
+            {t(
+              "Just for your account — overrides the default above whenever you're signed in, on any device."
+            )}
           </p>
         </div>
       </div>
@@ -208,48 +214,48 @@ export default function SettingsForm() {
       {/* Company branding */}
       <div className="card p-5 flex flex-col gap-4">
         <div>
-          <h2 className="font-display text-lg font-semibold">Company branding</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Company branding")}</h2>
           <p className="text-sm text-ink-muted mt-0.5">
-            Shown on every exported PDF and outgoing email.
+            {t("Shown on every exported PDF and outgoing email.")}
           </p>
         </div>
 
         <div className="flex gap-4 flex-wrap">
           <div>
-            <p className="label">Company logo (primary)</p>
+            <p className="label">{t("Company logo (primary)")}</p>
             <CompanyLogoUpload
               imageData={settings.companyLogo}
               onChange={(data) => update("companyLogo", data)}
-              label="primary company logo"
+              label={t("primary company logo")}
             />
             <p className="mt-1 text-xs text-ink-faint w-32">
-              Used on every PDF/email, and in the sidebar for light mode.
+              {t("Used on every PDF/email, and in the sidebar for light mode.")}
             </p>
           </div>
           <div>
-            <p className="label">Company logo (dark mode)</p>
+            <p className="label">{t("Company logo (dark mode)")}</p>
             <CompanyLogoUpload
               imageData={settings.companyLogoDark}
               onChange={(data) => update("companyLogoDark", data)}
-              label="dark mode company logo"
+              label={t("dark mode company logo")}
             />
             <p className="mt-1 text-xs text-ink-faint w-32">
-              Sidebar only, shown when dark mode is active. Leave blank to reuse the primary logo.
+              {t("Sidebar only, shown when dark mode is active. Leave blank to reuse the primary logo.")}
             </p>
           </div>
           <div className="flex-1 flex flex-col gap-3 min-w-0">
             <div>
-              <label className="label">Company name</label>
+              <label className="label">{t("Company name")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="e.g. HR Plus (Talent) Limited"
+                placeholder={t("e.g. HR Plus (Talent) Limited")}
                 value={settings.companyName}
                 onChange={(e) => update("companyName", e.target.value)}
               />
             </div>
             <div>
-              <label className="label">Company website</label>
+              <label className="label">{t("Company website")}</label>
               <input
                 type="text"
                 className="input"
@@ -258,7 +264,7 @@ export default function SettingsForm() {
                 onChange={(e) => update("companyWebsite", e.target.value)}
               />
               <p className="mt-1 text-xs text-ink-faint">
-                Shown at the bottom of every outgoing email.
+                {t("Shown at the bottom of every outgoing email.")}
               </p>
             </div>
           </div>
@@ -268,25 +274,28 @@ export default function SettingsForm() {
       {/* Google Drive */}
       <div className="card p-5 flex flex-col gap-3">
         <div>
-          <h2 className="font-display text-lg font-semibold">Google Drive sync</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Google Drive sync")}</h2>
           <p className="text-sm text-ink-muted mt-0.5">
-            The Shared Drive (or folder inside one) that generated quotation, invoice, and
-            receipt PDFs are automatically synced into.
+            {t(
+              "The Shared Drive (or folder inside one) that generated quotation, invoice, and receipt PDFs are automatically synced into."
+            )}
           </p>
         </div>
         <div>
-          <label className="label">Drive folder ID</label>
+          <label className="label">{t("Drive folder ID")}</label>
           <input
             type="text"
             className="input font-mono text-sm"
-            placeholder="e.g. 1AbCDefGhIJklmNoPQRstuVWxyZ"
+            placeholder={t("e.g. 1AbCDefGhIJklmNoPQRstuVWxyZ")}
             value={settings.driveFolderId}
             onChange={(e) => update("driveFolderId", e.target.value)}
           />
           <p className="mt-1 text-xs text-ink-faint">
-            The part of the Drive folder&apos;s URL after <code>/folders/</code>. Must be a Shared
-            Drive (or a folder inside one) the service account has been added to as a Member —
-            visit <code>/api/drive-test</code> to verify.
+            {t("The part of the Drive folder's URL after")} <code>/folders/</code>
+            {t(
+              ". Must be a Shared Drive (or a folder inside one) the service account has been added to as a Member — visit"
+            )}{" "}
+            <code>/api/drive-test</code> {t("to verify.")}
           </p>
         </div>
       </div>
@@ -294,10 +303,9 @@ export default function SettingsForm() {
       {/* Email CC */}
       <div className="card p-5 flex flex-col gap-3">
         <div>
-          <h2 className="font-display text-lg font-semibold">Email CC</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Email CC")}</h2>
           <p className="text-sm text-ink-muted mt-0.5">
-            Standing CC recipients added to every outgoing quotation, invoice, and notification
-            email.
+            {t("Standing CC recipients added to every outgoing quotation, invoice, and notification email.")}
           </p>
         </div>
 
@@ -308,20 +316,20 @@ export default function SettingsForm() {
             checked={settings.ccEnabled}
             onChange={(e) => update("ccEnabled", e.target.checked)}
           />
-          CC these addresses on every outgoing email
+          {t("CC these addresses on every outgoing email")}
         </label>
 
         <div>
-          <label className="label">CC addresses</label>
+          <label className="label">{t("CC addresses")}</label>
           <textarea
             className="input min-h-[80px]"
-            placeholder="e.g. boss@example.com, manager@example.com"
+            placeholder={t("e.g. boss@example.com, manager@example.com")}
             value={settings.ccEmails}
             disabled={!settings.ccEnabled}
             onChange={(e) => update("ccEmails", e.target.value)}
           />
           <p className="mt-1 text-xs text-ink-faint">
-            Separate multiple addresses with commas or new lines.
+            {t("Separate multiple addresses with commas or new lines.")}
           </p>
         </div>
       </div>
@@ -330,17 +338,17 @@ export default function SettingsForm() {
         <button type="button" onClick={save} disabled={saving} className="btn-primary">
           {saving ? (
             <>
-              <Loader2 size={15} className="animate-spin" /> Saving…
+              <Loader2 size={15} className="animate-spin" /> {t("Saving…")}
             </>
           ) : (
             <>
-              <Save size={15} /> Save settings
+              <Save size={15} /> {t("Save settings")}
             </>
           )}
         </button>
         {saved && (
           <span className="flex items-center gap-1.5 text-sm text-emerald-600">
-            <CheckCircle2 size={15} /> Saved
+            <CheckCircle2 size={15} /> {t("Saved")}
           </span>
         )}
       </div>

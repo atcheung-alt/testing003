@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 export type PromptCustomer = {
   customerName: string;
@@ -19,6 +20,7 @@ export default function NewCustomerPrompt({
   customer: PromptCustomer;
   onDone: () => void;
 }) {
+  const t = useT();
   const [saving, setSaving] = useState(false);
 
   async function addToLibrary() {
@@ -47,15 +49,18 @@ export default function NewCustomerPrompt({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm px-4 animate-fade-in">
       <div className="card p-6 max-w-sm w-full flex flex-col gap-4 animate-scale-in">
         <div>
-          <h2 className="font-display text-lg font-semibold text-ink">Add to client library?</h2>
+          <h2 className="font-display text-lg font-semibold text-ink">{t("Add to client library?")}</h2>
           <p className="text-sm text-ink-muted mt-1">
-            <strong>{customer.customerName}</strong> isn&apos;t in your client library yet — save
-            them so future quotations/invoices are quicker to fill in?
+            {t(
+              "{name} isn't in your client library yet — save them so future quotations/invoices are quicker to fill in?",
+              { name: customer.customerName }
+            )}
             {customer.customerContact && (
               <>
                 {" "}
-                <strong>{customer.customerContact}</strong> will be saved as their first contact
-                person.
+                {t("{name} will be saved as their first contact person.", {
+                  name: customer.customerContact,
+                })}
               </>
             )}
           </p>
@@ -68,10 +73,10 @@ export default function NewCustomerPrompt({
             className="btn-primary flex-1 justify-center"
           >
             {saving && <Loader2 size={15} className="animate-spin" />}
-            Add to library
+            {t("Add to library")}
           </button>
           <button type="button" onClick={onDone} className="btn-secondary flex-1 justify-center">
-            Skip
+            {t("Skip")}
           </button>
         </div>
       </div>

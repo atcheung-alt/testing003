@@ -5,6 +5,7 @@ import { getMyProfileLeaveView } from "@/lib/myProfile";
 import { formatDate } from "@/lib/calculations";
 import { COMPANY } from "@/lib/company";
 import MyLeaveClient from "@/components/MyLeaveClient";
+import { getT } from "@/lib/i18n/server";
 
 function InfoRow({ label, value }: { label: string; value?: string | null }) {
   return (
@@ -25,6 +26,7 @@ export const dynamic = "force-dynamic";
  * employee with their own leave balance to check.
  */
 export default async function MyProfilePage() {
+  const t = getT();
   const user = await getCurrentUser();
   if (!user) {
     redirect("/login");
@@ -36,19 +38,19 @@ export default async function MyProfilePage() {
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl font-semibold text-ink mb-1">
-          {view ? `Hi, ${view.name}` : "Profile"}
+          {view ? t("Hi, {name}", { name: view.name }) : t("Profile")}
         </h1>
-        <p className="text-sm text-ink-muted">Your annual leave balance and request history.</p>
+        <p className="text-sm text-ink-muted">{t("Your annual leave balance and request history.")}</p>
       </div>
 
       {view ? (
         <>
           <div className="card p-5">
-            <h2 className="font-display text-lg font-semibold mb-3">Profile</h2>
+            <h2 className="font-display text-lg font-semibold mb-3">{t("Profile")}</h2>
             <div className="flex flex-col gap-2 text-sm">
-              <InfoRow label="Full English name" value={view.name} />
-              <InfoRow label="Title / Position" value={view.title} />
-              <InfoRow label="Start date" value={formatDate(view.startDate)} />
+              <InfoRow label={t("Full English name")} value={view.name} />
+              <InfoRow label={t("Title / Position")} value={view.title} />
+              <InfoRow label={t("Start date")} value={formatDate(view.startDate)} />
             </div>
           </div>
           <MyLeaveClient initial={view} />
@@ -56,11 +58,15 @@ export default async function MyProfilePage() {
       ) : (
         <div className="card p-8 flex flex-col items-center text-center gap-3">
           <MailQuestion size={32} className="text-ink-faint" />
-          <p className="text-sm font-medium text-ink">Your account isn&apos;t linked to an employee record yet.</p>
+          <p className="text-sm font-medium text-ink">{t("Your account isn't linked to an employee record yet.")}</p>
           <p className="text-sm text-ink-muted max-w-sm">
-            HR needs to add <span className="font-mono text-ink">{user.email}</span> as your company email on
-            your employee record before your leave balance can show up here. Please contact{" "}
-            {COMPANY.contact?.email || COMPANY.shortName || COMPANY.name}.
+            {t(
+              "HR needs to add {email} as your company email on your employee record before your leave balance can show up here. Please contact {contact}.",
+              {
+                email: user.email,
+                contact: COMPANY.contact?.email || COMPANY.shortName || COMPANY.name,
+              }
+            )}
           </p>
         </div>
       )}

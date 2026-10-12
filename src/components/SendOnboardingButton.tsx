@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Send, Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export default function SendOnboardingButton({
   employeeId,
@@ -12,6 +13,7 @@ export default function SendOnboardingButton({
   /** Just changes the label/wording — same endpoint either way. */
   resend?: boolean;
 }) {
+  const t = useT();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,10 +40,10 @@ export default function SendOnboardingButton({
     <div className="flex flex-col items-start gap-1">
       <button type="button" onClick={handleSend} disabled={busy} className="btn-secondary">
         {busy ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-        {busy ? "Sending…" : resend ? "Resend onboarding email" : "Send onboarding email"}
+        {busy ? t("Sending…") : resend ? t("Resend onboarding email") : t("Send onboarding email")}
       </button>
-      {error && <span className="text-xs text-danger-500 max-w-[260px]">{error}</span>}
-      {sent && !error && <span className="text-xs text-emerald-600">Onboarding email sent.</span>}
+      {error && <span className="text-xs text-danger-500 max-w-[260px]">{t(error)}</span>}
+      {sent && !error && <span className="text-xs text-emerald-600">{t("Onboarding email sent.")}</span>}
     </div>
   );
 }

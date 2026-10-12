@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import clsx from "clsx";
 import StatusBadge from "@/components/StatusBadge";
+import { useT } from "@/lib/i18n/client";
 
 // Mirrors StatusBadge's own styling for these three states, so the toggle
 // looks identical to the plain badge everywhere else — just clickable.
@@ -34,6 +35,7 @@ export default function InvoiceStatusToggle({
   const router = useRouter();
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   const isTogglable = displayStatus === "PAID" || displayStatus === "UNPAID" || displayStatus === "OVERDUE";
   if (!isTogglable) {
@@ -55,7 +57,7 @@ export default function InvoiceStatusToggle({
     // needed there.
     if (
       nextStatus === "PAID" &&
-      !window.confirm("Mark this invoice as Paid? This will generate the receipt and email it to the client.")
+      !window.confirm(t("Mark this invoice as Paid? This will generate the receipt and email it to the client."))
     ) {
       return;
     }
@@ -68,12 +70,12 @@ export default function InvoiceStatusToggle({
         body: JSON.stringify({ status: nextStatus }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not update status.");
+      if (!res.ok) throw new Error(data.error || t("Could not update status."));
       router.refresh();
       // Left `updating` true — router.refresh() re-renders this row with
       // the new status shortly, unmounting this instance; no need to reset.
     } catch (err: any) {
-      setError(err.message || "Could not update status.");
+      setError(err.message || t("Could not update status."));
       setUpdating(false);
     }
   }
@@ -84,13 +86,13 @@ export default function InvoiceStatusToggle({
         type="button"
         onClick={handleClick}
         disabled={updating}
-        title={`Mark as ${nextStatus === "PAID" ? "Paid" : "Unpaid"}`}
+        title={t("Mark as {status}", { status: t(nextStatus === "PAID" ? "Paid" : "Unpaid") })}
         className={clsx(
           "stamp cursor-pointer hover:brightness-95 transition disabled:opacity-60 disabled:cursor-wait",
           STYLES[displayStatus]
         )}
       >
-        {updating ? "Updating…" : displayStatus}
+        {updating ? t("Updating…") : t(displayStatus)}
       </button>
       {error && <span className="text-[10px] text-danger-500 mt-0.5">{error}</span>}
     </span>

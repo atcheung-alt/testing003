@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useT } from "@/lib/i18n/client";
 
 const QUOTATION_STATUSES = ["DRAFT", "SENT", "ACCEPTED", "CHANGES_REQUESTED", "REJECTED"];
 // "OVERDUE" is deliberately absent — it's derived live from the due date
@@ -29,6 +30,7 @@ export default function StatusUpdater({
   disabled?: boolean;
 }) {
   const router = useRouter();
+  const t = useT();
   const [updating, setUpdating] = useState(false);
   const [warning, setWarning] = useState<string | null>(null);
   const { statuses: options, path } = KIND_CONFIG[kind];
@@ -40,7 +42,7 @@ export default function StatusUpdater({
     // from an accidental dropdown selection. No other kind/status change
     // here has any email side effect, so nothing else needs this gate.
     if (kind === "invoice" && newStatus === "PAID" && status !== "PAID") {
-      if (!window.confirm("Mark this invoice as Paid? This will generate the receipt and email it to the client.")) {
+      if (!window.confirm(t("Mark this invoice as Paid? This will generate the receipt and email it to the client."))) {
         return;
       }
     }
@@ -78,11 +80,13 @@ export default function StatusUpdater({
       >
         {options.map((s) => (
           <option key={s} value={s}>
-            Mark as {s}
+            {t("Mark as {status}", {
+              status: t(s === "CHANGES_REQUESTED" ? "CHANGES REQUESTED" : s === "PENDING_VERIFICATION" ? "PENDING VERIFICATION" : s),
+            })}
           </option>
         ))}
       </select>
-      {warning && <span className="text-xs text-danger-500 max-w-[260px] text-right">{warning}</span>}
+      {warning && <span className="text-xs text-danger-500 max-w-[260px] text-right">{t(warning)}</span>}
     </div>
   );
 }

@@ -14,10 +14,12 @@ import SendEmailButton from "@/components/SendEmailButton";
 import CopySigningLinkButton from "@/components/CopySigningLinkButton";
 import DeleteButton from "@/components/DeleteButton";
 import ActivityTimeline from "@/components/ActivityTimeline";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function RecruitmentDetailPage({ params }: { params: { id: string } }) {
+  const t = getT();
   const agreement = await prisma.recruitmentAgreement.findUnique({ where: { id: params.id } });
   if (!agreement) notFound();
 
@@ -26,15 +28,14 @@ export default async function RecruitmentDetailPage({ params }: { params: { id: 
   const signingUrl = token ? recruitmentSigningUrlFromHeaders(token) : null;
   const timeline = await getActivityTimeline("recruitment", agreement.id);
 
-  const emailSubject = `Recruitment Services Agreement ${agreement.number} from ${COMPANY.name}`;
-  const emailBody = `Dear ${agreement.companyName},
-
-Please find attached our Recruitment Services Agreement (${agreement.number}) for your review.
-
-To review and sign online, please use the "Review & Sign Online" link below — no login required.
-
-Best regards,
-${COMPANY.name}`;
+  const emailSubject = t("Recruitment Services Agreement {number} from {company}", {
+    number: agreement.number,
+    company: COMPANY.name,
+  });
+  const emailBody = t(
+    "Dear {company},\n\nPlease find attached our Recruitment Services Agreement ({number}) for your review.\n\nTo review and sign online, please use the \"Review & Sign Online\" link below — no login required.\n\nBest regards,\n{sender}",
+    { company: agreement.companyName, number: agreement.number, sender: COMPANY.name }
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -61,19 +62,19 @@ ${COMPANY.name}`;
           {signingUrl && agreement.status !== "SIGNED" && !locked && (
             <CopySigningLinkButton
               url={signingUrl}
-              label="Copy signing link"
-              title="Copy the public review & sign link"
+              label={t("Copy signing link")}
+              title={t("Copy the public review & sign link")}
             />
           )}
           {!locked && (
             <Link href={`/recruitment/${agreement.id}/edit`} className="btn-secondary">
-              <Pencil size={15} /> Edit
+              <Pencil size={15} /> {t("Edit")}
             </Link>
           )}
           <DeleteButton
             url={`/api/recruitment/${agreement.id}`}
             confirmNumber={agreement.number}
-            itemLabel="recruitment agreement"
+            itemLabel={t("recruitment agreement")}
             redirectTo="/recruitment"
           />
         </div>
@@ -82,18 +83,18 @@ ${COMPANY.name}`;
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-            Company email
+            {t("Company email")}
           </p>
           <p className="text-sm text-ink">{agreement.companyEmail}</p>
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-            Payment terms
+            {t("Payment terms")}
           </p>
-          <p className="text-sm text-ink">Net {agreement.paymentDueDays} days</p>
+          <p className="text-sm text-ink">{t("Net {days} days", { days: agreement.paymentDueDays })}</p>
         </div>
         <div className="card p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">Created</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">{t("Created")}</p>
           <p className="text-sm text-ink">{formatDate(agreement.createdAt)}</p>
         </div>
       </div>
@@ -101,19 +102,19 @@ ${COMPANY.name}`;
       {agreement.signedAt && (
         <div className="card p-5">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-            Signed by client
+            {t("Signed by client")}
           </h2>
           {agreement.signedDocumentData ? (
             <a href={`/api/recruitment/${agreement.id}/signed-document`} className="btn-secondary">
               <FileDown size={15} />
-              Download {agreement.signedDocumentName || "signed document"}
+              {t("Download {name}", { name: agreement.signedDocumentName || t("signed document") })}
             </a>
           ) : (
             agreement.signatureData && (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={agreement.signatureData}
-                alt="Client signature"
+                alt={t("Client signature")}
                 className="max-h-24 bg-white rounded-lg border border-line mb-2"
               />
             )
@@ -123,18 +124,18 @@ ${COMPANY.name}`;
           </p>
           <p className="text-xs text-ink-faint">
             {formatDateTime(agreement.signedAt)}
-            {agreement.signedIp ? ` · IP ${agreement.signedIp}` : ""}
-            {agreement.signedDocumentData ? " · uploaded a scanned/printed document" : ""}
+            {agreement.signedIp ? ` · ${t("IP {ip}", { ip: agreement.signedIp })}` : ""}
+            {agreement.signedDocumentData ? ` · ${t("uploaded a scanned/printed document")}` : ""}
           </p>
         </div>
       )}
 
       <div className="card p-5">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="font-display text-lg font-semibold">Terms of business</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Terms of business")}</h2>
           {signingUrl && (
             <Link href={signingUrl} target="_blank" className="text-sm text-brand-500 hover:underline flex items-center gap-1">
-              View public signing page <ExternalLink size={13} />
+              {t("View public signing page")} <ExternalLink size={13} />
             </Link>
           )}
         </div>

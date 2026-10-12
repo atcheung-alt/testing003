@@ -4,10 +4,12 @@ import InvoiceForm from "@/components/InvoiceForm";
 import { withParsedMultipliersList } from "@/lib/multipliers";
 import { withParsedFeesList } from "@/lib/fees";
 import type { Invoice } from "@/types";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditInvoicePage({ params }: { params: { id: string } }) {
+  const t = getT();
   const invoice = await prisma.invoice.findUnique({
     where: { id: params.id },
     include: { items: { orderBy: { sortOrder: "asc" } } },
@@ -18,8 +20,10 @@ export default async function EditInvoicePage({ params }: { params: { id: string
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink mb-1">Edit {invoice.number}</h1>
-        <p className="text-sm text-ink-muted">Changes recalculate totals automatically.</p>
+        <h1 className="font-display text-2xl font-semibold text-ink mb-1">
+          {t("Edit {number}", { number: invoice.number })}
+        </h1>
+        <p className="text-sm text-ink-muted">{t("Changes recalculate totals automatically.")}</p>
       </div>
       <InvoiceForm
         invoice={

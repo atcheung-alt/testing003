@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { requireAdminApi } from "@/lib/auth";
 import { formatDate } from "@/lib/calculations";
 import { buildCsv, csvResponseHeaders } from "@/lib/csv";
+import { appLanguageFromRequest } from "@/lib/i18n/downloadLanguage";
+import { translate } from "@/lib/i18n/translate";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +19,8 @@ export async function GET(request: NextRequest) {
   const denied = await requireAdminApi();
   if (denied) return denied;
 
+  const language = appLanguageFromRequest(request);
+  const t = (key: string) => translate(language, key);
   const q = request.nextUrl.searchParams.get("q") || undefined;
   const status = request.nextUrl.searchParams.get("status") || undefined;
 
@@ -38,8 +42,8 @@ export async function GET(request: NextRequest) {
     e.name,
     e.nameChinese || "",
     e.title || "",
-    e.status,
-    e.employmentType || "",
+    t(e.status),
+    t(e.employmentType || ""),
     e.hkid || "",
     e.phone || "",
     e.companyEmail || e.email || "",
@@ -73,9 +77,10 @@ export async function GET(request: NextRequest) {
       "Salary",
       "Pay Rate",
       "Annual Leave Days",
-    ],
+    ].map(t),
     rows
   );
+  const body = language === "zh" ? `\uFEFF${csv}` : csv;
 
-  return new NextResponse(csv, { headers: csvResponseHeaders("employees.csv") });
+  return new NextResponse(body, { headers: csvResponseHeaders("employees.csv") });
 }

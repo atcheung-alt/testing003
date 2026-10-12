@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Copy } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export default function DuplicateButton({
   kind,
@@ -14,6 +15,7 @@ export default function DuplicateButton({
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
   const base = kind === "quotation" ? "quotations" : "invoices";
 
   async function handleDuplicate() {
@@ -22,7 +24,7 @@ export default function DuplicateButton({
     try {
       const res = await fetch(`/api/${base}/${id}/duplicate`, { method: "POST" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not duplicate.");
+      if (!res.ok) throw new Error(data.error || t("Could not duplicate."));
       router.push(`/${base}/${data.id}`);
       router.refresh();
     } catch (err: any) {
@@ -34,7 +36,7 @@ export default function DuplicateButton({
   return (
     <div className="flex flex-col items-end gap-1">
       <button type="button" onClick={handleDuplicate} disabled={busy} className="btn-secondary">
-        <Copy size={15} /> {busy ? "Duplicating…" : "Duplicate"}
+        <Copy size={15} /> {busy ? t("Duplicating…") : t("Duplicate")}
       </button>
       {error && <span className="text-xs text-danger-500">{error}</span>}
     </div>

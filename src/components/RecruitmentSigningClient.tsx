@@ -16,6 +16,7 @@ import DownloadPdfButton from "@/components/DownloadPdfButton";
 import CompanyLogo from "@/components/CompanyLogo";
 import { formatDate } from "@/lib/calculations";
 import type { PublicRecruitmentView } from "@/lib/publicRecruitment";
+import { useT } from "@/lib/i18n/client";
 
 function SignedSummary({
   view,
@@ -24,6 +25,7 @@ function SignedSummary({
   view: PublicRecruitmentView;
   justSigned?: { signerName: string; signedAt: string; signedDocumentName?: string | null } | null;
 }) {
+  const t = useT();
   const signerName = justSigned?.signerName || view.signerName;
   const signedAt = justSigned?.signedAt || view.signedAt;
   const signedDocumentName = justSigned?.signedDocumentName || view.signedDocumentName;
@@ -33,23 +35,33 @@ function SignedSummary({
     <div className="card p-6 sm:p-8 flex flex-col items-center text-center gap-3">
       <CheckCircle2 size={44} className="text-emerald-500" />
       <h2 className="font-display text-xl font-semibold text-ink">
-        {justSigned ? "Agreement signed — thank you!" : "This agreement has already been signed"}
+        {justSigned ? t("Agreement signed — thank you!") : t("This agreement has already been signed")}
       </h2>
       <p className="text-sm text-ink-muted max-w-md">
         {justSigned
-          ? `A copy of the signed agreement ${view.number} has been emailed to you and to ${view.company.shortName || view.company.name}.`
-          : `Agreement ${view.number} was signed by ${signerName || "the client"}${
-              signedAt ? ` on ${formatDate(signedAt)}` : ""
-            }.`}
+          ? t("A copy of the signed agreement {number} has been emailed to you and to {company}.", {
+              number: view.number,
+              company: view.company.shortName || view.company.name,
+            })
+          : signedAt
+            ? t("Agreement {number} was signed by {signer} on {date}.", {
+                number: view.number,
+                signer: signerName || t("the client"),
+                date: formatDate(signedAt),
+              })
+            : t("Agreement {number} was signed by {signer}.", {
+                number: view.number,
+                signer: signerName || t("the client"),
+              })}
       </p>
 
       {hasSignedDocument ? (
         <div className="mt-2 flex flex-col items-center gap-1">
           <div className="flex items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2">
             <FileText size={16} className="text-brand-600" />
-            <span className="text-sm text-ink">{signedDocumentName || "Signed document"}</span>
+            <span className="text-sm text-ink">{signedDocumentName || t("Signed document")}</span>
           </div>
-          <p className="text-xs text-ink-faint">Uploaded by {signerName}</p>
+          <p className="text-xs text-ink-faint">{t("Uploaded by {name}", { name: signerName || "" })}</p>
         </div>
       ) : null}
     </div>
@@ -63,6 +75,7 @@ export default function RecruitmentSigningClient({
   token: string;
   initial: PublicRecruitmentView;
 }) {
+  const t = useT();
   const [view] = useState(initial);
   const [signerName, setSignerName] = useState("");
   const [signerCompanyName, setSignerCompanyName] = useState(view.companyName || "");
@@ -165,9 +178,9 @@ export default function RecruitmentSigningClient({
         ) : (
           <h1 className="font-display text-xl font-semibold text-ink">{view.company.name}</h1>
         )}
-        <h2 className="font-display text-lg font-semibold text-ink">Recruitment Services Agreement</h2>
+        <h2 className="font-display text-lg font-semibold text-ink">{t("Recruitment Services Agreement")}</h2>
         <p className="text-sm text-ink-muted">
-          Agreement {view.number} for {view.companyName}
+          {t("Agreement {number} for {company}", { number: view.number, company: view.companyName })}
         </p>
         <div className="mt-1">
           <DownloadPdfButton url={`/api/public/recruitment/${token}/pdf`} />
@@ -182,19 +195,19 @@ export default function RecruitmentSigningClient({
         <div className="card p-5 sm:p-6 flex flex-col gap-4">
           <div className="flex items-center gap-2 text-sm text-ink-muted">
             <ShieldCheck size={16} className="text-brand-500" />
-            Sign below to accept this agreement on behalf of your company.
+            {t("Sign below to accept this agreement on behalf of your company.")}
           </div>
 
           {error && (
             <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
               <AlertCircle size={16} className="mt-0.5 shrink-0" />
-              <span>{error}</span>
+              <span>{t(error)}</span>
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="label">Your full name *</label>
+              <label className="label">{t("Your full name *")}</label>
               <input
                 type="text"
                 className="input"
@@ -203,7 +216,7 @@ export default function RecruitmentSigningClient({
               />
             </div>
             <div>
-              <label className="label">Your company name *</label>
+              <label className="label">{t("Your company name *")}</label>
               <input
                 type="text"
                 className="input"
@@ -212,7 +225,7 @@ export default function RecruitmentSigningClient({
               />
             </div>
             <div>
-              <label className="label">Job title *</label>
+              <label className="label">{t("Job title *")}</label>
               <input
                 type="text"
                 className="input"
@@ -223,7 +236,7 @@ export default function RecruitmentSigningClient({
           </div>
 
           <div>
-            <label className="label">Confirm your acceptance *</label>
+            <label className="label">{t("Confirm your acceptance *")}</label>
             <div className="flex gap-2 mb-3">
               <button
                 type="button"
@@ -234,7 +247,7 @@ export default function RecruitmentSigningClient({
                     : "stamp gap-1 border-line text-ink-muted"
                 }
               >
-                <PenLine size={13} /> Draw signature
+                <PenLine size={13} /> {t("Draw signature")}
               </button>
               <button
                 type="button"
@@ -245,7 +258,7 @@ export default function RecruitmentSigningClient({
                     : "stamp gap-1 border-line text-ink-muted"
                 }
               >
-                <Upload size={13} /> Upload signed PDF
+                <Upload size={13} /> {t("Upload signed PDF")}
               </button>
             </div>
 
@@ -254,8 +267,9 @@ export default function RecruitmentSigningClient({
             ) : (
               <div className="flex flex-col gap-2">
                 <p className="text-xs text-ink-muted">
-                  Download the agreement, print it, sign it, scan or photograph it back into a
-                  PDF, then upload it here.
+                  {t(
+                    "Download the agreement, print it, sign it, scan or photograph it back into a PDF, then upload it here."
+                  )}
                 </p>
                 {uploadedFileName ? (
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-paper px-3 py-2.5">
@@ -269,7 +283,7 @@ export default function RecruitmentSigningClient({
                         setUploadedFileData(null);
                         setUploadedFileName(null);
                       }}
-                      aria-label="Remove file"
+                      aria-label={t("Remove file")}
                       className="text-ink-faint hover:text-danger-500 transition-colors shrink-0"
                     >
                       <X size={15} />
@@ -278,8 +292,8 @@ export default function RecruitmentSigningClient({
                 ) : (
                   <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line px-4 py-8 text-center cursor-pointer hover:border-brand-300 hover:bg-brand-50/30 transition-colors">
                     <Upload size={22} className="text-ink-faint" />
-                    <span className="text-sm text-ink-muted">Click to choose a PDF</span>
-                    <span className="text-xs text-ink-faint">PDF only, up to 15 MB</span>
+                    <span className="text-sm text-ink-muted">{t("Click to choose a PDF")}</span>
+                    <span className="text-xs text-ink-faint">{t("PDF only, up to 15 MB")}</span>
                     <input
                       type="file"
                       accept="application/pdf,.pdf"
@@ -288,16 +302,21 @@ export default function RecruitmentSigningClient({
                     />
                   </label>
                 )}
-                {uploadError && <p className="text-xs text-danger-500">{uploadError}</p>}
+                {uploadError && <p className="text-xs text-danger-500">{t(uploadError)}</p>}
               </div>
             )}
           </div>
 
           <p className="text-xs text-ink-faint">
-            By signing, you confirm that you have reviewed this agreement in full and accept its
-            terms on behalf of {signerCompanyName || "your company"}. Your name, company, job
-            title, {method === "draw" ? "signature" : "uploaded document"}, and IP address will be
-            recorded with the timestamp of signing.
+            {method === "draw"
+              ? t(
+                  "By signing, you confirm that you have reviewed this agreement in full and accept its terms on behalf of {company}. Your name, company, job title, signature, and IP address will be recorded with the timestamp of signing.",
+                  { company: signerCompanyName || t("your company") }
+                )
+              : t(
+                  "By signing, you confirm that you have reviewed this agreement in full and accept its terms on behalf of {company}. Your name, company, job title, uploaded document, and IP address will be recorded with the timestamp of signing.",
+                  { company: signerCompanyName || t("your company") }
+                )}
           </p>
 
           <button
@@ -307,12 +326,12 @@ export default function RecruitmentSigningClient({
             className="btn-primary self-start"
           >
             {submitting ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
-            {submitting ? "Submitting…" : "Accept & Sign"}
+            {submitting ? t("Submitting…") : t("Accept & Sign")}
           </button>
         </div>
       ) : (
         <div className="card p-5 sm:p-6">
-          <p className="text-sm text-ink-muted">This agreement is no longer available for signing.</p>
+          <p className="text-sm text-ink-muted">{t("This agreement is no longer available for signing.")}</p>
         </div>
       )}
     </div>

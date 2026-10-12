@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { FileDown, FileText, X, AlertCircle } from "lucide-react";
-import { PDF_DOWNLOAD_BUTTONS } from "@/lib/pdf/language";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 /** The HK tax year (ending 31 March) currently in progress — Jan/Feb/Mar
  *  fall inside the year ending THIS March 31; Apr–Dec fall inside the year
@@ -34,17 +34,18 @@ export default function IR56BButton({
   hkid?: string | null;
   address?: string | null;
 }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [year, setYear] = useState(currentTaxYearEnd());
   const [error, setError] = useState<string | null>(null);
 
   const missing: string[] = [];
   if (!hkid?.trim()) missing.push("HKID");
-  if (!address?.trim()) missing.push("address");
+  if (!address?.trim()) missing.push(t("address"));
 
   function download() {
     if (!year || year < 2000 || year > 2100) {
-      setError("Please choose a valid tax year.");
+      setError(t("Please choose a valid tax year."));
       return;
     }
     setError(null);
@@ -55,7 +56,7 @@ export default function IR56BButton({
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="btn-secondary">
-        <FileText size={15} /> IR56B
+        <FileText size={15} /> {t("IR56B")}
       </button>
 
       {open && (
@@ -67,12 +68,12 @@ export default function IR56BButton({
             />
             <div className="relative w-full max-w-sm card p-6 animate-scale-in">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-lg font-semibold">Export IR56B</h2>
+                <h2 className="font-display text-lg font-semibold">{t("Export IR56B")}</h2>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   className="text-ink-faint hover:text-ink"
-                  aria-label="Close"
+                  aria-label={t("Close")}
                 >
                   <X size={18} />
                 </button>
@@ -89,14 +90,16 @@ export default function IR56BButton({
                 <div className="flex items-start gap-2 bg-amber-50 border border-amber-500/30 text-amber-700 text-sm rounded-xl px-3 py-2 mb-4">
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
                   <span>
-                    This employee has no {missing.join(" or ")} on file — add{" "}
-                    {missing.length > 1 ? "them" : "it"} on the edit page for a complete export.
+                    {t("This employee has no {missing} on file — add {which} on the edit page for a complete export.", {
+                      missing: missing.join(t(" or ")),
+                      which: missing.length > 1 ? t("them") : t("it"),
+                    })}
                   </span>
                 </div>
               )}
 
               <div className="mb-2">
-                <label className="label">Tax year ending 31 March</label>
+                <label className="label">{t("Tax year ending 31 March")}</label>
                 <input
                   type="number"
                   className="input"
@@ -105,29 +108,18 @@ export default function IR56BButton({
                 />
               </div>
               <p className="text-xs text-ink-faint mb-4">
-                Fills the actual official IR56B form from IRD — name, HKID, address, position, employment
-                dates, and salary + bonus totaled from payroll history for that year. The government form is
-                already printed in English and Chinese on the same page, so both buttons download that one
-                form. Marital status, spouse, passport, housing, and employer file number aren&apos;t stored
-                anywhere in this app, so those sections are left blank on the form for you to fill in by hand
-                before filing.
+                {t(
+                  "Fills the actual official IR56B form from IRD — name, HKID, address, position, employment dates, and salary + bonus totaled from payroll history for that year. The government form is already printed in English and Chinese on the same page. Marital status, spouse, passport, housing, and employer file number aren't stored anywhere in this app, so those sections are left blank on the form for you to fill in by hand before filing."
+                )}
               </p>
 
               <div className="flex flex-wrap gap-2 justify-end">
                 <button type="button" onClick={() => setOpen(false)} className="btn-secondary">
-                  Cancel
+                  {t("Cancel")}
                 </button>
-                {PDF_DOWNLOAD_BUTTONS.map((option) => (
-                  <button
-                    key={option.lang}
-                    type="button"
-                    onClick={download}
-                    disabled={!year}
-                    className="btn-secondary whitespace-nowrap"
-                  >
-                    <FileDown size={15} /> {option.label}
-                  </button>
-                ))}
+                <button type="button" onClick={download} disabled={!year} className="btn-secondary whitespace-nowrap">
+                  <FileDown size={15} /> {t("Download PDF")}
+                </button>
               </div>
             </div>
           </div>

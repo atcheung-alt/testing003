@@ -4,10 +4,12 @@ import { requireAdminPage } from "@/lib/auth";
 import { getEffectiveCompany } from "@/lib/appSettings";
 import { getContractPrerequisiteIssues } from "@/lib/employees";
 import EmployeeContractForm from "@/components/EmployeeContractForm";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function EmployeeContractPage({ params }: { params: { id: string } }) {
+  const t = getT();
   await requireAdminPage();
 
   const employee = await prisma.employee.findUnique({
@@ -41,7 +43,9 @@ export default async function EmployeeContractPage({ params }: { params: { id: s
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl font-semibold text-ink mb-1">
-          {employee.contract ? "Edit" : "Create"} contract for {employee.name}
+          {employee.contract
+            ? t("Edit contract for {name}", { name: employee.name })
+            : t("Create contract for {name}", { name: employee.name })}
         </h1>
       </div>
       <EmployeeContractForm

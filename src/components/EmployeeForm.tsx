@@ -6,6 +6,7 @@ import { CalendarDays } from "lucide-react";
 import type { Employee } from "@/types";
 import { PAY_RATE_TYPES_BY_EMPLOYMENT_TYPE, PAY_RATE_TYPE_LABELS, hasAnnualLeaveEntitlement } from "@/lib/employees";
 import CurrencyInput from "@/components/CurrencyInput";
+import { useT } from "@/lib/i18n/client";
 
 function toDateInput(value?: string | null) {
   if (!value) return "";
@@ -36,6 +37,7 @@ export default function EmployeeForm({
   contract?: WorkDetailsContract;
 }) {
   const router = useRouter();
+  const t = useT();
   // `name`/`nameChinese` are auto-derived server-side from these split
   // fields (see deriveFullName/deriveFullNameChinese in
   // src/lib/employees.ts) — the form only ever collects/submits the split
@@ -156,7 +158,7 @@ export default function EmployeeForm({
     setError(null);
 
     if (!surnameEn.trim()) {
-      setError("Please enter the employee's surname.");
+      setError(t("Please enter the employee's surname."));
       return;
     }
 
@@ -201,7 +203,7 @@ export default function EmployeeForm({
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong."));
 
       if (contract && contract.status === "DRAFT") {
         const contractRes = await fetch(`/api/employees/${data.id}/contract`, {
@@ -211,7 +213,7 @@ export default function EmployeeForm({
         });
         const contractData = await contractRes.json();
         if (!contractRes.ok) {
-          throw new Error(contractData.error || "Employee saved, but the work location/hours couldn't be updated.");
+          throw new Error(contractData.error || t("Employee saved, but the work location/hours couldn't be updated."));
         }
       }
 
@@ -232,10 +234,10 @@ export default function EmployeeForm({
       )}
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Basic information</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Basic information")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">Surname *</label>
+            <label className="label">{t("Surname *")}</label>
             <input
               type="text"
               className="input"
@@ -245,7 +247,7 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Given name</label>
+            <label className="label">{t("Given name")}</label>
             <input
               type="text"
               className="input"
@@ -254,34 +256,34 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Preferred name</label>
+            <label className="label">{t("Preferred name")}</label>
             <input
               type="text"
               className="input"
-              placeholder="What they go by day to day"
+              placeholder={t("What they go by day to day")}
               value={preferredName}
               onChange={(e) => setPreferredName(e.target.value)}
             />
-            <p className="mt-1 text-xs text-ink-faint">Shown on the Employees list instead of the full name, if set.</p>
+            <p className="mt-1 text-xs text-ink-faint">{t("Shown on the Employees list instead of the full name, if set.")}</p>
           </div>
           <div>
-            <label className="label">Title</label>
+            <label className="label">{t("Title")}</label>
             <input
               type="text"
               className="input"
-              placeholder="e.g. Recruitment Consultant"
+              placeholder={t("e.g. Recruitment Consultant")}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Status</label>
+            <label className="label">{t("Status")}</label>
             <select
               className="input"
               value={status}
               onChange={(e) => setStatus(e.target.value as "ACTIVE" | "ONBOARDING" | "FORMER")}
             >
-              <option value="ACTIVE">Active</option>
+              <option value="ACTIVE">{t("Active")}</option>
               {/* Onboarding is only offered here if the employee is already
                   in that state (i.e. they came in through the Invite flow —
                   see /api/employees/invite). Someone whose details are being
@@ -290,28 +292,28 @@ export default function EmployeeForm({
                   onboarding step left for them to be stuck in — and picking
                   this from the dropdown wouldn't generate the token/email an
                   actual onboarding needs anyway. */}
-              {employee?.status === "ONBOARDING" && <option value="ONBOARDING">Onboarding</option>}
-              <option value="FORMER">Former</option>
+              {employee?.status === "ONBOARDING" && <option value="ONBOARDING">{t("Onboarding")}</option>}
+              <option value="FORMER">{t("Former")}</option>
             </select>
           </div>
           <div>
-            <label className="label">Employment type</label>
+            <label className="label">{t("Employment type")}</label>
             <select
               className="input"
               value={employmentType}
               onChange={(e) => handleEmploymentTypeChange(e.target.value)}
             >
               <option value="">—</option>
-              <option value="FULL_TIME">Full time</option>
-              <option value="PART_TIME">Part time</option>
-              <option value="INTERN">Intern</option>
-              <option value="FREELANCE">Freelance</option>
+              <option value="FULL_TIME">{t("Full time")}</option>
+              <option value="PART_TIME">{t("Part time")}</option>
+              <option value="INTERN">{t("Intern")}</option>
+              <option value="FREELANCE">{t("Freelance")}</option>
             </select>
           </div>
           <div>
             <label className="label flex items-center gap-1.5">
               <CalendarDays size={13} className="text-ink-faint" />
-              Start date
+              {t("Start date")}
             </label>
             <input
               type="date"
@@ -321,49 +323,47 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Contact email</label>
+            <label className="label">{t("Contact email")}</label>
             <input
               type="email"
               className="input"
-              placeholder="Where the onboarding invite is sent"
+              placeholder={t("Where the onboarding invite is sent")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Company email</label>
+            <label className="label">{t("Company email")}</label>
             <input
               type="email"
               className="input"
-              placeholder="Their work email / login address"
+              placeholder={t("Their work email / login address")}
               value={companyEmail}
               onChange={(e) => setCompanyEmail(e.target.value)}
             />
-            <p className="mt-1 text-xs text-ink-faint">
-              Must match their login email — this is what links them to the Profile tab.
-            </p>
+            <p className="mt-1 text-xs text-ink-faint">{t("Must match their login email — this is what links them to the Profile tab.")}</p>
           </div>
         </div>
       </div>
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Compensation &amp; leave</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Compensation & leave")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {isIntern ? (
             <>
               <div>
-                <label className="label">Pay type</label>
+                <label className="label">{t("Pay type")}</label>
                 <select
                   className="input"
                   value={payRateType === "HOURLY" ? "HOURLY" : ""}
                   onChange={(e) => handleInternPayTypeChange(e.target.value)}
                 >
-                  <option value="">Monthly salary</option>
-                  <option value="HOURLY">Hourly rate</option>
+                  <option value="">{t("Monthly salary")}</option>
+                  <option value="HOURLY">{t("Hourly rate")}</option>
                 </select>
               </div>
               <div>
-                <label className="label">{payRateType === "HOURLY" ? "Hourly rate" : "Salary (monthly)"}</label>
+                <label className="label">{payRateType === "HOURLY" ? t("Hourly rate") : t("Salary (monthly)")}</label>
                 <CurrencyInput
                   className="input"
                   value={payRateType === "HOURLY" ? payRate : salary}
@@ -377,16 +377,16 @@ export default function EmployeeForm({
           ) : usesPayRate ? (
             <>
               <div>
-                <label className="label">Pay rate type</label>
+                <label className="label">{t("Pay rate type")}</label>
                 <select
                   className="input"
                   value={payRateType}
                   onChange={(e) => setPayRateType(e.target.value)}
                 >
                   <option value="">—</option>
-                  {(allowedPayRateTypes || []).map((t) => (
-                    <option key={t} value={t}>
-                      {PAY_RATE_TYPE_LABELS[t]}
+                  {(allowedPayRateTypes || []).map((rateType) => (
+                    <option key={rateType} value={rateType}>
+                      {t(PAY_RATE_TYPE_LABELS[rateType])}
                     </option>
                   ))}
                 </select>
@@ -394,36 +394,34 @@ export default function EmployeeForm({
               <div>
                 <label className="label">
                   {payRateType === "PROJECT_FEE"
-                    ? "Fixed project fee"
+                    ? t("Fixed project fee")
                     : payRateType === "HOURLY"
-                      ? "Hourly rate"
-                      : "Daily rate"}
+                      ? t("Hourly rate")
+                      : t("Daily rate")}
                 </label>
                 <CurrencyInput className="input" value={payRate} onChange={setPayRate} />
               </div>
             </>
           ) : (
             <div>
-              <label className="label">Salary (monthly)</label>
+              <label className="label">{t("Salary (monthly)")}</label>
               <CurrencyInput className="input" value={salary} onChange={setSalary} />
             </div>
           )}
           {hasNoAnnualLeaveEntitlement ? (
             <div>
-              <label className="label">Annual leave (days/year)</label>
+              <label className="label">{t("Annual leave (days/year)")}</label>
               <p className="input flex items-center text-ink-faint bg-paper">
-                Not entitled —{" "}
                 {employmentType === "INTERN"
-                  ? "interns"
+                  ? t("Not entitled — interns don't accrue annual leave")
                   : employmentType === "PART_TIME"
-                    ? "part-time staff"
-                    : "freelancers"}{" "}
-                don&apos;t accrue annual leave
+                    ? t("Not entitled — part-time staff don't accrue annual leave")
+                    : t("Not entitled — freelancers don't accrue annual leave")}
               </p>
             </div>
           ) : (
             <div>
-              <label className="label">Annual leave (days/year)</label>
+              <label className="label">{t("Annual leave (days/year)")}</label>
               <input
                 type="number"
                 step="any"
@@ -439,84 +437,80 @@ export default function EmployeeForm({
 
       {contract && employmentType !== "FREELANCE" && (
         <div className="card p-5">
-          <h2 className="font-display text-lg font-semibold mb-4">Work location &amp; hours</h2>
+          <h2 className="font-display text-lg font-semibold mb-4">{t("Work location & hours")}</h2>
           {contract.status === "DRAFT" ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="label">Work location</label>
+                <label className="label">{t("Work location")}</label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="e.g. Hong Kong office"
+                  placeholder={t("e.g. Hong Kong office")}
                   value={workLocation}
                   onChange={(e) => setWorkLocation(e.target.value)}
                 />
               </div>
               <div>
-                <label className="label">Working hours / schedule</label>
+                <label className="label">{t("Working hours / schedule")}</label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="e.g. Mon–Fri, 9:30am–6:30pm"
+                  placeholder={t("e.g. Mon–Fri, 9:30am–6:30pm")}
                   value={workSchedule}
                   onChange={(e) => setWorkSchedule(e.target.value)}
                 />
               </div>
-              <p className="sm:col-span-2 text-xs text-ink-faint">
-                Also feeds the contract letter — since it&apos;s still a draft, this stays in sync.
-              </p>
+              <p className="sm:col-span-2 text-xs text-ink-faint">{t("Also feeds the contract letter — since it's still a draft, this stays in sync.")}</p>
             </div>
           ) : (
             <div className="text-sm text-ink-muted">
               <p>{contract.workLocation || "—"} · {contract.workSchedule || "—"}</p>
-              <p className="text-xs text-ink-faint mt-1">
-                The contract has been sent, so these are locked here — go to the contract page to change them.
-              </p>
+              <p className="text-xs text-ink-faint mt-1">{t("The contract has been sent, so these are locked here — go to the contract page to change them.")}</p>
             </div>
           )}
         </div>
       )}
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Personal information</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Personal information")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">Chinese surname</label>
+            <label className="label">{t("Chinese surname")}</label>
             <input
               type="text"
               className="input"
-              placeholder="If applicable"
+              placeholder={t("If applicable")}
               value={surnameChinese}
               onChange={(e) => setSurnameChinese(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Chinese given name</label>
+            <label className="label">{t("Chinese given name")}</label>
             <input
               type="text"
               className="input"
-              placeholder="If applicable"
+              placeholder={t("If applicable")}
               value={givenNameChinese}
               onChange={(e) => setGivenNameChinese(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">HKID</label>
+            <label className="label">{t("HKID")}</label>
             <input
               type="text"
               className="input"
-              placeholder="e.g. A123456(7)"
+              placeholder={t("e.g. A123456(7)")}
               value={hkid}
               onChange={(e) => setHkid(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Gender</label>
+            <label className="label">{t("Gender")}</label>
             <select className="input" value={gender} onChange={(e) => setGender(e.target.value)}>
               <option value="">—</option>
               {GENDER_OPTIONS.map((g) => (
                 <option key={g} value={g}>
-                  {g}
+                  {t(g)}
                 </option>
               ))}
             </select>
@@ -524,7 +518,7 @@ export default function EmployeeForm({
           <div>
             <label className="label flex items-center gap-1.5">
               <CalendarDays size={13} className="text-ink-faint" />
-              Birthday
+              {t("Birthday")}
             </label>
             <input
               type="date"
@@ -534,7 +528,7 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Nationality</label>
+            <label className="label">{t("Nationality")}</label>
             <input
               type="text"
               className="input"
@@ -543,11 +537,11 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Phone number</label>
+            <label className="label">{t("Phone number")}</label>
             <input type="tel" className="input" value={phone} onChange={(e) => setPhone(e.target.value)} />
           </div>
           <div>
-            <label className="label">Personal email</label>
+            <label className="label">{t("Personal email")}</label>
             <input
               type="email"
               className="input"
@@ -556,7 +550,7 @@ export default function EmployeeForm({
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="label">Address</label>
+            <label className="label">{t("Address")}</label>
             <textarea
               className="input min-h-[70px]"
               value={address}
@@ -567,10 +561,10 @@ export default function EmployeeForm({
       </div>
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Emergency contact</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Emergency contact")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">Contact name</label>
+            <label className="label">{t("Contact name")}</label>
             <input
               type="text"
               className="input"
@@ -579,17 +573,17 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Relationship</label>
+            <label className="label">{t("Relationship")}</label>
             <input
               type="text"
               className="input"
-              placeholder="e.g. Spouse, Parent"
+              placeholder={t("e.g. Spouse, Parent")}
               value={emergencyContactRelationship}
               onChange={(e) => setEmergencyContactRelationship(e.target.value)}
             />
           </div>
           <div>
-            <label className="label">Contact number</label>
+            <label className="label">{t("Contact number")}</label>
             <input
               type="tel"
               className="input"
@@ -601,10 +595,10 @@ export default function EmployeeForm({
       </div>
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Bank details</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Bank details")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">Name of the bank</label>
+            <label className="label">{t("Name of the bank")}</label>
             <input
               type="text"
               className="input"
@@ -613,7 +607,7 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Bank code</label>
+            <label className="label">{t("Bank code")}</label>
             <input
               type="text"
               className="input"
@@ -622,7 +616,7 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Account number</label>
+            <label className="label">{t("Account number")}</label>
             <input
               type="text"
               className="input"
@@ -631,7 +625,7 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Account holder</label>
+            <label className="label">{t("Account holder")}</label>
             <input
               type="text"
               className="input"
@@ -643,16 +637,13 @@ export default function EmployeeForm({
       </div>
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Leaving details</h2>
-        <p className="text-xs text-ink-faint mb-3">
-          Only fill these in once the employee has actually left — setting a last day
-          automatically marks them as Former above.
-        </p>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Leaving details")}</h2>
+        <p className="text-xs text-ink-faint mb-3">{t("Only fill these in once the employee has actually left — setting a last day automatically marks them as Former above.")}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="label flex items-center gap-1.5">
               <CalendarDays size={13} className="text-ink-faint" />
-              Last day
+              {t("Last day")}
             </label>
             <input
               type="date"
@@ -662,7 +653,7 @@ export default function EmployeeForm({
             />
           </div>
           <div>
-            <label className="label">Reason of leaving</label>
+            <label className="label">{t("Reason of leaving")}</label>
             <input
               type="text"
               className="input"
@@ -675,10 +666,10 @@ export default function EmployeeForm({
 
       <div className="flex gap-3">
         <button type="submit" disabled={saving} className="btn-primary">
-          {saving ? "Saving…" : employee ? "Save changes" : "Create employee"}
+          {saving ? t("Saving…") : employee ? t("Save changes") : t("Create employee")}
         </button>
         <button type="button" onClick={() => router.back()} className="btn-secondary">
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
     </form>

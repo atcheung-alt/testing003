@@ -4,12 +4,14 @@ import { getEffectiveCompany } from "@/lib/appSettings";
 import { getBookingEventByManageToken, listBookingsForEvent, listSlotsForEvent } from "@/lib/bookings";
 import { bookingEventUrlFromHeaders } from "@/lib/signing";
 import PublicBookingManagerClient from "@/components/PublicBookingManagerClient";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: { params: { token: string } }): Promise<Metadata> {
+  const t = getT();
   const event = await getBookingEventByManageToken(params.token);
-  return { title: event ? `Manage: ${event.name}` : "Manage booking event" };
+  return { title: event ? t("Manage: {name}", { name: event.name }) : t("Manage booking event") };
 }
 
 /**

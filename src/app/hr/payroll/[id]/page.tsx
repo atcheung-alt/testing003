@@ -7,10 +7,12 @@ import { periodLabel } from "@/lib/payroll";
 import { COMPANY } from "@/lib/company";
 import DeleteButton from "@/components/DeleteButton";
 import PayrollRunEntries from "@/components/PayrollRunEntries";
+import { getAppLanguage, getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function PayrollRunPage({ params }: { params: { id: string } }) {
+  const t = getT();
   await requireAdminPage();
 
   const run = await prisma.payrollRun.findUnique({
@@ -19,13 +21,13 @@ export default async function PayrollRunPage({ params }: { params: { id: string 
   });
   if (!run) notFound();
 
-  const label = periodLabel(run.period);
+  const label = periodLabel(run.period, getAppLanguage() === "zh" ? "ZH_HANT" : undefined);
 
   return (
     <div className="flex flex-col gap-6">
       <div>
         <Link href="/hr/payroll" className="text-sm text-ink-muted hover:text-ink flex items-center gap-1 mb-3">
-          <ArrowLeft size={14} /> All payroll runs
+          <ArrowLeft size={14} /> {t("All payroll runs")}
         </Link>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -34,12 +36,14 @@ export default async function PayrollRunPage({ params }: { params: { id: string 
           <DeleteButton
             url={`/api/payroll/${run.id}`}
             confirmNumber={run.period}
-            itemLabel="payroll run"
+            itemLabel={t("payroll run")}
             redirectTo="/hr/payroll"
           />
         </div>
         <p className="text-sm text-ink-muted mt-1">
-          {run.entries.length} employee{run.entries.length === 1 ? "" : "s"}
+          {run.entries.length === 1
+            ? t("{count} employee", { count: run.entries.length })
+            : t("{count} employees", { count: run.entries.length })}
         </p>
       </div>
 

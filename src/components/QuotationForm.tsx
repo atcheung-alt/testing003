@@ -14,6 +14,7 @@ import {
   type DocumentLanguage,
 } from "@/lib/settings";
 import type { Quotation, LineItem, CustomerDetails } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 function toDateInput(value?: string | null) {
   if (!value) return "";
@@ -21,6 +22,7 @@ function toDateInput(value?: string | null) {
 }
 
 export default function QuotationForm({ quotation }: { quotation?: Quotation }) {
+  const t = useT();
   const router = useRouter();
   const [customer, setCustomer] = useState<CustomerDetails>(
     quotation
@@ -184,29 +186,29 @@ export default function QuotationForm({ quotation }: { quotation?: Quotation }) 
     <form onSubmit={handleSubmit} className="flex flex-col gap-6">
       {error && (
         <div className="bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-md px-3 py-2">
-          {error}
+          {t(error)}
         </div>
       )}
 
       <div className="card p-5">
-        <label className="label">Title / subject</label>
+        <label className="label">{t("Title / subject")}</label>
         <input
           type="text"
           className="input"
-          placeholder="e.g. HR Management System"
+          placeholder={t("e.g. HR Management System")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
       </div>
 
       <div className="card p-5" ref={customerSectionRef}>
-        <h2 className="font-display text-lg font-semibold mb-4">Company information</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Company information")}</h2>
         <CustomerFields value={customer} onChange={setCustomer} showContactAndPhone={false} />
       </div>
 
       <div className="card p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="label">Issue date</label>
+          <label className="label">{t("Issue date")}</label>
           <input
             type="date"
             className="input"
@@ -215,7 +217,7 @@ export default function QuotationForm({ quotation }: { quotation?: Quotation }) 
           />
         </div>
         <div>
-          <label className="label">Valid until</label>
+          <label className="label">{t("Valid until")}</label>
           <input
             type="date"
             className="input"
@@ -226,7 +228,7 @@ export default function QuotationForm({ quotation }: { quotation?: Quotation }) 
       </div>
 
       <div className="card overflow-visible p-5" ref={lineItemsSectionRef}>
-        <h2 className="font-display text-lg font-semibold mb-4">Line items</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Line items")}</h2>
         <LineItemsEditor
           items={items}
           onItemsChange={setItems}
@@ -257,10 +259,10 @@ export default function QuotationForm({ quotation }: { quotation?: Quotation }) 
 
       <div className="flex gap-3">
         <button type="submit" disabled={saving} className="btn-primary">
-          {saving ? "Saving…" : quotation ? "Save changes" : "Create quotation"}
+          {saving ? t("Saving…") : quotation ? t("Save changes") : t("Create quotation")}
         </button>
         <button type="button" onClick={() => router.back()} className="btn-secondary">
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
 

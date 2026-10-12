@@ -21,10 +21,12 @@ import { withParsedMultipliersList } from "@/lib/multipliers";
 import { withParsedFeesList } from "@/lib/fees";
 import { getActivityTimeline } from "@/lib/activity";
 import { computeTotals } from "@/lib/calculations";
+import { getAppLanguage, getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function QuotationDetailPage({ params }: { params: { id: string } }) {
+  const t = getT();
   const raw = await prisma.quotation.findUnique({
     where: { id: params.id },
     include: {
@@ -51,6 +53,7 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
     customerName: quotation.customerName,
     companyName: COMPANY.shortName || COMPANY.name,
     signingUrl,
+    language: getAppLanguage(),
   });
 
   return (
@@ -66,12 +69,12 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
           )}
           <p className="text-sm text-ink-muted">
             <span className="text-brand-600 font-medium">{quotation.customerName}</span>{" "}
-            · Issued {formatDate(quotation.issueDate)}
-            {quotation.expiryDate ? ` · Valid until ${formatDate(quotation.expiryDate)}` : ""}
+            · {t("Issued {date}", { date: formatDate(quotation.issueDate) })}
+            {quotation.expiryDate ? ` · ${t("Valid until {date}", { date: formatDate(quotation.expiryDate) })}` : ""}
           </p>
           {quotation.invoice && (
             <p className="text-sm text-accent-600 mt-1">
-              Converted to invoice{" "}
+              {t("Converted to invoice")}{" "}
               <Link href={`/invoices/${quotation.invoice.id}`} className="underline">
                 {quotation.invoice.number}
               </Link>
@@ -101,18 +104,20 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
           {!signed && signingUrl && <CopySigningLinkButton url={signingUrl} />}
           {!locked && (
             <Link href={`/quotations/${quotation.id}/edit`} className="btn-secondary">
-              <Pencil size={15} /> Edit
+              <Pencil size={15} /> {t("Edit")}
             </Link>
           )}
           <DuplicateButton kind="quotation" id={quotation.id} />
           <DeleteButton
             url={`/api/quotations/${quotation.id}`}
             confirmNumber={quotation.number}
-            itemLabel="quotation"
+            itemLabel={t("quotation")}
             redirectTo="/quotations"
             extraWarning={
               quotation.invoice
-                ? `This will also delete its linked invoice ${quotation.invoice.number} (and its receipt, if paid).`
+                ? t("This will also delete its linked invoice {number} (and its receipt, if paid).", {
+                    number: quotation.invoice.number,
+                  })
                 : undefined
             }
             />
@@ -121,15 +126,16 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
 
       {quotation.status === "CHANGES_REQUESTED" && (
         <div className="card p-4 bg-accent-100/50 border-accent-300 text-sm text-accent-600">
-          The client requested changes instead of accepting this quotation as-is — see their
-          feedback below.
+          {t(
+            "The client requested changes instead of accepting this quotation as-is — see their feedback below."
+          )}
         </div>
       )}
 
       {!locked && quotation.status !== "REJECTED" && !quotation.invoice && (
         <div className="card p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-brand-50/60 border-brand-100">
           <p className="text-sm text-brand-700">
-            Ready to bill this? Converting locks the quotation and creates a matching invoice.
+            {t("Ready to bill this? Converting locks the quotation and creates a matching invoice.")}
           </p>
           <ConvertToInvoiceButton quotationId={quotation.id} />
         </div>
@@ -137,7 +143,7 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
 
       <div className="card p-5">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-          Billed to
+          {t("Billed to")}
         </h2>
         <p className="font-medium text-sm">{quotation.customerName}</p>
         {[
@@ -168,7 +174,7 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
       {quotation.reminder && (
         <div className="card p-5">
           <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-            Reminder
+            {t("Reminder")}
           </h2>
           <p className="text-sm text-ink whitespace-pre-line">{quotation.reminder}</p>
         </div>
@@ -185,7 +191,7 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
           {quotation.notes && (
             <div className="card p-5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-                Notes
+                {t("Notes")}
               </h2>
               <p className="text-sm text-ink whitespace-pre-line">{quotation.notes}</p>
             </div>
@@ -193,7 +199,7 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
           {quotation.terms && (
             <div className="card p-5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-                Terms
+                {t("Terms")}
               </h2>
               <p className="text-sm text-ink whitespace-pre-line">{quotation.terms}</p>
             </div>
@@ -214,7 +220,7 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
 
       <div className="card p-5">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-          Client acceptance
+          {t("Client acceptance")}
         </h2>
         {signed ? (
           <div>
@@ -224,36 +230,35 @@ export default async function QuotationDetailPage({ params }: { params: { id: st
                 className="btn-secondary"
               >
                 <FileDown size={15} />
-                Download {quotation.signedDocumentName || "signed document"}
+                {t("Download {name}", { name: quotation.signedDocumentName || t("signed document") })}
               </a>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={quotation.signatureData || undefined}
-                alt="Client signature"
+                alt={t("Client signature")}
                 className="max-h-24 bg-white rounded-lg border border-line"
               />
             )}
             <p className="mt-2 text-sm text-ink">
-              Signed by {quotation.signerName || quotation.customerName}
+              {t("Signed by {name}", { name: quotation.signerName || quotation.customerName })}
               {quotation.signerEmail ? ` (${quotation.signerEmail})` : ""}
             </p>
             <p className="text-xs text-ink-faint">
               {formatDate(quotation.signedAt!)}
-              {quotation.signedIp ? ` · IP ${quotation.signedIp}` : ""}
-              {quotation.signedDocumentData ? " · uploaded a scanned/printed document" : ""}
+              {quotation.signedIp ? ` · ${t("IP {ip}", { ip: quotation.signedIp })}` : ""}
+              {quotation.signedDocumentData ? ` · ${t("uploaded a scanned/printed document")}` : ""}
             </p>
           </div>
         ) : (
           <p className="text-sm text-ink-muted">
-            Not signed yet.{" "}
+            {t("Not signed yet.")}{" "}
             {signingUrl && (
               <>
-                Share the{" "}
                 <Link href={signingUrl} target="_blank" className="text-brand-600 hover:underline">
-                  signing link
-                </Link>{" "}
-                with the client, or use &ldquo;Send email&rdquo; above.
+                  {t("Share the signing link")}
+                </Link>
+                {t(" with the client, or use “Send email” above.")}
               </>
             )}
           </p>

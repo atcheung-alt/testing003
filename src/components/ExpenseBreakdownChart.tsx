@@ -1,4 +1,5 @@
 import { formatCurrency } from "@/lib/calculations";
+import { getT } from "@/lib/i18n/server";
 
 type ExpenseCategoryBreakdown = {
   category: string;
@@ -35,10 +36,11 @@ export default function ExpenseBreakdownChart({
 }: {
   categories: ExpenseCategoryBreakdown[];
 }) {
+  const t = getT();
   const total = categories.reduce((sum, c) => sum + c.amount, 0);
 
   if (categories.length === 0 || total <= 0) {
-    return <p className="text-sm text-ink-muted">No expenses logged for this period.</p>;
+    return <p className="text-sm text-ink-muted">{t("No expenses logged for this period.")}</p>;
   }
 
   const size = 200;
@@ -78,9 +80,10 @@ export default function ExpenseBreakdownChart({
 
       <div className="flex flex-col gap-2 w-full">
         <p className="text-xs text-ink-muted">
-          Largest: <span className="font-medium text-ink">{largest.category}</span> at{" "}
-          {formatCurrency(largest.amount)}
-          {largest.pctOfRevenue !== null && ` (${largest.pctOfRevenue.toFixed(1)}% of revenue)`}
+          {t("Largest:")} <span className="font-medium text-ink">{largest.category}</span>{" "}
+          {t("at {amount}", { amount: formatCurrency(largest.amount) })}
+          {largest.pctOfRevenue !== null &&
+            t(" ({percent}% of revenue)", { percent: largest.pctOfRevenue.toFixed(1) })}
         </p>
         <div className="flex flex-col gap-1.5">
           {slices.map((s, i) => (

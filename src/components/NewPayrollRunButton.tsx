@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, X, Loader2, AlertCircle } from "lucide-react";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 function currentPeriod(): string {
   const now = new Date();
@@ -15,6 +16,7 @@ function currentPeriod(): string {
  *  POST /api/payroll). If a run for that month already exists, offers to
  *  jump straight to it instead of erroring out. */
 export default function NewPayrollRunButton() {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [period, setPeriod] = useState(currentPeriod());
@@ -48,7 +50,7 @@ export default function NewPayrollRunButton() {
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="btn-primary">
-        <Plus size={15} /> New payroll run
+        <Plus size={15} /> {t("New payroll run")}
       </button>
 
       {open && (
@@ -60,12 +62,12 @@ export default function NewPayrollRunButton() {
             />
             <div className="relative w-full max-w-sm card p-6 animate-scale-in">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-lg font-semibold">New payroll run</h2>
+                <h2 className="font-display text-lg font-semibold">{t("New payroll run")}</h2>
                 <button
                   type="button"
                   onClick={() => !saving && setOpen(false)}
                   className="text-ink-faint hover:text-ink"
-                  aria-label="Close"
+                  aria-label={t("Close")}
                 >
                   <X size={18} />
                 </button>
@@ -74,11 +76,11 @@ export default function NewPayrollRunButton() {
               {error && (
                 <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2 mb-4">
                   <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                  <span>{error}</span>
+                  <span>{t(error)}</span>
                 </div>
               )}
 
-              <label className="label">Pay period</label>
+              <label className="label">{t("Pay period")}</label>
               <input
                 type="month"
                 className="input mb-2"
@@ -86,21 +88,22 @@ export default function NewPayrollRunButton() {
                 onChange={(e) => setPeriod(e.target.value)}
               />
               <p className="text-xs text-ink-faint mb-4">
-                Creates a draft with every currently active employee, pre-filled from their pay
-                setup — nothing is final until you review and finalize it.
+                {t(
+                  "Creates a draft with every currently active employee, pre-filled from their pay setup — nothing is final until you review and finalize it."
+                )}
               </p>
 
               <div className="flex gap-3 justify-end">
                 <button type="button" onClick={() => setOpen(false)} disabled={saving} className="btn-secondary">
-                  Cancel
+                  {t("Cancel")}
                 </button>
                 <button type="button" onClick={createRun} disabled={saving || !period} className="btn-primary">
                   {saving ? (
                     <>
-                      <Loader2 size={15} className="animate-spin" /> Creating…
+                      <Loader2 size={15} className="animate-spin" /> {t("Creating…")}
                     </>
                   ) : (
-                    "Create run"
+                    t("Create run")
                   )}
                 </button>
               </div>

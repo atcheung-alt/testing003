@@ -1,11 +1,13 @@
+"use client";
+
 import clsx from "clsx";
+import { useT } from "@/lib/i18n/client";
 
 /**
  * Renders the company logo, swapping to the dark-mode variant purely via
  * CSS (see `.theme-logo-primary`/`.theme-logo-dark` in globals.css) when
  * both are configured — no JS theme detection, no flash, and it works
- * identically in a server component or a client one since it's plain JSX
- * with no hooks. Shared by the Sidebar, the login page, and every public
+ * from both server and client parents. Shared by the Sidebar, the login page, and every public
  * document page (quotation/invoice/recruitment signing, leave, onboarding)
  * so the dark logo shows up everywhere the primary one does, not just the
  * sidebar.
@@ -25,7 +27,9 @@ export default function CompanyLogo({
   name?: string;
   className?: string;
 }) {
+  const t = useT();
   if (!logoData) return null;
+  const alt = name || t("Company logo");
 
   if (logoDataDark) {
     return (
@@ -33,13 +37,13 @@ export default function CompanyLogo({
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={logoData}
-          alt={name || "Company logo"}
+          alt={alt}
           className={clsx(className, "theme-logo-primary")}
         />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={logoDataDark}
-          alt={name || "Company logo"}
+          alt={alt}
           className={clsx(className, "theme-logo-dark")}
         />
       </>
@@ -48,6 +52,6 @@ export default function CompanyLogo({
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={logoData} alt={name || "Company logo"} className={className} />
+    <img src={logoData} alt={alt} className={className} />
   );
 }

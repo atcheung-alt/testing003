@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CalendarPlus, CalendarCheck, X } from "lucide-react";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 export default function MarkOnCalendarButton({
   invoiceId,
@@ -16,6 +17,7 @@ export default function MarkOnCalendarButton({
    *  instead of the button when set. */
   markedEventName: string | null;
 }) {
+  const t = useT();
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -27,9 +29,9 @@ export default function MarkOnCalendarButton({
   if (marked) {
     return (
       <p className="text-sm text-brand-600 flex items-center gap-1.5">
-        <CalendarCheck size={15} /> On the calendar as &quot;{marked}&quot; —{" "}
+        <CalendarCheck size={15} /> {t("On the calendar as \"{name}\" —", { name: marked })}{" "}
         <Link href="/calendar" className="underline">
-          view calendar
+          {t("view calendar")}
         </Link>
       </p>
     );
@@ -64,7 +66,7 @@ export default function MarkOnCalendarButton({
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="btn-secondary">
-        <CalendarPlus size={15} /> Mark on calendar
+        <CalendarPlus size={15} /> {t("Mark on calendar")}
       </button>
 
       {open && (
@@ -76,34 +78,34 @@ export default function MarkOnCalendarButton({
             />
             <div className="relative w-full max-w-sm card p-6 animate-scale-in">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-lg font-semibold">Mark on calendar</h2>
+                <h2 className="font-display text-lg font-semibold">{t("Mark on calendar")}</h2>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   className="text-ink-faint hover:text-ink"
-                  aria-label="Close"
+                  aria-label={t("Close")}
                 >
                   <X size={18} />
                 </button>
               </div>
 
-              <label className="label">Event name</label>
+              <label className="label">{t("Event name")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="e.g. Annual Wellness Day"
+                placeholder={t("e.g. Annual Wellness Day")}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 autoFocus
               />
-              {error && <p className="text-sm text-danger-600 mt-2">{error}</p>}
+              {error && <p className="text-sm text-danger-600 mt-2">{t(error)}</p>}
 
               <div className="flex gap-3 justify-end mt-5">
                 <button type="button" onClick={() => setOpen(false)} className="btn-secondary" disabled={saving}>
-                  Cancel
+                  {t("Cancel")}
                 </button>
                 <button type="button" onClick={handleConfirm} disabled={saving} className="btn-primary">
-                  {saving ? "Saving…" : "Add to calendar"}
+                  {saving ? t("Saving…") : t("Add to calendar")}
                 </button>
               </div>
             </div>

@@ -4,10 +4,12 @@ import QuotationForm from "@/components/QuotationForm";
 import { withParsedMultipliersList } from "@/lib/multipliers";
 import { withParsedFeesList } from "@/lib/fees";
 import type { Quotation } from "@/types";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditQuotationPage({ params }: { params: { id: string } }) {
+  const t = getT();
   const quotation = await prisma.quotation.findUnique({
     where: { id: params.id },
     include: { items: { orderBy: { sortOrder: "asc" } } },
@@ -20,9 +22,9 @@ export default async function EditQuotationPage({ params }: { params: { id: stri
     <div className="flex flex-col gap-6">
       <div>
         <h1 className="font-display text-2xl font-semibold text-ink mb-1">
-          Edit {quotation.number}
+          {t("Edit {number}", { number: quotation.number })}
         </h1>
-        <p className="text-sm text-ink-muted">Changes recalculate totals automatically.</p>
+        <p className="text-sm text-ink-muted">{t("Changes recalculate totals automatically.")}</p>
       </div>
       <QuotationForm
         quotation={

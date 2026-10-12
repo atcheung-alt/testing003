@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Settings2 } from "lucide-react";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 /**
  * Hard-blocks the app for the admin account until the handful of Settings
@@ -24,6 +25,7 @@ export default function RequiredSetupGate({
   isAdmin: boolean;
   missingFields: string[];
 }) {
+  const t = useT();
   const pathname = usePathname();
 
   if (!isAdmin || missingFields.length === 0) return null;
@@ -38,10 +40,11 @@ export default function RequiredSetupGate({
               <Settings2 size={18} />
             </div>
             <div>
-              <h2 className="font-display text-lg font-semibold text-ink">Finish setting up HR Plus</h2>
+              <h2 className="font-display text-lg font-semibold text-ink">{t("Finish setting up HR Plus")}</h2>
               <p className="text-sm text-ink-muted mt-1">
-                A few things need to be filled in on the Settings page before the app can generate
-                documents and emails correctly.
+                {t(
+                  "A few things need to be filled in on the Settings page before the app can generate documents and emails correctly."
+                )}
               </p>
             </div>
           </div>
@@ -50,13 +53,13 @@ export default function RequiredSetupGate({
             {missingFields.map((field) => (
               <li key={field} className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-danger-500 shrink-0" />
-                {field}
+                {t(field)}
               </li>
             ))}
           </ul>
 
           <Link href="/settings" className="btn-primary justify-center">
-            Go to Settings
+            {t("Go to Settings")}
           </Link>
         </div>
       </div>

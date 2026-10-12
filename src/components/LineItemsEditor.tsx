@@ -10,6 +10,7 @@ import { computeTotals, lineAmount, lineTotalWithFee, formatCurrency } from "@/l
 import { matchesAnyField } from "@/lib/chineseSearch";
 import { lineItemTemplateKey } from "@/lib/lineItemTemplates";
 import type { LineItem, Multiplier, Fee, PresetItem } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 type HistoryTemplate = {
   name: string;
@@ -105,6 +106,7 @@ export default function LineItemsEditor({
   repeatCount,
   onRepeatCountChange,
 }: Props) {
+  const t = useT();
   const showRepeatCount = Boolean(onRepeatCountChange);
   const effectiveRepeatCount = repeatCount || 1;
   const totals = computeTotals(items, taxRate, discount, effectiveRepeatCount);
@@ -322,11 +324,11 @@ export default function LineItemsEditor({
               />
               <div className="flex-1 flex flex-col gap-2 min-w-0">
                 <div className="relative">
-                  <label className="label">Item name</label>
+                  <label className="label">{t("Item name")}</label>
                   <input
                     type="text"
                     className="input"
-                    placeholder="Search past items, or type a new name"
+                    placeholder={t("Search past items, or type a new name")}
                     value={item.name}
                     autoComplete="off"
                     role="combobox"
@@ -378,10 +380,10 @@ export default function LineItemsEditor({
                   )}
                 </div>
                 <div>
-                  <label className="label">Item description</label>
+                  <label className="label">{t("Item description")}</label>
                   <textarea
                     className="input min-h-[54px]"
-                    placeholder="Optional details, e.g. 8 responsive pages incl. CMS setup"
+                    placeholder={t("Optional details, e.g. 8 responsive pages incl. CMS setup")}
                     value={item.description}
                     onChange={(e) => updateItem(index, { description: e.target.value })}
                   />
@@ -392,8 +394,8 @@ export default function LineItemsEditor({
                   type="button"
                   onClick={() => moveItem(index, -1)}
                   disabled={index === 0}
-                  aria-label="Move line item up"
-                  title="Move up"
+                  aria-label={t("Move line item up")}
+                  title={t("Move up")}
                   className="text-ink-faint hover:text-ink transition-colors disabled:opacity-25 disabled:hover:text-ink-faint"
                 >
                   <ChevronUp size={16} />
@@ -401,7 +403,7 @@ export default function LineItemsEditor({
                 <button
                   type="button"
                   onClick={() => removeItem(index)}
-                  aria-label="Remove line item"
+                  aria-label={t("Remove line item")}
                   className="text-ink-faint hover:text-danger-500 transition-colors"
                 >
                   <Trash2 size={16} />
@@ -410,8 +412,8 @@ export default function LineItemsEditor({
                   type="button"
                   onClick={() => moveItem(index, 1)}
                   disabled={index === items.length - 1}
-                  aria-label="Move line item down"
-                  title="Move down"
+                  aria-label={t("Move line item down")}
+                  title={t("Move down")}
                   className="text-ink-faint hover:text-ink transition-colors disabled:opacity-25 disabled:hover:text-ink-faint"
                 >
                   <ChevronDown size={16} />
@@ -421,7 +423,7 @@ export default function LineItemsEditor({
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
               <div>
-                <label className="label text-brand-600 font-semibold">Qty</label>
+                <label className="label text-brand-600 font-semibold">{t("Qty")}</label>
                 <input
                   type="number"
                   step="any"
@@ -438,7 +440,7 @@ export default function LineItemsEditor({
                 />
               </div>
               <div>
-                <label className="label text-brand-600 font-semibold">Unit price</label>
+                <label className="label text-brand-600 font-semibold">{t("Unit price")}</label>
                 <input
                   type="number"
                   step="any"
@@ -455,17 +457,17 @@ export default function LineItemsEditor({
                 />
               </div>
               <div>
-                <label className="label">Unit (optional)</label>
+                <label className="label">{t("Unit (optional)")}</label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="e.g. pcs, hrs"
+                  placeholder={t("e.g. pcs, hrs")}
                   value={item.unit}
                   onChange={(e) => updateItem(index, { unit: e.target.value })}
                 />
               </div>
               <div>
-                <label className="label">Amount</label>
+                <label className="label">{t("Amount")}</label>
                 <div className="flex items-center justify-end h-[38px] font-mono text-sm font-semibold text-brand-600">
                   {formatCurrency(lineTotalWithFee(item))}
                 </div>
@@ -473,19 +475,19 @@ export default function LineItemsEditor({
             </div>
 
             <div className="mt-3 max-w-[200px]">
-              <label className="label text-ink-faint">Duration (optional)</label>
+              <label className="label text-ink-faint">{t("Duration (optional)")}</label>
               <input
                 type="text"
                 className="input text-sm"
-                placeholder="e.g. 3 hours"
+                placeholder={t("e.g. 3 hours")}
                 value={item.duration || ""}
                 onChange={(e) => updateItem(index, { duration: e.target.value })}
               />
-              <p className="text-xs text-ink-faint mt-1">Display only — doesn&apos;t affect the total.</p>
+              <p className="text-xs text-ink-faint mt-1">{t("Display only — doesn't affect the total.")}</p>
             </div>
 
             <div className="mt-3">
-              <label className="label">Multipliers (optional)</label>
+              <label className="label">{t("Multipliers (optional)")}</label>
               {item.multipliers.length > 0 && (
                 <div className="flex flex-col gap-2 mb-2">
                   {item.multipliers.map((m, mi) => (
@@ -495,7 +497,7 @@ export default function LineItemsEditor({
                         step="any"
                         min={0}
                         className="input text-right w-24"
-                        placeholder="e.g. 3"
+                        placeholder={t("e.g. 3")}
                         value={m.value}
                         onChange={(e) =>
                           updateMultiplier(index, mi, {
@@ -506,14 +508,14 @@ export default function LineItemsEditor({
                       <input
                         type="text"
                         className="input flex-1"
-                        placeholder="e.g. persons, sessions"
+                        placeholder={t("e.g. persons, sessions")}
                         value={m.label}
                         onChange={(e) => updateMultiplier(index, mi, { label: e.target.value })}
                       />
                       <button
                         type="button"
                         onClick={() => removeMultiplier(index, mi)}
-                        aria-label="Remove multiplier"
+                        aria-label={t("Remove multiplier")}
                         className="text-ink-faint hover:text-danger-500 transition-colors shrink-0"
                       >
                         <Trash2 size={15} />
@@ -527,23 +529,23 @@ export default function LineItemsEditor({
                 onClick={() => addMultiplier(index)}
                 className="btn-ghost !px-2 text-xs"
               >
-                <Plus size={14} /> Add multiplier
+                <Plus size={14} /> {t("Add multiplier")}
               </button>
               {item.multipliers.length > 0 && (
                 <p className="text-xs text-ink-muted mt-1">
-                  Amount = qty × unit price × {multipliersSummary(item.multipliers)}
-                  {item.fees.length > 0 ? " + additional fees" : ""}
+                  {t("Amount = qty × unit price × {summary}", { summary: multipliersSummary(item.multipliers) })}
+                  {item.fees.length > 0 ? t(" + additional fees") : ""}
                 </p>
               )}
               {!item.multipliers.length && item.fees.length > 0 && (
                 <p className="text-xs text-ink-muted mt-1">
-                  Amount shown includes the additional fees below.
+                  {t("Amount shown includes the additional fees below.")}
                 </p>
               )}
             </div>
 
             <div className="mt-3">
-              <label className="label">Additional fees (optional)</label>
+              <label className="label">{t("Additional fees (optional)")}</label>
               {item.fees.length > 0 && (
                 <div className="flex flex-col gap-2 mb-2">
                   {item.fees.map((fee, fi) => (
@@ -551,7 +553,7 @@ export default function LineItemsEditor({
                       <input
                         type="text"
                         className="input flex-1"
-                        placeholder="e.g. Transportation fee"
+                        placeholder={t("e.g. Transportation fee")}
                         value={fee.label}
                         onChange={(e) => updateFee(index, fi, { label: e.target.value })}
                       />
@@ -560,14 +562,14 @@ export default function LineItemsEditor({
                         step="any"
                         min={0}
                         className="input text-right w-28"
-                        placeholder="Amount"
+                        placeholder={t("Amount")}
                         value={fee.amount}
                         onChange={(e) => updateFee(index, fi, { amount: parseFloat(e.target.value) || 0 })}
                       />
                       <button
                         type="button"
                         onClick={() => removeFee(index, fi)}
-                        aria-label="Remove fee"
+                        aria-label={t("Remove fee")}
                         className="text-ink-faint hover:text-danger-500 transition-colors shrink-0"
                       >
                         <Trash2 size={15} />
@@ -581,7 +583,7 @@ export default function LineItemsEditor({
                 onClick={() => addFee(index)}
                 className="btn-ghost !px-2 text-xs"
               >
-                <Plus size={14} /> Add fee
+                <Plus size={14} /> {t("Add fee")}
               </button>
             </div>
           </div>
@@ -591,11 +593,11 @@ export default function LineItemsEditor({
       <div className="flex flex-wrap gap-2 mt-3">
         {presetsLoaded && (
           <button type="button" onClick={openPicker} className="btn-secondary">
-            <PackagePlus size={15} /> Add from item library
+            <PackagePlus size={15} /> {t("Add from item library")}
           </button>
         )}
         <button type="button" onClick={addItem} className="btn-ghost !px-2">
-          <Plus size={15} /> Add line item
+          <Plus size={15} /> {t("Add line item")}
         </button>
       </div>
 
@@ -608,12 +610,12 @@ export default function LineItemsEditor({
           />
           <div className="relative w-full max-w-lg card p-6 max-h-[85vh] flex flex-col animate-scale-in">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-display text-lg font-semibold">Add from item library</h2>
+              <h2 className="font-display text-lg font-semibold">{t("Add from item library")}</h2>
               <button
                 type="button"
                 onClick={() => setPickerOpen(false)}
                 className="text-ink-faint hover:text-ink"
-                aria-label="Close"
+                aria-label={t("Close")}
               >
                 <X size={18} />
               </button>
@@ -621,15 +623,15 @@ export default function LineItemsEditor({
 
             {presets.length === 0 ? (
               <p className="text-sm text-ink-muted">
-                No preset items yet. Save standardized items in the{" "}
+                {t("No preset items yet. Save standardized items in the")}{" "}
                 <Link
                   href="/items"
                   className="text-brand-500 hover:underline"
                   onClick={() => setPickerOpen(false)}
                 >
-                  item library
+                  {t("item library")}
                 </Link>{" "}
-                to pick them from here.
+                {t("to pick them from here.")}
               </p>
             ) : (
               <>
@@ -641,7 +643,7 @@ export default function LineItemsEditor({
                   <input
                     type="text"
                     className="input pl-9"
-                    placeholder="Search item library…"
+                    placeholder={t("Search item library…")}
                     value={presetSearch}
                     onChange={(e) => setPresetSearch(e.target.value)}
                     autoFocus
@@ -651,7 +653,7 @@ export default function LineItemsEditor({
                 <div className="flex-1 overflow-y-auto -mx-2 px-2 flex flex-col gap-1">
                   {filteredPresets.length === 0 ? (
                     <p className="text-sm text-ink-faint py-6 text-center">
-                      No items match &ldquo;{presetSearch}&rdquo;.
+{t("No items match “{query}”.", { query: presetSearch })}
                     </p>
                   ) : (
                     filteredPresets.map((p) => {
@@ -688,7 +690,7 @@ export default function LineItemsEditor({
                           </div>
                           <div className="text-right shrink-0">
                             <p className="font-mono text-sm">{formatCurrency(p.unitPrice)}</p>
-                            {p.unit && <p className="text-xs text-ink-muted">per {p.unit}</p>}
+                            {p.unit && <p className="text-xs text-ink-muted">{t("per {unit}", { unit: p.unit })}</p>}
                             {p.multipliers && p.multipliers.length > 0 && (
                               <p className="text-xs text-ink-muted">
                                 {multipliersSummary(p.multipliers)}
@@ -703,11 +705,11 @@ export default function LineItemsEditor({
 
                 <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-line shrink-0">
                   <p className="text-xs text-ink-muted">
-                    {selectedIds.size > 0 ? `${selectedIds.size} selected` : "Select items to add"}
+                    {selectedIds.size > 0 ? t("{count} selected", { count: selectedIds.size }) : t("Select items to add")}
                   </p>
                   <div className="flex gap-2">
                     <button type="button" onClick={() => setPickerOpen(false)} className="btn-secondary">
-                      Cancel
+                      {t("Cancel")}
                     </button>
                     <button
                       type="button"
@@ -715,8 +717,10 @@ export default function LineItemsEditor({
                       disabled={selectedIds.size === 0}
                       className="btn-primary"
                     >
-                      <Plus size={15} /> Add {selectedIds.size || ""} item
-                      {selectedIds.size === 1 ? "" : "s"}
+                      <Plus size={15} />{" "}
+                      {selectedIds.size === 1
+                        ? t("Add {count} item", { count: selectedIds.size })
+                        : t("Add {count} items", { count: selectedIds.size || "" })}
                     </button>
                   </div>
                 </div>
@@ -731,7 +735,7 @@ export default function LineItemsEditor({
         <div className="w-full sm:w-80 card p-4">
           {showRepeatCount && (
             <div className="mb-3">
-              <label className="label">Repeat count</label>
+              <label className="label">{t("Repeat count")}</label>
               <input
                 type="number"
                 step="1"
@@ -741,14 +745,13 @@ export default function LineItemsEditor({
                 onChange={(e) => onRepeatCountChange!(Math.max(1, Math.round(parseFloat(e.target.value)) || 1))}
               />
               <p className="text-xs text-ink-faint mt-1">
-                For work conducted several times (e.g. a training run 3 times) — multiplies the item
-                subtotal before discount and tax.
+{t("For work conducted several times (e.g. a training run 3 times) — multiplies the item subtotal before discount and tax.")}
               </p>
             </div>
           )}
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div>
-              <label className="label">Discount ($)</label>
+              <label className="label">{t("Discount ($)")}</label>
               <input
                 type="number"
                 step="any"
@@ -759,7 +762,7 @@ export default function LineItemsEditor({
               />
             </div>
             <div>
-              <label className="label">Tax rate (%)</label>
+              <label className="label">{t("Tax rate (%)")}</label>
               <input
                 type="number"
                 step="any"
@@ -774,32 +777,32 @@ export default function LineItemsEditor({
             {showRepeatCount && effectiveRepeatCount > 1 && (
               <>
                 <div className="flex justify-between text-ink-muted">
-                  <span>Subtotal (per session)</span>
+                  <span>{t("Subtotal (per session)")}</span>
                   <span className="font-mono text-ink">{formatCurrency(totals.rawSubtotal)}</span>
                 </div>
                 <div className="flex justify-between text-ink-muted">
-                  <span>× {effectiveRepeatCount} sessions</span>
+                  <span>{t("× {count} sessions", { count: effectiveRepeatCount })}</span>
                 </div>
               </>
             )}
             <div className="flex justify-between text-ink-muted">
-              <span>Subtotal</span>
+              <span>{t("Subtotal")}</span>
               <span className="font-mono text-ink">{formatCurrency(totals.subtotal)}</span>
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-ink-muted">
-                <span>Discount</span>
+                <span>{t("Discount")}</span>
                 <span className="font-mono text-ink">-{formatCurrency(discount)}</span>
               </div>
             )}
             {taxRate > 0 && (
               <div className="flex justify-between text-ink-muted">
-                <span>Tax ({taxRate}%)</span>
+                <span>{t("Tax ({rate}%)", { rate: taxRate })}</span>
                 <span className="font-mono text-ink">{formatCurrency(totals.taxAmount)}</span>
               </div>
             )}
             <div className="flex justify-between pt-2 mt-1 border-t border-brand-500/40">
-              <span className="font-semibold text-brand-600">Total</span>
+              <span className="font-semibold text-brand-600">{t("Total")}</span>
               <span className="font-mono font-semibold text-brand-600 text-base">
                 {formatCurrency(totals.total)}
               </span>
@@ -826,6 +829,7 @@ function ItemSuggestionList({
   onHighlight: (index: number) => void;
   onPick: (template: ItemSuggestion) => void;
 }) {
+  const t = useT();
   const active = Math.min(highlight, Math.max(suggestions.length - 1, 0));
 
   return (
@@ -836,10 +840,10 @@ function ItemSuggestionList({
       {suggestions.length === 0 ? (
         <p className="px-2.5 py-2 text-xs text-ink-faint">
           {loading
-            ? "Loading saved items…"
+            ? t("Loading saved items…")
             : query.trim()
-              ? "No saved item matches. Keep typing to enter a new one."
-              : "No past items yet. Type a new name, or save presets in the item library."}
+              ? t("No saved item matches. Keep typing to enter a new one.")
+              : t("No past items yet. Type a new name, or save presets in the item library.")}
         </p>
       ) : (
         suggestions.map((template, index) => (
@@ -865,11 +869,15 @@ function ItemSuggestionList({
               ) : null}
               <p className="text-[11px] text-ink-faint">
                 {template.useCount > 0
-                  ? `Used ${template.useCount} time${template.useCount === 1 ? "" : "s"}`
-                  : "Item library"}
-                {template.unit ? ` · per ${template.unit}` : ""}
+                  ? template.useCount === 1
+                    ? t("Used {count} time", { count: template.useCount })
+                    : t("Used {count} times", { count: template.useCount })
+                  : t("Item library")}
+                {template.unit ? t(" · per {unit}", { unit: template.unit }) : ""}
                 {template.fees.length > 0
-                  ? ` · ${template.fees.length} fee${template.fees.length === 1 ? "" : "s"}`
+                  ? template.fees.length === 1
+                    ? t(" · {count} fee", { count: template.fees.length })
+                    : t(" · {count} fees", { count: template.fees.length })
                   : ""}
               </p>
             </div>

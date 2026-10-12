@@ -8,6 +8,7 @@ import StatusBadge from "@/components/StatusBadge";
 import EmptyState from "@/components/EmptyState";
 import SearchBox from "@/components/SearchBox";
 import DateRangeFilter from "@/components/DateRangeFilter";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +25,7 @@ async function QuotationList({
   from?: string;
   to?: string;
 }) {
+  const t = getT();
   const quotations = await prisma.quotation.findMany({
     where: {
       status: status || undefined,
@@ -46,10 +48,10 @@ async function QuotationList({
     return (
       <EmptyState
         icon={FileText}
-        title="No quotations found"
-        description="Try adjusting your filters, or create a new quotation."
+        title={t("No quotations found")}
+        description={t("Try adjusting your filters, or create a new quotation.")}
         actionHref="/quotations/new"
-        actionLabel="New quotation"
+        actionLabel={t("New quotation")}
       />
     );
   }
@@ -68,13 +70,13 @@ async function QuotationList({
               <StatusBadge status={q.status} />
             </div>
             <p className="text-xs text-ink-muted truncate mt-0.5">
-              {q.customerName} · Issued {formatDate(q.issueDate)}
+              {q.customerName} · {t("Issued {date}", { date: formatDate(q.issueDate) })}
             </p>
             {/* Always rendered (even blank) so every row reserves the
                 same vertical space regardless of item count — keeps every
                 row's height consistent. */}
             <p className="text-xs text-ink-faint truncate mt-0.5">
-              {q.items.length > 0 ? q.items.map((item) => item.name || "Untitled item").join(" \u00b7 ") : "\u00a0"}
+              {q.items.length > 0 ? q.items.map((item) => item.name || t("Untitled item")).join(" \u00b7 ") : "\u00a0"}
             </p>
           </div>
           <span className="font-mono text-sm font-medium shrink-0">{formatCurrency(q.total)}</span>
@@ -89,6 +91,7 @@ export default function QuotationsPage({
 }: {
   searchParams: { q?: string; status?: string; from?: string; to?: string };
 }) {
+  const t = getT();
   const exportParams = new URLSearchParams();
   if (searchParams.q) exportParams.set("q", searchParams.q);
   if (searchParams.status) exportParams.set("status", searchParams.status);
@@ -111,15 +114,15 @@ export default function QuotationsPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink mb-1">Quotations</h1>
-          <p className="text-sm text-ink-muted">Draft, send, and track quotations for your customers.</p>
+          <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Quotations")}</h1>
+          <p className="text-sm text-ink-muted">{t("Draft, send, and track quotations for your customers.")}</p>
         </div>
         <div className="flex gap-2 shrink-0">
           <a href={exportHref} className="btn-secondary">
-            <Download size={15} /> Export CSV
+            <Download size={15} /> {t("Export CSV")}
           </a>
           <Link href="/quotations/new" className="btn-primary">
-            <Plus size={15} /> New quotation
+            <Plus size={15} /> {t("New quotation")}
           </Link>
         </div>
       </div>
@@ -134,7 +137,7 @@ export default function QuotationsPage({
             href={statusHref(undefined)}
             className={`stamp ${!searchParams.status ? "border-brand-500 text-brand-500" : "border-line text-ink-muted"}`}
           >
-            All
+            {t("All")}
           </Link>
           {STATUSES.map((s) => (
             <Link
@@ -142,13 +145,13 @@ export default function QuotationsPage({
               href={statusHref(s)}
               className={`stamp ${searchParams.status === s ? "border-brand-500 text-brand-500" : "border-line text-ink-muted"}`}
             >
-              {s}
+              {t(s)}
             </Link>
           ))}
         </div>
       </div>
 
-      <Suspense fallback={<div className="text-sm text-ink-muted">Loading…</div>}>
+      <Suspense fallback={<div className="text-sm text-ink-muted">{t("Loading…")}</div>}>
         <QuotationList
           q={searchParams.q}
           status={searchParams.status}

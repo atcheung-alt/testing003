@@ -1,4 +1,5 @@
 import { Converter } from "opencc-js";
+import type { AppLanguage } from "@/lib/i18n/language";
 
 // -----------------------------------------------------------------------------
 // Document defaults — the single source of truth for standardized wording that
@@ -271,9 +272,31 @@ export function defaultEmailContent(args: {
   companyName: string;
   /** Public signing link — when set, quotation emails mention reviewing & signing online. */
   signingUrl?: string | null;
+  /** Staff Language choice. Omitted calls stay English, so automatic mail is unchanged. */
+  language?: AppLanguage;
 }) {
-  const { kind, number, title, customerName, companyName, signingUrl } = args;
+  const { kind, number, title, customerName, companyName, signingUrl, language } = args;
   const subjectTitle = title ? ` — ${title}` : "";
+  if (language === "zh") {
+    const kindLabel = kind === "Invoice" ? "發票" : "報價單";
+    const kindWord = kind === "Invoice" ? "發票" : "報價單";
+    const subject = `${kindLabel} ${number}${subjectTitle}（${companyName}）`;
+    const intro = `請查收附件${kindWord} ${number}${title ? `（${title}）` : ""}。`;
+    const callToAction =
+      kind === "Invoice"
+        ? "請於到期日前安排付款，並以發票編號作為付款參考。"
+        : signingUrl
+        ? "如需在線查閱並接受此報價單，請使用下方「在線查閱及簽署」連結。您可以查閱全部內容並以電子方式簽署，無需登入。"
+        : "如對此報價單有任何問題，歡迎與我們聯絡。";
+    const body = `${customerName || "客戶"} 您好：
+
+${intro}
+
+${callToAction}
+
+謝謝。`;
+    return { subject, body };
+  }
   const subject = `${kind} ${number}${subjectTitle} from ${companyName}`;
   const intro = `Please find attached ${kind === "Invoice" ? "invoice" : "quotation"} ${number}${
     title ? ` for ${title}` : ""
@@ -313,13 +336,33 @@ export function followUpEmailContent(args: {
   companyName: string;
   dueDate?: string | Date | null;
   overdue?: boolean;
+  language?: AppLanguage;
 }) {
-  const { number, title, customerName, companyName, dueDate, overdue } = args;
-  const subject = `Payment reminder: Invoice ${number}${title ? ` — ${title}` : ""} from ${companyName}`;
-
+  const { number, title, customerName, companyName, dueDate, overdue, language } = args;
   const dueDateText = dueDate
-    ? new Date(dueDate).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "numeric" })
+    ? new Date(dueDate).toLocaleDateString(language === "zh" ? "zh-HK" : "en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
     : null;
+
+  if (language === "zh") {
+    const subject = `付款提醒：發票 ${number}${title ? ` — ${title}` : ""}（${companyName}）`;
+    const statusLine = overdue
+      ? `根據紀錄，發票 ${number}${title ? `（${title}）` : ""} 已經逾期${dueDateText ? `（到期日為 ${dueDateText}）` : ""}。`
+      : `提醒你發票 ${number}${title ? `（${title}）` : ""} 尚未付款${dueDateText ? `，到期日為 ${dueDateText}` : ""}。`;
+    const body = `${customerName || "客戶"} 您好：
+
+${statusLine}
+
+發票已再次附上，方便查閱。請盡快安排付款，並以發票編號作為付款參考。如已付款，或有任何問題需要協助，請告知我們。
+
+感謝你對 ${companyName} 的支持。`;
+    return { subject, body };
+  }
+
+  const subject = `Payment reminder: Invoice ${number}${title ? ` — ${title}` : ""} from ${companyName}`;
 
   const statusLine = overdue
     ? `Our records show invoice ${number}${title ? ` for ${title}` : ""} is now overdue${
@@ -345,8 +388,21 @@ export function payslipEmailContent(args: {
   employeeName: string;
   periodLabel: string;
   companyName: string;
+  language?: AppLanguage;
 }) {
-  const { employeeName, periodLabel, companyName } = args;
+  const { employeeName, periodLabel, companyName, language } = args;
+  if (language === "zh") {
+    return {
+      subject: `薪資單 — ${periodLabel} — ${companyName}`,
+      body: `${employeeName || "同事"} 您好：
+
+請查收附件為 ${periodLabel} 的薪資單。
+
+如對此薪資單有任何問題，請與人力資源部聯絡。
+
+感謝你在 ${companyName} 的工作。`,
+    };
+  }
   const subject = `Payslip — ${periodLabel} — ${companyName}`;
   const body = `Dear ${employeeName || "Team member"},
 

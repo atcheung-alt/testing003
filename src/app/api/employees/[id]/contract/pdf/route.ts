@@ -1,13 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth";
 import { buildEmployeeContractPdf } from "@/lib/pdf/build";
-import { pdfContentDisposition, pdfDownloadLanguage } from "@/lib/pdf/language";
+import { pdfContentDisposition } from "@/lib/pdf/language";
+import { pdfLanguageFromRequest } from "@/lib/i18n/downloadLanguage";
 
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   const denied = await requireAdminApi();
   if (denied) return denied;
 
-  const language = pdfDownloadLanguage(request.nextUrl.searchParams.get("lang"));
+  const language = pdfLanguageFromRequest(request);
   const built = await buildEmployeeContractPdf(params.id, language);
   if (!built) {
     return NextResponse.json({ error: "This employee has no contract yet." }, { status: 404 });

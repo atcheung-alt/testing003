@@ -1,8 +1,8 @@
-import clsx from "clsx";
+"use client";
 
-// Shared between the public /leave/[token] history list and the staff
-// Employee detail page's leave-requests section, so PENDING/APPROVED/
-// REJECTED always read the same way everywhere.
+import clsx from "clsx";
+import { useT } from "@/lib/i18n/client";
+
 const STYLES: Record<string, string> = {
   PENDING: "border-accent-500 text-accent-600 bg-accent-100",
   APPROVED: "border-brand-500 text-brand-500 bg-brand-50",
@@ -10,5 +10,6 @@ const STYLES: Record<string, string> = {
 };
 
 export default function LeaveStatusBadge({ status }: { status: string }) {
-  return <span className={clsx("stamp", STYLES[status] || "border-ink-faint text-ink-muted")}>{status}</span>;
+  const t = useT();
+  return <span className={clsx("stamp", STYLES[status] || "border-ink-faint text-ink-muted")}>{t(status)}</span>;
 }

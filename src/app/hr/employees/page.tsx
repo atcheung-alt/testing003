@@ -8,6 +8,7 @@ import EmptyState from "@/components/EmptyState";
 import SearchBox from "@/components/SearchBox";
 import InviteEmployeeButton from "@/components/InviteEmployeeButton";
 import EmployeeListClient, { EmployeeListItem } from "@/components/EmployeeListClient";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -27,6 +28,7 @@ function contractActionLabel(contract: { status: string } | null): string | null
 }
 
 async function EmployeeList({ q, status, isAdmin }: { q?: string; status?: string; isAdmin: boolean }) {
+  const t = getT();
   // This page is admin-only (see requireAdminPage below), so the query pulls
   // every field the row-click preview panel wants to show — no narrower
   // select needed since there's no non-admin viewer of this data to protect
@@ -55,16 +57,16 @@ async function EmployeeList({ q, status, isAdmin }: { q?: string; status?: strin
     return (
       <EmptyState
         icon={IdCard}
-        title="No employees found"
+        title={t("No employees found")}
         description={
           isAdmin
-            ? "Try adjusting your filters, or add a new employee record."
-            : "Try adjusting your filters."
+            ? t("Try adjusting your filters, or add a new employee record.")
+            : t("Try adjusting your filters.")
         }
         // Creating a record is admin-only (see the header button above) —
         // don't offer a path to it here that would just redirect back.
         actionHref={isAdmin ? "/hr/employees/new" : undefined}
-        actionLabel={isAdmin ? "New employee" : undefined}
+        actionLabel={isAdmin ? t("New employee") : undefined}
       />
     );
   }
@@ -74,8 +76,20 @@ async function EmployeeList({ q, status, isAdmin }: { q?: string; status?: strin
   // (mpfReminder, contractAction) server-side rather than shipping
   // src/lib/payroll.ts's prisma-adjacent module into the client bundle.
   const items: EmployeeListItem[] = employees.map((e) => {
-    const mpfReminder =
+    const rawReminder =
       e.status === "FORMER" ? null : mpfReminderFor(e.employmentType, e.startDate, e.mpfVerifiedAt);
+    const mpfReminder = rawReminder
+      ? {
+          severity: rawReminder.severity,
+          label:
+            rawReminder.severity === "overdue"
+              ? t("MPF overdue ({days}d)", { days: Math.abs(rawReminder.daysRemaining) })
+              : rawReminder.daysRemaining === 0
+              ? t("MPF due today")
+              : t("MPF due in {days}d", { days: rawReminder.daysRemaining }),
+        }
+      : null;
+    const actionLabel = contractActionLabel(e.contract);
     return {
       id: e.id,
       name: e.name,
@@ -112,7 +126,7 @@ async function EmployeeList({ q, status, isAdmin }: { q?: string; status?: strin
       mpfVerifiedAt: e.mpfVerifiedAt ? e.mpfVerifiedAt.toISOString() : null,
       pendingLeaveCount: e.leaveRequests.length,
       contractStatus: e.contract?.status || null,
-      contractActionLabel: contractActionLabel(e.contract),
+      contractActionLabel: actionLabel ? t(actionLabel) : null,
       mpfReminder,
     };
   });
@@ -125,6 +139,7 @@ export default async function EmployeesPage({
 }: {
   searchParams: { q?: string; status?: string };
 }) {
+  const t = getT();
   function statusHref(status?: string) {
     const params = new URLSearchParams();
     if (searchParams.q) params.set("q", searchParams.q);
@@ -149,20 +164,21 @@ export default async function EmployeesPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink mb-1">Employees</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Employees")}</h1>
           <p className="text-sm text-ink-muted">
-            Staff records, leave balances, and leave requests submitted through each employee&apos;s
-            personal link.
+            {t(
+              "Staff records, leave balances, and leave requests submitted through each employee's personal link."
+            )}
           </p>
         </div>
         {isAdmin && (
           <div className="flex gap-2 flex-wrap">
             <a href={exportHref} className="btn-secondary shrink-0">
-              <Download size={15} /> Export CSV
+              <Download size={15} /> {t("Export CSV")}
             </a>
             <InviteEmployeeButton />
             <Link href="/hr/employees/new" className="btn-primary shrink-0">
-              <Plus size={15} /> New employee
+              <Plus size={15} /> {t("New employee")}
             </Link>
           </div>
         )}
@@ -175,7 +191,7 @@ export default async function EmployeesPage({
             href={statusHref(undefined)}
             className={`stamp ${!searchParams.status ? "border-brand-500 text-brand-500" : "border-line text-ink-muted"}`}
           >
-            All
+            {t("All")}
           </Link>
           {STATUSES.map((s) => (
             <Link
@@ -183,13 +199,13 @@ export default async function EmployeesPage({
               href={statusHref(s)}
               className={`stamp ${searchParams.status === s ? "border-brand-500 text-brand-500" : "border-line text-ink-muted"}`}
             >
-              {s}
+              {t(s)}
             </Link>
           ))}
         </div>
       </div>
 
-      <Suspense fallback={<div className="text-sm text-ink-muted">Loading…</div>}>
+      <Suspense fallback={<div className="text-sm text-ink-muted">{t("Loading…")}</div>}>
         <EmployeeList q={searchParams.q} status={searchParams.status} isAdmin={isAdmin} />
       </Suspense>
     </div>

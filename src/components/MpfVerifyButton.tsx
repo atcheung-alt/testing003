@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ShieldCheck } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 /** Mirrors VerifyContractButton — a plain confirm + PATCH that marks MPF
  *  enrollment as verified for an employee. One-way, same as contract
  *  verification: no un-verify from the UI. */
 export default function MpfVerifyButton({ employeeId }: { employeeId: string }) {
+  const t = useT();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +17,7 @@ export default function MpfVerifyButton({ employeeId }: { employeeId: string }) 
   async function handleVerify() {
     if (
       !window.confirm(
-        "Confirm this employee's MPF scheme enrollment has actually been completed with the trustee?"
+        t("Confirm this employee's MPF scheme enrollment has actually been completed with the trustee?")
       )
     ) {
       return;
@@ -37,9 +39,9 @@ export default function MpfVerifyButton({ employeeId }: { employeeId: string }) 
   return (
     <div className="flex flex-col items-end gap-1">
       <button type="button" onClick={handleVerify} disabled={busy} className="btn-secondary">
-        <ShieldCheck size={15} /> {busy ? "Saving…" : "Mark MPF verified"}
+        <ShieldCheck size={15} /> {busy ? t("Saving…") : t("Mark MPF verified")}
       </button>
-      {error && <span className="text-xs text-danger-500 max-w-[220px] text-right">{error}</span>}
+      {error && <span className="text-xs text-danger-500 max-w-[220px] text-right">{t(error)}</span>}
     </div>
   );
 }

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { buildQuotationPdf } from "@/lib/pdf/build";
-import { pdfContentDisposition, pdfDownloadLanguage } from "@/lib/pdf/language";
+import { pdfContentDisposition } from "@/lib/pdf/language";
+import { pdfLanguageFromRequest } from "@/lib/i18n/downloadLanguage";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest, { params }: { params: { token: string } }) {
-  const language = pdfDownloadLanguage(request.nextUrl.searchParams.get("lang"));
+  const language = pdfLanguageFromRequest(request);
   const quotation = await prisma.quotation.findUnique({
     where: { signingToken: params.token },
     select: { id: true, number: true },

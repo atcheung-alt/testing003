@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Pen, Type, Check } from "lucide-react";
 import SignatureCanvas from "@/components/SignatureCanvas";
 import { typedSignatureToDataUrl } from "@/lib/signatureImage";
+import { useT } from "@/lib/i18n/client";
 
 type Mode = "draw" | "type";
 
@@ -21,6 +22,7 @@ type Props = {
  * client acceptance signature, not a scanned company stamp.
  */
 export default function PublicSignaturePad({ fullName, value, onChange }: Props) {
+  const t = useT();
   const [mode, setMode] = useState<Mode>("draw");
 
   // Keep the typed signature in sync with the name field while in Type mode.
@@ -38,22 +40,22 @@ export default function PublicSignaturePad({ fullName, value, onChange }: Props)
             { id: "draw" as const, label: "Draw", icon: Pen },
             { id: "type" as const, label: "Type", icon: Type },
           ]
-        ).map((t) => {
-          const Icon = t.icon;
-          const active = mode === t.id;
+        ).map((option) => {
+          const Icon = option.icon;
+          const active = mode === option.id;
           return (
             <button
-              key={t.id}
+              key={option.id}
               type="button"
               onClick={() => {
-                setMode(t.id);
+                setMode(option.id);
                 onChange(null);
               }}
               className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
                 active ? "bg-brand-gradient text-white shadow-soft" : "text-ink-muted hover:text-ink"
               }`}
             >
-              <Icon size={13} /> {t.label}
+              <Icon size={13} /> {t(option.label)}
             </button>
           );
         })}
@@ -69,7 +71,7 @@ export default function PublicSignaturePad({ fullName, value, onChange }: Props)
             </span>
           ) : (
             <span className="text-sm text-ink-faint">
-              Enter your full name above to preview your signature
+              {t("Enter your full name above to preview your signature")}
             </span>
           )}
         </div>
@@ -77,7 +79,7 @@ export default function PublicSignaturePad({ fullName, value, onChange }: Props)
 
       {value && (
         <div className="flex items-center gap-1.5 text-xs font-medium text-brand-700">
-          <Check size={14} /> Signature ready
+          <Check size={14} /> {t("Signature ready")}
         </div>
       )}
     </div>

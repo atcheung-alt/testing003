@@ -1,4 +1,5 @@
 import type { MonthlyFinance } from "@/lib/finance";
+import { getT } from "@/lib/i18n/server";
 
 const COLORS = {
   revenue: "#4F7CFF", // brand-500
@@ -18,6 +19,7 @@ function niceCeil(value: number): number {
 }
 
 export default function MonthlyFinanceChart({ data }: { data: MonthlyFinance[] }) {
+  const t = getT();
   const width = 760;
   const height = 280;
   const padding = { top: 16, right: 16, bottom: 44, left: 64 };
@@ -133,13 +135,13 @@ export default function MonthlyFinanceChart({ data }: { data: MonthlyFinance[] }
 
       <div className="flex items-center gap-5 mt-3 text-xs text-ink-muted">
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: COLORS.revenue }} /> Revenue
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: COLORS.revenue }} /> {t("Revenue")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: COLORS.expenses }} /> Expenses
+          <span className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: COLORS.expenses }} /> {t("Expenses")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.profit }} /> Net profit
+          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.profit }} /> {t("Net profit")}
         </span>
       </div>
     </div>

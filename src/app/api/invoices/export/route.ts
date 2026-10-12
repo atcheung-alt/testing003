@@ -4,6 +4,8 @@ import { formatDate } from "@/lib/calculations";
 import { getInvoiceDisplayStatus } from "@/lib/invoiceStatus";
 import { dateRangeFilter } from "@/lib/dateRange";
 import { buildCsv, csvResponseHeaders } from "@/lib/csv";
+import { appLanguageFromRequest } from "@/lib/i18n/downloadLanguage";
+import { translate } from "@/lib/i18n/translate";
 
 /**
  * CSV export for the invoices list — takes the exact same `q`/`status`/
@@ -15,6 +17,8 @@ import { buildCsv, csvResponseHeaders } from "@/lib/csv";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
+  const language = appLanguageFromRequest(request);
+  const t = (key: string) => translate(language, key);
   const q = request.nextUrl.searchParams.get("q") || undefined;
   const status = request.nextUrl.searchParams.get("status") || undefined;
   const from = request.nextUrl.searchParams.get("from") || undefined;
@@ -40,18 +44,19 @@ export async function GET(request: NextRequest) {
     return [
       inv.number,
       inv.customerName,
-      displayStatus,
+      t(displayStatus),
       formatDate(inv.issueDate),
       formatDate(inv.dueDate),
       inv.total.toFixed(2),
-      displayStatus === "PAID" ? "Paid" : "Unpaid",
+      t(displayStatus === "PAID" ? "Paid" : "Unpaid"),
     ];
   });
 
   const csv = buildCsv(
-    ["Number", "Customer", "Status", "Issue Date", "Due Date", "Total", "Payment Status"],
+    ["Number", "Customer", "Status", "Issue Date", "Due Date", "Total", "Payment Status"].map(t),
     rows
   );
+  const body = language === "zh" ? `\uFEFF${csv}` : csv;
 
-  return new NextResponse(csv, { headers: csvResponseHeaders("invoices.csv") });
+  return new NextResponse(body, { headers: csvResponseHeaders("invoices.csv") });
 }

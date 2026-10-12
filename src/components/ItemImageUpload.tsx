@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { ImagePlus, X } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 /** Read an image file, downscale it to max 480px and return a JPEG data URL. */
 export function fileToResizedDataUrl(file: File, maxSize = 480): Promise<string> {
@@ -39,6 +40,7 @@ export default function ItemImageUpload({
   onChange: (data: string | null) => void;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = useT();
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -65,15 +67,15 @@ export default function ItemImageUpload({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageData}
-            alt="Item"
+            alt={t("Item")}
             className="w-16 h-16 object-cover rounded-md border border-line cursor-pointer"
             onClick={() => inputRef.current?.click()}
-            title="Click to replace image"
+            title={t("Click to replace image")}
           />
           <button
             type="button"
             onClick={() => onChange(null)}
-            aria-label="Remove image"
+            aria-label={t("Remove image")}
             className="absolute -top-1.5 -right-1.5 bg-white border border-line rounded-full p-0.5 text-ink-faint hover:text-danger-500 shadow-sm"
           >
             <X size={12} />
@@ -83,12 +85,12 @@ export default function ItemImageUpload({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          aria-label="Upload item image"
-          title="Upload item image"
+          aria-label={t("Upload item image")}
+          title={t("Upload item image")}
           className="w-16 h-16 flex flex-col items-center justify-center gap-0.5 rounded-md border border-dashed border-line text-ink-faint hover:text-brand-600 hover:border-brand-500/60 transition-colors"
         >
           <ImagePlus size={18} />
-          <span className="text-[10px] leading-none">Image</span>
+          <span className="text-[10px] leading-none">{t("Image")}</span>
         </button>
       )}
     </div>

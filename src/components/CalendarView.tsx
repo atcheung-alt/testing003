@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, X, ExternalLink, User, Building2 } from "lucide-react";
 import clsx from "clsx";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
+import type { TFunction } from "@/lib/i18n/translate";
 
 export type CalendarEvent = {
   id: string;
@@ -22,6 +24,10 @@ export type CalendarEvent = {
 type NormEvent = CalendarEvent & { start: Date; end: Date };
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
 
 const MAX_LANES = 3;
 const BAR_HEIGHT = 20;
@@ -47,12 +53,13 @@ function isSameDay(a: Date, b: Date) {
 function daysBetween(a: Date, b: Date) {
   return Math.round((startOfDay(b).getTime() - startOfDay(a).getTime()) / 86400000);
 }
-function formatTime(time: string | null | undefined) {
+function formatTime(time: string | null | undefined, t: TFunction) {
   if (!time) return null;
   const [h, m] = time.split(":").map(Number);
   if (Number.isNaN(h) || Number.isNaN(m)) return time;
   const d = new Date(2000, 0, 1, h, m);
-  return new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(d);
+  const formatted = new Intl.DateTimeFormat("en-US", { hour: "numeric", minute: "2-digit" }).format(d);
+  return formatted.replace("AM", t("AM")).replace("PM", t("PM"));
 }
 /** DD/MM/YYYY — the standard date format across the whole app. */
 function formatEventDate(d: Date) {
@@ -62,12 +69,12 @@ function formatEventDate(d: Date) {
 }
 /** "1h 30m" / "1h" / "45m" — durationMins is always a whole number of
  *  minutes (see computeDurationMins in src/lib/events.ts). */
-function formatDuration(mins: number) {
+function formatDuration(mins: number, t: TFunction) {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
-  if (h && m) return `${h}h ${m}m`;
-  if (h) return `${h}h`;
-  return `${m}m`;
+  if (h && m) return t("{hours}h {minutes}m", { hours: h, minutes: m });
+  if (h) return t("{hours}h", { hours: h });
+  return t("{minutes}m", { minutes: m });
 }
 
 function normalizeEvents(events: CalendarEvent[]): NormEvent[] {
@@ -151,6 +158,7 @@ function WeekRow({
   onEventClick: (ev: NormEvent) => void;
   onMoreClick: (day: Date, events: NormEvent[]) => void;
 }) {
+  const t = useT();
   const weekStart = week[0];
   const weekEnd = week[6];
 
@@ -242,7 +250,7 @@ function WeekRow({
               left: `${(i / 7) * 100}%`,
             }}
           >
-            +{hiddenByDay[i].length} more
+            {t("+{count} more", { count: hiddenByDay[i].length })}
           </button>
         ) : null
       )}
@@ -251,8 +259,9 @@ function WeekRow({
 }
 
 function EventDetail({ ev }: { ev: NormEvent }) {
-  const startTime = formatTime(ev.eventStartTime);
-  const endTime = formatTime(ev.eventEndTime);
+  const t = useT();
+  const startTime = formatTime(ev.eventStartTime, t);
+  const endTime = formatTime(ev.eventEndTime, t);
   const spansDays = !isSameDay(ev.start, ev.end);
 
   return (
@@ -268,26 +277,31 @@ function EventDetail({ ev }: { ev: NormEvent }) {
             <User size={14} /> {ev.contactPerson}
           </p>
         ) : (
-          <p className="text-ink-faint">No contact person on file</p>
+          <p className="text-ink-faint">{t("No contact person on file")}</p>
         )}
       </div>
 
       <div className="rounded-xl border border-line p-3 text-sm">
         <p className="text-ink">
-          {formatEventDate(ev.start)}
-          {startTime ? ` at ${startTime}` : ""}
+          {startTime
+            ? t("{date} at {time}", { date: formatEventDate(ev.start), time: startTime })
+            : formatEventDate(ev.start)}
         </p>
         {(spansDays || endTime) && (
           <p className="text-ink-muted mt-0.5">
-            to {spansDays ? formatEventDate(ev.end) : formatEventDate(ev.start)}
-            {endTime ? ` at ${endTime}` : ""}
+            {endTime
+              ? t("to {date} at {time}", {
+                  date: spansDays ? formatEventDate(ev.end) : formatEventDate(ev.start),
+                  time: endTime,
+                })
+              : t("to {date}", { date: spansDays ? formatEventDate(ev.end) : formatEventDate(ev.start) })}
           </p>
         )}
-        <p className="text-ink-faint mt-1.5">Duration: {formatDuration(ev.durationMins)}</p>
+        <p className="text-ink-faint mt-1.5">{t("Duration: {duration}", { duration: formatDuration(ev.durationMins, t) })}</p>
       </div>
 
       <Link href={`/invoices/${ev.invoiceId}`} className="btn-secondary self-start">
-        <ExternalLink size={15} /> View invoice
+        <ExternalLink size={15} /> {t("View invoice")}
       </Link>
     </div>
   );
@@ -302,6 +316,7 @@ export default function CalendarView({ events }: { events: CalendarEvent[] }) {
   const today = useMemo(() => startOfDay(new Date()), []);
   const [monthDate, setMonthDate] = useState(() => startOfDay(new Date(today.getFullYear(), today.getMonth(), 1)));
   const [modal, setModal] = useState<ModalState>(null);
+  const t = useT();
 
   const normalized = useMemo(() => normalizeEvents(events), [events]);
 
@@ -325,7 +340,10 @@ export default function CalendarView({ events }: { events: CalendarEvent[] }) {
     setMonthDate(new Date(today.getFullYear(), today.getMonth(), 1));
   }
 
-  const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(monthDate);
+  const monthLabel = t("{month} {year}", {
+    month: t(MONTH_NAMES[monthDate.getMonth()]),
+    year: monthDate.getFullYear(),
+  });
 
   return (
     <div className="card p-4 sm:p-5">
@@ -333,12 +351,12 @@ export default function CalendarView({ events }: { events: CalendarEvent[] }) {
         <h2 className="font-display text-lg font-semibold text-ink">{monthLabel}</h2>
         <div className="flex items-center gap-1.5">
           <button type="button" onClick={goToday} className="btn-secondary">
-            Today
+            {t("Today")}
           </button>
           <button
             type="button"
             onClick={goPrevMonth}
-            aria-label="Previous month"
+            aria-label={t("Previous month")}
             className="btn-secondary px-2.5"
           >
             <ChevronLeft size={16} />
@@ -346,7 +364,7 @@ export default function CalendarView({ events }: { events: CalendarEvent[] }) {
           <button
             type="button"
             onClick={goNextMonth}
-            aria-label="Next month"
+            aria-label={t("Next month")}
             className="btn-secondary px-2.5"
           >
             <ChevronRight size={16} />
@@ -357,7 +375,7 @@ export default function CalendarView({ events }: { events: CalendarEvent[] }) {
       <div className="grid grid-cols-7 border-b border-line pb-2 mb-1">
         {WEEKDAY_LABELS.map((label) => (
           <div key={label} className="text-center text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            {label}
+            {t(label)}
           </div>
         ))}
       </div>
@@ -379,8 +397,7 @@ export default function CalendarView({ events }: { events: CalendarEvent[] }) {
 
       {normalized.length === 0 && (
         <p className="text-sm text-ink-muted mt-4">
-          Nothing on the calendar yet — set an event date on an invoice, then use &quot;Mark on
-          calendar&quot; from the invoice page and it&apos;ll show up here.
+          {t("Nothing on the calendar yet — set an event date on an invoice, then use \"Mark on calendar\" from the invoice page and it'll show up here.")}
         </p>
       )}
 
@@ -393,13 +410,13 @@ export default function CalendarView({ events }: { events: CalendarEvent[] }) {
           <div className="card p-6 max-w-sm w-full animate-scale-in" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between mb-4">
               <h2 className="font-display text-lg font-semibold text-ink">
-                {modal.mode === "event" ? "Event details" : formatEventDate(modal.date)}
+                {modal.mode === "event" ? t("Event details") : formatEventDate(modal.date)}
               </h2>
               <button
                 type="button"
                 onClick={() => setModal(null)}
                 className="text-ink-faint hover:text-ink transition-colors"
-                aria-label="Close"
+                aria-label={t("Close")}
               >
                 <X size={18} />
               </button>

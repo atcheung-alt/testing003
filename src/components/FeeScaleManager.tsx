@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2, Table2 } from "lucide-react";
 import type { FeeScaleRow } from "@/lib/recruitmentTerms";
+import { useT } from "@/lib/i18n/client";
 
 type Category = "PERMANENT" | "CONTRACT";
 
@@ -25,10 +26,11 @@ function RowForm({
 }) {
   const [draft, setDraft] = useState<Draft>(initial);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   function submit() {
     if (!draft.packageLabel.trim()) {
-      setError("This row needs a package label.");
+      setError(t("This row needs a package label."));
       return;
     }
     setError(null);
@@ -44,31 +46,31 @@ function RowForm({
       )}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
-          <label className="label">Annual Remuneration Package</label>
+          <label className="label">{t("Annual Remuneration Package")}</label>
           <input
             type="text"
             className="input"
-            placeholder="e.g. HK$1 mil or below"
+            placeholder={t("e.g. HK$1 mil or below")}
             value={draft.packageLabel}
             onChange={(e) => setDraft((d) => ({ ...d, packageLabel: e.target.value }))}
           />
         </div>
         <div>
-          <label className="label">Fee</label>
+          <label className="label">{t("Fee")}</label>
           <input
             type="text"
             className="input"
-            placeholder="e.g. 20% of annual salary package"
+            placeholder={t("e.g. 20% of annual salary package")}
             value={draft.fee}
             onChange={(e) => setDraft((d) => ({ ...d, fee: e.target.value }))}
           />
         </div>
         <div>
-          <label className="label">Guarantee Period</label>
+          <label className="label">{t("Guarantee Period")}</label>
           <input
             type="text"
             className="input"
-            placeholder="e.g. 12 weeks"
+            placeholder={t("e.g. 12 weeks")}
             value={draft.guaranteePeriod}
             onChange={(e) => setDraft((d) => ({ ...d, guaranteePeriod: e.target.value }))}
           />
@@ -76,10 +78,10 @@ function RowForm({
       </div>
       <div className="flex gap-2">
         <button type="button" onClick={submit} disabled={saving} className="btn-primary">
-          {saving ? "Saving…" : saveLabel}
+          {saving ? t("Saving…") : saveLabel}
         </button>
         <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
     </div>
@@ -105,6 +107,7 @@ function FeeScaleSection({
 }) {
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const t = useT();
 
   return (
     <div className="card p-5">
@@ -119,7 +122,7 @@ function FeeScaleSection({
             }}
             className="btn-secondary !py-1.5 !px-3 text-xs"
           >
-            <Plus size={14} /> Add row
+            <Plus size={14} /> {t("Add row")}
           </button>
         )}
       </div>
@@ -130,7 +133,7 @@ function FeeScaleSection({
           <RowForm
             initial={emptyDraft}
             saving={saving}
-            saveLabel="Add row"
+            saveLabel={t("Add row")}
             onSave={async (draft) => {
               await onCreate(draft);
               setAdding(false);
@@ -143,16 +146,16 @@ function FeeScaleSection({
       {rows.length === 0 && !adding ? (
         <div className="flex flex-col items-center text-center gap-2 py-6">
           <Table2 size={24} className="text-ink-faint" />
-          <p className="text-sm text-ink-muted">No rows yet.</p>
+          <p className="text-sm text-ink-muted">{t("No rows yet.")}</p>
         </div>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left text-xs text-ink-faint border-b border-line">
-                <th className="py-2 pr-3 font-medium">Annual Remuneration Package</th>
-                <th className="py-2 pr-3 font-medium">Fee</th>
-                <th className="py-2 pr-3 font-medium">Guarantee Period</th>
+                <th className="py-2 pr-3 font-medium">{t("Annual Remuneration Package")}</th>
+                <th className="py-2 pr-3 font-medium">{t("Fee")}</th>
+                <th className="py-2 pr-3 font-medium">{t("Guarantee Period")}</th>
                 <th className="py-2 w-20" />
               </tr>
             </thead>
@@ -168,7 +171,7 @@ function FeeScaleSection({
                           guaranteePeriod: row.guaranteePeriod,
                         }}
                         saving={saving}
-                        saveLabel="Save changes"
+                        saveLabel={t("Save changes")}
                         onSave={async (draft) => {
                           await onUpdate(row.id, draft);
                           setEditingId(null);
@@ -190,7 +193,7 @@ function FeeScaleSection({
                             setAdding(false);
                             setEditingId(row.id);
                           }}
-                          aria-label="Edit row"
+                          aria-label={t("Edit row")}
                           className="p-1.5 text-ink-faint hover:text-brand-600 transition-colors"
                         >
                           <Pencil size={14} />
@@ -198,7 +201,7 @@ function FeeScaleSection({
                         <button
                           type="button"
                           onClick={() => onDelete(row)}
-                          aria-label="Delete row"
+                          aria-label={t("Delete row")}
                           className="p-1.5 text-ink-faint hover:text-danger-500 transition-colors"
                         >
                           <Trash2 size={14} />
@@ -222,6 +225,7 @@ export default function FeeScaleManager() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   async function refresh() {
     const res = await fetch("/api/recruitment/fee-scale");
@@ -244,7 +248,7 @@ export default function FeeScaleManager() {
         body: JSON.stringify({ category, ...draft }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not save the row.");
+      if (!res.ok) throw new Error(data.error || t("Could not save the row."));
       await refresh();
     } catch (err: any) {
       setError(err.message);
@@ -263,7 +267,7 @@ export default function FeeScaleManager() {
         body: JSON.stringify(draft),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not save the row.");
+      if (!res.ok) throw new Error(data.error || t("Could not save the row."));
       await refresh();
     } catch (err: any) {
       setError(err.message);
@@ -273,12 +277,12 @@ export default function FeeScaleManager() {
   }
 
   async function remove(row: FeeScaleRow) {
-    if (!window.confirm(`Delete the "${row.packageLabel}" row?`)) return;
+    if (!window.confirm(t("Delete the \"{label}\" row?", { label: row.packageLabel }))) return;
     setError(null);
     try {
       const res = await fetch(`/api/recruitment/fee-scale/${row.id}`, { method: "DELETE" });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not delete the row.");
+      if (!res.ok) throw new Error(data.error || t("Could not delete the row."));
       await refresh();
     } catch (err: any) {
       setError(err.message);
@@ -286,7 +290,7 @@ export default function FeeScaleManager() {
   }
 
   if (loading) {
-    return <p className="text-sm text-ink-muted">Loading…</p>;
+    return <p className="text-sm text-ink-muted">{t("Loading…")}</p>;
   }
 
   return (
@@ -298,8 +302,8 @@ export default function FeeScaleManager() {
       )}
 
       <FeeScaleSection
-        title="Fee Scale for Permanent Placements"
-        description="Pre-fills Clause 13.b's first table when staff start a new agreement."
+        title={t("Fee Scale for Permanent Placements")}
+        description={t("Pre-fills Clause 13.b's first table when staff start a new agreement.")}
         rows={permanent}
         saving={saving}
         onCreate={(draft) => create("PERMANENT", draft)}
@@ -308,8 +312,8 @@ export default function FeeScaleManager() {
       />
 
       <FeeScaleSection
-        title="Fee Scale for Contract Placements"
-        description="Pre-fills the second table directly below, in the same clause."
+        title={t("Fee Scale for Contract Placements")}
+        description={t("Pre-fills the second table directly below, in the same clause.")}
         rows={contract}
         saving={saving}
         onCreate={(draft) => create("CONTRACT", draft)}
@@ -318,9 +322,7 @@ export default function FeeScaleManager() {
       />
 
       <p className="text-xs text-ink-muted">
-        These are just the starting rates for a <strong>new</strong> agreement — every agreement
-        keeps its own editable copy from the moment it&apos;s created (on the New/Edit Agreement
-        page), so changing rows here never affects any existing agreement, draft or signed.
+        {t("These are just the starting rates for a new agreement — every agreement keeps its own editable copy from the moment it's created (on the New/Edit Agreement page), so changing rows here never affects any existing agreement, draft or signed.")}
       </p>
     </div>
   );

@@ -5,6 +5,7 @@ import { CheckCircle2, Send, Loader2, AlertCircle, Upload, FileText, X } from "l
 import { formatDate } from "@/lib/calculations";
 import CompanyLogo from "@/components/CompanyLogo";
 import type { PublicEmployeeOnboardingView } from "@/lib/publicEmployeeOnboarding";
+import { useT } from "@/lib/i18n/client";
 
 const MAX_DOCUMENT_BYTES = 8 * 1024 * 1024; // 8MB — matches the server-side cap in onboardingSubmissionFieldsFrom
 
@@ -98,6 +99,7 @@ export default function EmployeeOnboardingClient({
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   function update<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -111,11 +113,11 @@ export default function EmployeeOnboardingClient({
       return;
     }
     if (!ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
-      setDocumentErrors((d) => ({ ...d, [key]: "Please upload a PDF, JPG, or PNG file." }));
+      setDocumentErrors((d) => ({ ...d, [key]: t("Please upload a PDF, JPG, or PNG file.") }));
       return;
     }
     if (file.size > MAX_DOCUMENT_BYTES) {
-      setDocumentErrors((d) => ({ ...d, [key]: "This file is too large — please keep it under 8 MB." }));
+      setDocumentErrors((d) => ({ ...d, [key]: t("This file is too large — please keep it under 8 MB.") }));
       return;
     }
     setDocumentErrors((d) => ({ ...d, [key]: null }));
@@ -124,7 +126,7 @@ export default function EmployeeOnboardingClient({
       setDocuments((d) => ({ ...d, [key]: { data: reader.result as string, name: file.name } }));
     };
     reader.onerror = () => {
-      setDocumentErrors((d) => ({ ...d, [key]: "Could not read this file — please try again." }));
+      setDocumentErrors((d) => ({ ...d, [key]: t("Could not read this file — please try again.") }));
     };
     reader.readAsDataURL(file);
   }
@@ -138,11 +140,11 @@ export default function EmployeeOnboardingClient({
     e.preventDefault();
     setError(null);
     if (!allDocumentsAttached) {
-      setError("Please attach all three documents before submitting.");
+      setError(t("Please attach all three documents before submitting."));
       return;
     }
     if (!declarationAccuracy || !declarationConsent) {
-      setError("Please confirm both declarations before submitting.");
+      setError(t("Please confirm both declarations before submitting."));
       return;
     }
     setSubmitting(true);
@@ -160,7 +162,7 @@ export default function EmployeeOnboardingClient({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong. Please try again."));
       setView(data);
     } catch (err: any) {
       setError(err.message);
@@ -176,11 +178,11 @@ export default function EmployeeOnboardingClient({
         <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-600">
           <CheckCircle2 size={24} />
         </div>
-        <h1 className="font-display text-xl font-semibold text-ink">Thanks, {view.name}</h1>
+        <h1 className="font-display text-xl font-semibold text-ink">{t("Thanks, {name}", { name: view.name })}</h1>
         <p className="text-sm text-ink-muted">
-          Your details have been received{view.completedAt ? ` on ${formatDate(view.completedAt)}` : ""}
-          . If anything needs correcting, please contact HR directly — this link can&apos;t be used
-          to submit again.
+          {view.completedAt
+            ? t("Your details have been received on {date}. If anything needs correcting, please contact HR directly — this link can't be used to submit again.", { date: formatDate(view.completedAt) })
+            : t("Your details have been received. If anything needs correcting, please contact HR directly — this link can't be used to submit again.")}
         </p>
       </div>
     );
@@ -191,10 +193,9 @@ export default function EmployeeOnboardingClient({
       <CompanyHeader company={view.company} />
 
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink">Hi, {view.name}</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink">{t("Hi, {name}", { name: view.name })}</h1>
         <p className="text-sm text-ink-muted mt-0.5">
-          Please fill in your personal details below. Once submitted, this form can&apos;t be
-          changed through this link again, so double-check everything before sending.
+          {t("Please fill in your personal details below. Once submitted, this form can't be changed through this link again, so double-check everything before sending.")}
         </p>
       </div>
 
@@ -207,10 +208,10 @@ export default function EmployeeOnboardingClient({
         )}
 
         <div className="card p-5 flex flex-col gap-4">
-          <h2 className="font-display text-lg font-semibold">Personal information</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Personal information")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">English surname *</label>
+              <label className="label">{t("English surname *")}</label>
               <input
                 type="text"
                 className="input"
@@ -220,7 +221,7 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">English given name *</label>
+              <label className="label">{t("English given name *")}</label>
               <input
                 type="text"
                 className="input"
@@ -230,54 +231,54 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">Chinese surname</label>
+              <label className="label">{t("Chinese surname")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="If you have one"
+                placeholder={t("If you have one")}
                 value={form.surnameChinese}
                 onChange={(e) => update("surnameChinese", e.target.value)}
               />
             </div>
             <div>
-              <label className="label">Chinese given name</label>
+              <label className="label">{t("Chinese given name")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="If you have one"
+                placeholder={t("If you have one")}
                 value={form.givenNameChinese}
                 onChange={(e) => update("givenNameChinese", e.target.value)}
               />
             </div>
             <div>
-              <label className="label">HKID *</label>
+              <label className="label">{t("HKID *")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="e.g. A123456(7)"
+                placeholder={t("e.g. A123456(7)")}
                 value={form.hkid}
                 onChange={(e) => update("hkid", e.target.value)}
                 required
               />
             </div>
             <div>
-              <label className="label">Gender *</label>
+              <label className="label">{t("Gender *")}</label>
               <select
                 className="input"
                 value={form.gender}
                 onChange={(e) => update("gender", e.target.value)}
                 required
               >
-                <option value="">Select…</option>
+                <option value="">{t("Select…")}</option>
                 {GENDER_OPTIONS.map((g) => (
                   <option key={g} value={g}>
-                    {g}
+                    {t(g)}
                   </option>
                 ))}
               </select>
             </div>
             <div>
-              <label className="label">Date of birth *</label>
+              <label className="label">{t("Date of birth *")}</label>
               <input
                 type="date"
                 className="input"
@@ -287,7 +288,7 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">Nationality *</label>
+              <label className="label">{t("Nationality *")}</label>
               <input
                 type="text"
                 className="input"
@@ -297,7 +298,7 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">Phone number *</label>
+              <label className="label">{t("Phone number *")}</label>
               <input
                 type="tel"
                 className="input"
@@ -307,7 +308,7 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">Personal email *</label>
+              <label className="label">{t("Personal email *")}</label>
               <input
                 type="email"
                 className="input"
@@ -317,7 +318,7 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="label">Address *</label>
+              <label className="label">{t("Address *")}</label>
               <textarea
                 className="input min-h-[70px]"
                 value={form.address}
@@ -329,10 +330,10 @@ export default function EmployeeOnboardingClient({
         </div>
 
         <div className="card p-5 flex flex-col gap-4">
-          <h2 className="font-display text-lg font-semibold">Emergency contact</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Emergency contact")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">Contact name *</label>
+              <label className="label">{t("Contact name *")}</label>
               <input
                 type="text"
                 className="input"
@@ -342,17 +343,17 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">Relationship</label>
+              <label className="label">{t("Relationship")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="e.g. Spouse, Parent"
+                placeholder={t("e.g. Spouse, Parent")}
                 value={form.emergencyContactRelationship}
                 onChange={(e) => update("emergencyContactRelationship", e.target.value)}
               />
             </div>
             <div>
-              <label className="label">Contact number *</label>
+              <label className="label">{t("Contact number *")}</label>
               <input
                 type="tel"
                 className="input"
@@ -365,10 +366,10 @@ export default function EmployeeOnboardingClient({
         </div>
 
         <div className="card p-5 flex flex-col gap-4">
-          <h2 className="font-display text-lg font-semibold">Bank details</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Bank details")}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">Bank name *</label>
+              <label className="label">{t("Bank name *")}</label>
               <input
                 type="text"
                 className="input"
@@ -378,7 +379,7 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">Bank code</label>
+              <label className="label">{t("Bank code")}</label>
               <input
                 type="text"
                 className="input"
@@ -387,7 +388,7 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">Account holder *</label>
+              <label className="label">{t("Account holder *")}</label>
               <input
                 type="text"
                 className="input"
@@ -397,7 +398,7 @@ export default function EmployeeOnboardingClient({
               />
             </div>
             <div>
-              <label className="label">Account number *</label>
+              <label className="label">{t("Account number *")}</label>
               <input
                 type="text"
                 className="input"
@@ -411,11 +412,8 @@ export default function EmployeeOnboardingClient({
 
         <div className="card p-5 flex flex-col gap-4">
           <div>
-            <h2 className="font-display text-lg font-semibold">Documents</h2>
-            <p className="text-sm text-ink-muted mt-0.5">
-              Please attach all three documents below (PDF, JPG, or PNG, up to 8 MB each). All
-              three are required to submit.
-            </p>
+            <h2 className="font-display text-lg font-semibold">{t("Documents")}</h2>
+            <p className="text-sm text-ink-muted mt-0.5">{t("Please attach all three documents below (PDF, JPG, or PNG, up to 8 MB each). All three are required to submit.")}</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {(Object.keys(DOCUMENT_LABELS) as DocumentKey[]).map((key) => {
@@ -424,8 +422,8 @@ export default function EmployeeOnboardingClient({
               const docError = documentErrors[key];
               return (
                 <div key={key} className="flex flex-col gap-1.5">
-                  <label className="label">{label.title}</label>
-                  <p className="text-xs text-ink-muted -mt-1">{label.hint}</p>
+                  <label className="label">{t(label.title)}</label>
+                  <p className="text-xs text-ink-muted -mt-1">{t(label.hint)}</p>
                   {doc.name ? (
                     <div className="flex items-center gap-2 bg-neutral-50 border border-neutral-200 rounded-lg px-3 py-2 text-sm">
                       <FileText size={15} className="shrink-0 text-brand-700" />
@@ -434,7 +432,7 @@ export default function EmployeeOnboardingClient({
                         type="button"
                         onClick={() => handleDocumentChange(key, null)}
                         className="text-ink-muted hover:text-danger-600 shrink-0"
-                        aria-label={`Remove ${label.title}`}
+                        aria-label={t("Remove {label}", { label: t(label.title) })}
                       >
                         <X size={15} />
                       </button>
@@ -442,7 +440,7 @@ export default function EmployeeOnboardingClient({
                   ) : (
                     <label className="flex items-center gap-2 justify-center border border-dashed border-neutral-300 rounded-lg px-3 py-4 text-sm text-ink-muted cursor-pointer hover:border-brand-500 hover:text-brand-700">
                       <Upload size={15} />
-                      <span>Upload file</span>
+                      <span>{t("Upload file")}</span>
                       <input
                         type="file"
                         accept="application/pdf,image/jpeg,image/png"
@@ -459,7 +457,7 @@ export default function EmployeeOnboardingClient({
         </div>
 
         <div className="card p-5 flex flex-col gap-3">
-          <h2 className="font-display text-lg font-semibold">Declarations</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Declarations")}</h2>
           <label className="flex items-start gap-2.5 text-sm">
             <input
               type="checkbox"
@@ -468,10 +466,7 @@ export default function EmployeeOnboardingClient({
               onChange={(e) => setDeclarationAccuracy(e.target.checked)}
               required
             />
-            <span>
-              I declare that the information and documents I have provided are true, complete and
-              accurate.
-            </span>
+            <span>{t("I declare that the information and documents I have provided are true, complete and accurate.")}</span>
           </label>
           <label className="flex items-start gap-2.5 text-sm">
             <input
@@ -481,16 +476,13 @@ export default function EmployeeOnboardingClient({
               onChange={(e) => setDeclarationConsent(e.target.checked)}
               required
             />
-            <span>
-              I consent to the Company collecting, storing and using this information for
-              employment and statutory purposes.
-            </span>
+            <span>{t("I consent to the Company collecting, storing and using this information for employment and statutory purposes.")}</span>
           </label>
         </div>
 
         <button type="submit" disabled={!canSubmit} className="btn-primary self-start">
           {submitting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-          {submitting ? "Submitting…" : "Submit my details"}
+          {submitting ? t("Submitting…") : t("Submit my details")}
         </button>
       </form>
     </div>

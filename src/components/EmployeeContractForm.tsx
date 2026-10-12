@@ -10,6 +10,7 @@ import {
   greetingName,
 } from "@/lib/employeeContractTerms";
 import { formatDate } from "@/lib/calculations";
+import { useT } from "@/lib/i18n/client";
 
 export type EmployeeContractFormData = {
   id: string;
@@ -54,6 +55,7 @@ export default function EmployeeContractForm({
   contract?: EmployeeContractFormData;
 }) {
   const router = useRouter();
+  const t = useT();
   // Intern and Part time share the same shorter letter shape — see
   // contractTermsTemplateFor/PART_TIME_CONTRACT_TERMS_TEMPLATE — with no
   // probation period or fixed end date (flat 7-day notice instead), so
@@ -157,7 +159,7 @@ export default function EmployeeContractForm({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong."));
       router.push(`/hr/employees/${employeeId}`);
       router.refresh();
     } catch (err: any) {
@@ -176,29 +178,26 @@ export default function EmployeeContractForm({
       )}
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Contract details</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Contract details")}</h2>
         {(isIntern || isPartTime) && (
           <p className="text-xs text-ink-faint mb-4">
-            {isIntern ? "The intern letter" : "The part-time letter"} has a flat 7-day notice period and
-            no fixed end date, so those fields aren&apos;t shown here.
+            {isIntern
+              ? t("The intern letter has a flat 7-day notice period and no fixed end date, so those fields aren't shown here.")
+              : t("The part-time letter has a flat 7-day notice period and no fixed end date, so those fields aren't shown here.")}
           </p>
         )}
         {isFreelance ? (
-          <p className="text-xs text-ink-faint">
-            The Independent Contractor Agreement has no probation period, fixed end date, or working
-            hours/location clause — a contractor sets their own. Nothing to fill in here; edit the
-            letter directly below if it needs a change.
-          </p>
+          <p className="text-xs text-ink-faint">{t("The Independent Contractor Agreement has no probation period, fixed end date, or working hours/location clause — a contractor sets their own. Nothing to fill in here; edit the letter directly below if it needs a change.")}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {!hidesProbationAndEndDate && (
               <>
                 <div>
-                  <label className="label">Probation period</label>
+                  <label className="label">{t("Probation period")}</label>
                   <input
                     type="text"
                     className="input"
-                    placeholder="e.g. 3 months"
+                    placeholder={t("e.g. 3 months")}
                     value={probationPeriod}
                     onChange={(e) => {
                       setProbationPeriod(e.target.value);
@@ -207,7 +206,7 @@ export default function EmployeeContractForm({
                   />
                 </div>
                 <div>
-                  <label className="label">Contract end date</label>
+                  <label className="label">{t("Contract end date")}</label>
                   <input
                     type="date"
                     className="input"
@@ -217,16 +216,16 @@ export default function EmployeeContractForm({
                       syncTerms(probationPeriod, e.target.value, workLocation, workSchedule);
                     }}
                   />
-                  <p className="text-xs text-ink-faint mt-1">Leave blank for a permanent position.</p>
+                  <p className="text-xs text-ink-faint mt-1">{t("Leave blank for a permanent position.")}</p>
                 </div>
               </>
             )}
             <div>
-              <label className="label">Work location</label>
+              <label className="label">{t("Work location")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="e.g. Hong Kong office"
+                placeholder={t("e.g. Hong Kong office")}
                 value={workLocation}
                 onChange={(e) => {
                   setWorkLocation(e.target.value);
@@ -235,11 +234,11 @@ export default function EmployeeContractForm({
               />
             </div>
             <div>
-              <label className="label">Working hours / schedule</label>
+              <label className="label">{t("Working hours / schedule")}</label>
               <input
                 type="text"
                 className="input"
-                placeholder="e.g. Mon–Fri, 9:30am–6:30pm"
+                placeholder={t("e.g. Mon–Fri, 9:30am–6:30pm")}
                 value={workSchedule}
                 onChange={(e) => {
                   setWorkSchedule(e.target.value);
@@ -253,7 +252,7 @@ export default function EmployeeContractForm({
 
       <div className="card p-5">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="font-display text-lg font-semibold">Contract letter</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Contract letter")}</h2>
           {termsDirty && (
             <button
               type="button"
@@ -268,14 +267,11 @@ export default function EmployeeContractForm({
               }}
               className="text-xs text-brand-500 hover:text-brand-600"
             >
-              <RotateCcw size={12} className="inline mr-1" /> Reset to template
+              <RotateCcw size={12} className="inline mr-1" /> {t("Reset to template")}
             </button>
           )}
         </div>
-        <p className="text-xs text-ink-muted mb-3">
-          Auto-filled from the fields above and the employee&apos;s title/pay/leave entitlement —
-          editing this text directly stops that automatic sync.
-        </p>
+        <p className="text-xs text-ink-muted mb-3">{t("Auto-filled from the fields above and the employee's title/pay/leave entitlement — editing this text directly stops that automatic sync.")}</p>
         <textarea
           className="input min-h-[400px] font-mono text-xs leading-relaxed"
           value={terms}
@@ -289,10 +285,10 @@ export default function EmployeeContractForm({
       <div className="flex gap-3">
         <button type="submit" disabled={saving} className="btn-primary">
           {saving && <Loader2 size={15} className="animate-spin" />}
-          {saving ? "Saving…" : contract ? "Save changes" : "Create contract"}
+          {saving ? t("Saving…") : contract ? t("Save changes") : t("Create contract")}
         </button>
         <button type="button" onClick={() => router.back()} className="btn-secondary">
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
     </form>

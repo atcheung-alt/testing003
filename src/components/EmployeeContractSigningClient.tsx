@@ -16,6 +16,7 @@ import DownloadPdfButton from "@/components/DownloadPdfButton";
 import CompanyLogo from "@/components/CompanyLogo";
 import { formatDate } from "@/lib/calculations";
 import type { PublicEmployeeContractView } from "@/lib/publicEmployeeContract";
+import { useT } from "@/lib/i18n/client";
 
 function SignedSummary({
   view,
@@ -28,26 +29,31 @@ function SignedSummary({
   const signedAt = justSigned?.signedAt || view.signedAt;
   const signedDocumentName = justSigned?.signedDocumentName || view.signedDocumentName;
   const hasSignedDocument = Boolean(justSigned?.signedDocumentName) || view.hasSignedDocument;
+  const t = useT();
+  const company = view.company.shortName || view.company.name;
+  const who = signerName || t("you");
 
   return (
     <div className="card p-6 sm:p-8 flex flex-col items-center text-center gap-3">
       <CheckCircle2 size={44} className="text-emerald-500" />
       <h2 className="font-display text-xl font-semibold text-ink">
-        {justSigned ? "Contract signed — thank you!" : "This contract has already been signed"}
+        {justSigned ? t("Contract signed — thank you!") : t("This contract has already been signed")}
       </h2>
       <p className="text-sm text-ink-muted max-w-md">
         {justSigned
-          ? `A copy of your signed contract has been emailed to you and to ${view.company.shortName || view.company.name}. Our team will review it shortly.`
-          : `Signed by ${signerName || "you"}${signedAt ? ` on ${formatDate(signedAt)}` : ""}.`}
+          ? t("A copy of your signed contract has been emailed to you and to {company}. Our team will review it shortly.", { company })
+          : signedAt
+            ? t("Signed by {name} on {date}.", { name: who, date: formatDate(signedAt) })
+            : t("Signed by {name}.", { name: who })}
       </p>
 
       {hasSignedDocument ? (
         <div className="mt-2 flex flex-col items-center gap-1">
           <div className="flex items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2">
             <FileText size={16} className="text-brand-600" />
-            <span className="text-sm text-ink">{signedDocumentName || "Signed document"}</span>
+            <span className="text-sm text-ink">{signedDocumentName || t("Signed document")}</span>
           </div>
-          <p className="text-xs text-ink-faint">Uploaded by {signerName}</p>
+          <p className="text-xs text-ink-faint">{t("Uploaded by {name}", { name: signerName || "" })}</p>
         </div>
       ) : null}
     </div>
@@ -75,6 +81,7 @@ export default function EmployeeContractSigningClient({
     signedAt: string;
     signedDocumentName?: string | null;
   } | null>(null);
+  const t = useT();
 
   const nameValid = signerName.trim().length > 0;
   const proofProvided = method === "draw" ? Boolean(signatureData) : Boolean(uploadedFileData);
@@ -90,11 +97,11 @@ export default function EmployeeContractSigningClient({
     setUploadedFileName(null);
 
     if (file.type !== "application/pdf" && !file.name.toLowerCase().endsWith(".pdf")) {
-      setUploadError("Please upload a PDF file.");
+      setUploadError(t("Please upload a PDF file."));
       return;
     }
     if (file.size > 15 * 1024 * 1024) {
-      setUploadError("That file is too large — please keep it under 15 MB.");
+      setUploadError(t("That file is too large — please keep it under 15 MB."));
       return;
     }
 
@@ -103,7 +110,7 @@ export default function EmployeeContractSigningClient({
       setUploadedFileData(typeof reader.result === "string" ? reader.result : null);
       setUploadedFileName(file.name);
     };
-    reader.onerror = () => setUploadError("Couldn't read that file — please try again.");
+    reader.onerror = () => setUploadError(t("Couldn't read that file — please try again."));
     reader.readAsDataURL(file);
   }
 
@@ -123,7 +130,7 @@ export default function EmployeeContractSigningClient({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong. Please try again."));
       setJustSigned({
         signerName: signerName.trim(),
         signedAt: data.signedAt,
@@ -158,7 +165,7 @@ export default function EmployeeContractSigningClient({
           <h1 className="font-display text-xl font-semibold text-ink">{view.company.name}</h1>
         )}
         <h2 className="font-display text-lg font-semibold text-ink">{view.documentTitle}</h2>
-        <p className="text-sm text-ink-muted">Prepared for {view.employeeName}</p>
+        <p className="text-sm text-ink-muted">{t("Prepared for {name}", { name: view.employeeName })}</p>
         <div className="mt-1">
           <DownloadPdfButton url={`/api/public/employee-contract/${token}/pdf`} />
         </div>
@@ -172,7 +179,7 @@ export default function EmployeeContractSigningClient({
         <div className="card p-5 sm:p-6 flex flex-col gap-4">
           <div className="flex items-center gap-2 text-sm text-ink-muted">
             <ShieldCheck size={16} className="text-brand-500" />
-            Sign below to accept this contract.
+{t("Sign below to accept this contract.")}
           </div>
 
           {error && (
@@ -183,7 +190,7 @@ export default function EmployeeContractSigningClient({
           )}
 
           <div>
-            <label className="label">Your full name *</label>
+            <label className="label">{t("Your full name *")}</label>
             <input
               type="text"
               className="input"
@@ -193,7 +200,7 @@ export default function EmployeeContractSigningClient({
           </div>
 
           <div>
-            <label className="label">Confirm your acceptance *</label>
+            <label className="label">{t("Confirm your acceptance *")}</label>
             <div className="flex gap-2 mb-3">
               <button
                 type="button"
@@ -204,7 +211,7 @@ export default function EmployeeContractSigningClient({
                     : "stamp gap-1 border-line text-ink-muted"
                 }
               >
-                <PenLine size={13} /> Draw signature
+                <PenLine size={13} /> {t("Draw signature")}
               </button>
               <button
                 type="button"
@@ -215,7 +222,7 @@ export default function EmployeeContractSigningClient({
                     : "stamp gap-1 border-line text-ink-muted"
                 }
               >
-                <Upload size={13} /> Upload signed PDF
+                <Upload size={13} /> {t("Upload signed PDF")}
               </button>
             </div>
 
@@ -224,8 +231,7 @@ export default function EmployeeContractSigningClient({
             ) : (
               <div className="flex flex-col gap-2">
                 <p className="text-xs text-ink-muted">
-                  Download the contract, print it, sign it, scan or photograph it back into a
-                  PDF, then upload it here.
+{t("Download the contract, print it, sign it, scan or photograph it back into a PDF, then upload it here.")}
                 </p>
                 {uploadedFileName ? (
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-paper px-3 py-2.5">
@@ -239,7 +245,7 @@ export default function EmployeeContractSigningClient({
                         setUploadedFileData(null);
                         setUploadedFileName(null);
                       }}
-                      aria-label="Remove file"
+                      aria-label={t("Remove file")}
                       className="text-ink-faint hover:text-danger-500 transition-colors shrink-0"
                     >
                       <X size={15} />
@@ -248,8 +254,8 @@ export default function EmployeeContractSigningClient({
                 ) : (
                   <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line px-4 py-8 text-center cursor-pointer hover:border-brand-300 hover:bg-brand-50/30 transition-colors">
                     <Upload size={22} className="text-ink-faint" />
-                    <span className="text-sm text-ink-muted">Click to choose a PDF</span>
-                    <span className="text-xs text-ink-faint">PDF only, up to 15 MB</span>
+                    <span className="text-sm text-ink-muted">{t("Click to choose a PDF")}</span>
+                    <span className="text-xs text-ink-faint">{t("PDF only, up to 15 MB")}</span>
                     <input
                       type="file"
                       accept="application/pdf,.pdf"
@@ -264,9 +270,9 @@ export default function EmployeeContractSigningClient({
           </div>
 
           <p className="text-xs text-ink-faint">
-            By signing, you confirm that you have reviewed this contract in full and accept its
-            terms. Your name, {method === "draw" ? "signature" : "uploaded document"}, and IP
-            address will be recorded with the timestamp of signing.
+            {method === "draw"
+              ? t("By signing, you confirm that you have reviewed this contract in full and accept its terms. Your name, signature, and IP address will be recorded with the timestamp of signing.")
+              : t("By signing, you confirm that you have reviewed this contract in full and accept its terms. Your name, uploaded document, and IP address will be recorded with the timestamp of signing.")}
           </p>
 
           <button
@@ -276,12 +282,12 @@ export default function EmployeeContractSigningClient({
             className="btn-primary self-start"
           >
             {submitting ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
-            {submitting ? "Submitting…" : "Accept & Sign"}
+            {submitting ? t("Submitting…") : t("Accept & Sign")}
           </button>
         </div>
       ) : (
         <div className="card p-5 sm:p-6">
-          <p className="text-sm text-ink-muted">This contract is no longer available for signing.</p>
+          <p className="text-sm text-ink-muted">{t("This contract is no longer available for signing.")}</p>
         </div>
       )}
     </div>

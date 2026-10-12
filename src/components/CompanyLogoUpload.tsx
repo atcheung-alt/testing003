@@ -2,6 +2,7 @@
 
 import { useRef } from "react";
 import { ImagePlus, X } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 /**
  * Read an image file and downscale it to max 480px, returning a PNG data
@@ -46,6 +47,8 @@ export default function CompanyLogoUpload({
   label?: string;
 }) {
   const inputRef = useRef<HTMLInputElement>(null);
+  const t = useT();
+  const resolvedLabel = t(label);
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -66,15 +69,15 @@ export default function CompanyLogoUpload({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={imageData}
-            alt={label}
+            alt={resolvedLabel}
             className="max-w-[112px] max-h-16 object-contain cursor-pointer"
             onClick={() => inputRef.current?.click()}
-            title={`Click to replace ${label}`}
+            title={t("Click to replace {label}", { label: resolvedLabel })}
           />
           <button
             type="button"
             onClick={() => onChange(null)}
-            aria-label={`Remove ${label}`}
+            aria-label={t("Remove {label}", { label: resolvedLabel })}
             className="absolute -top-1.5 -right-1.5 bg-white border border-line rounded-full p-0.5 text-ink-faint hover:text-danger-500 shadow-sm"
           >
             <X size={12} />
@@ -84,12 +87,12 @@ export default function CompanyLogoUpload({
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
-          aria-label={`Upload ${label}`}
-          title={`Upload ${label}`}
+          aria-label={t("Upload {label}", { label: resolvedLabel })}
+          title={t("Upload {label}", { label: resolvedLabel })}
           className="w-32 h-20 flex flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line text-ink-faint hover:text-brand-600 hover:border-brand-500/60 transition-colors"
         >
           <ImagePlus size={20} />
-          <span className="text-[11px] leading-none">Upload logo</span>
+          <span className="text-[11px] leading-none">{t("Upload logo")}</span>
         </button>
       )}
     </div>

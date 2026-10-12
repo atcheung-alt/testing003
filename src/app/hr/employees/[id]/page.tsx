@@ -29,6 +29,7 @@ import MarkOnboardingCompleteButton from "@/components/MarkOnboardingCompleteBut
 import MpfVerifyButton from "@/components/MpfVerifyButton";
 import SalaryReportButton from "@/components/SalaryReportButton";
 import IR56BButton from "@/components/IR56BButton";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,7 @@ function Row({ label, value }: { label: string; value?: string | null }) {
 }
 
 export default async function EmployeeDetailPage({ params }: { params: { id: string } }) {
+  const t = getT();
   // Admin-only, like the rest of /hr/employees — non-admins are redirected
   // to /hr/profile (see requireAdminPage). The isAdmin-narrowed
   // EMPLOYEE_STAFF_SELECT branch below is dead code past this guard, but
@@ -105,7 +107,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                   : "border-ink-faint text-ink-faint"
               }`}
             >
-              {employee.status}
+              {t(employee.status)}
             </span>
           </div>
           {employee.title && <p className="text-sm text-ink-muted">{employee.title}</p>}
@@ -114,8 +116,8 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
           {leaveUrl && (
             <CopySigningLinkButton
               url={leaveUrl}
-              label="Copy leave link"
-              title="Copy this employee's personal leave link"
+              label={t("Copy leave link")}
+              title={t("Copy this employee's personal leave link")}
             />
           )}
           {isAdmin && (
@@ -123,12 +125,12 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
               <SalaryReportButton employeeId={employee.id} />
               <IR56BButton employeeId={employee.id} hkid={employee.hkid} address={employee.address} />
               <Link href={`/hr/employees/${employee.id}/edit`} className="btn-secondary">
-                <Pencil size={15} /> Edit
+                <Pencil size={15} /> {t("Edit")}
               </Link>
               <DeleteButton
                 url={`/api/employees/${employee.id}`}
                 confirmNumber={employee.name}
-                itemLabel="employee record"
+                itemLabel={t("employee record")}
                 redirectTo="/hr/employees"
               />
             </>
@@ -148,19 +150,22 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
             <div>
               <p className="text-sm font-medium text-ink">
                 {employee.onboardingSentAt
-                  ? `Onboarding invite sent — ${formatDate(employee.onboardingSentAt)}`
-                  : "Onboarding not sent yet"}
+                  ? t("Onboarding invite sent — {date}", { date: formatDate(employee.onboardingSentAt) })
+                  : t("Onboarding not sent yet")}
               </p>
               <p className="text-xs text-ink-muted">
-                {employee.email ? `Contact email: ${employee.email}` : "No contact email on file yet."}
+                {employee.email
+                  ? t("Contact email: {email}", { email: employee.email })
+                  : t("No contact email on file yet.")}
               </p>
               {/* Only shown for a manually-added employee (never invited) —
                   tells the admin what's still missing before they can mark
                   onboarding complete without going through the invite link. */}
               {!employee.onboardingSentAt && manualCompletionIssues.length > 0 && (
                 <p className="text-xs text-ink-faint mt-1 max-w-sm">
-                  Or fill in the following to mark onboarding complete manually:{" "}
-                  {manualCompletionIssues.join(", ")}.
+                  {t("Or fill in the following to mark onboarding complete manually:")}{" "}
+                  {manualCompletionIssues.map((issue) => t(issue)).join(t(", "))}
+                  {t(".")}
                 </p>
               )}
             </div>
@@ -195,17 +200,17 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
               <div>
                 <p className="text-sm font-medium text-ink">
                   {employee.mpfVerifiedAt
-                    ? `MPF enrollment verified — ${formatDate(employee.mpfVerifiedAt)}`
+                    ? t("MPF enrollment verified — {date}", { date: formatDate(employee.mpfVerifiedAt) })
                     : reminder
-                    ? `MPF enrollment needed — deadline ${formatDate(reminder.deadline)}`
-                    : "MPF enrollment not yet verified"}
+                    ? t("MPF enrollment needed — deadline {date}", { date: formatDate(reminder.deadline) })
+                    : t("MPF enrollment not yet verified")}
                 </p>
                 <p className="text-xs text-ink-muted">
                   {employee.mpfVerifiedAt
-                    ? "Confirmed enrolled with an MPF trustee."
+                    ? t("Confirmed enrolled with an MPF trustee.")
                     : employee.startDate
-                    ? "Enrollment window is 60 days from the start date above."
-                    : "No start date on file yet — add one to track the deadline."}
+                    ? t("Enrollment window is 60 days from the start date above.")
+                    : t("No start date on file yet — add one to track the deadline.")}
                 </p>
               </div>
             </div>
@@ -223,30 +228,34 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="card p-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-              Annual entitlement
+              {t("Annual entitlement")}
             </p>
-            <p className="font-mono text-xl font-semibold text-ink">{employee.annualLeaveDays} days</p>
-            <p className="text-xs text-ink-faint mt-0.5">Full amount per year</p>
+            <p className="font-mono text-xl font-semibold text-ink">
+              {t("{count} days", { count: employee.annualLeaveDays })}
+            </p>
+            <p className="text-xs text-ink-faint mt-0.5">{t("Full amount per year")}</p>
           </div>
           <div className="card p-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-              Accrued to date
+              {t("Accrued to date")}
             </p>
-            <p className="font-mono text-xl font-semibold text-ink">{entitlement} days</p>
+            <p className="font-mono text-xl font-semibold text-ink">{t("{count} days", { count: entitlement })}</p>
             <p className="text-xs text-ink-faint mt-0.5">
-              {employee.startDate ? "Based on time worked" : "No start date on file — using full amount"}
+              {employee.startDate
+                ? t("Based on time worked")
+                : t("No start date on file — using full amount")}
             </p>
           </div>
           <div className="card p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">Applied</p>
-            <p className="font-mono text-xl font-semibold text-ink">{used} days</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">{t("Applied")}</p>
+            <p className="font-mono text-xl font-semibold text-ink">{t("{count} days", { count: used })}</p>
           </div>
           <div className="card p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">Remaining</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">{t("Remaining")}</p>
             <p
               className={`font-mono text-xl font-semibold ${remaining < 0 ? "text-danger-500" : "text-brand-600"}`}
             >
-              {remaining} days
+              {t("{count} days", { count: remaining })}
             </p>
           </div>
         </div>
@@ -255,32 +264,42 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Non-sensitive — visible to every signed-in staff account. */}
         <div className="card p-5">
-          <h2 className="font-display text-lg font-semibold mb-3">Employment</h2>
+          <h2 className="font-display text-lg font-semibold mb-3">{t("Employment")}</h2>
           <div className="flex flex-col gap-2 text-sm">
-            <Row label="Gender" value={employee.gender} />
-            <Row label="Employment type" value={EMPLOYMENT_TYPE_LABELS[employee.employmentType || ""] || null} />
-            <Row label="Company email" value={employee.companyEmail} />
-            <Row label="Start date" value={formatDate(employee.startDate)} />
+            <Row label={t("Gender")} value={employee.gender} />
+            <Row
+              label={t("Employment type")}
+              value={
+                EMPLOYMENT_TYPE_LABELS[employee.employmentType || ""]
+                  ? t(EMPLOYMENT_TYPE_LABELS[employee.employmentType || ""])
+                  : null
+              }
+            />
+            <Row label={t("Company email")} value={employee.companyEmail} />
+            <Row label={t("Start date")} value={formatDate(employee.startDate)} />
             {employee.employmentType !== "FREELANCE" && (
               <>
-                <Row label="Work location" value={contract?.workLocation} />
-                <Row label="Working hours" value={contract?.workSchedule} />
+                <Row label={t("Work location")} value={contract?.workLocation} />
+                <Row label={t("Working hours")} value={contract?.workSchedule} />
               </>
             )}
-            {employee.status === "FORMER" && <Row label="Last day" value={formatDate(employee.lastDay)} />}
+            {employee.status === "FORMER" && <Row label={t("Last day")} value={formatDate(employee.lastDay)} />}
             {isAdmin && employee.payRateType ? (
               <Row
-                label={PAY_RATE_TYPE_LABELS[employee.payRateType] || "Pay rate"}
+                label={t(PAY_RATE_TYPE_LABELS[employee.payRateType] || "Pay rate")}
                 value={
-                  formatCurrency(employee.payRate) +
-                  (employee.payRateType === "HOURLY" ? " /hour" : employee.payRateType === "DAILY" ? " /day" : "")
+                  employee.payRateType === "HOURLY"
+                    ? t("{amount} /hour", { amount: formatCurrency(employee.payRate) })
+                    : employee.payRateType === "DAILY"
+                    ? t("{amount} /day", { amount: formatCurrency(employee.payRate) })
+                    : formatCurrency(employee.payRate)
                 }
               />
             ) : (
-              isAdmin && <Row label="Salary" value={formatCurrency(employee.salary)} />
+              isAdmin && <Row label={t("Salary")} value={formatCurrency(employee.salary)} />
             )}
             {isAdmin && employee.status === "FORMER" && (
-              <Row label="Reason of leaving" value={employee.leavingReason} />
+              <Row label={t("Reason of leaving")} value={employee.leavingReason} />
             )}
           </div>
         </div>
@@ -288,7 +307,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
         {isAdmin && (
           <div className="card p-5">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-display text-lg font-semibold">Contract</h2>
+              <h2 className="font-display text-lg font-semibold">{t("Contract")}</h2>
               {contract && (
                 <span
                   className={`stamp ${
@@ -299,7 +318,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                       : "border-ink-faint text-ink-faint"
                   }`}
                 >
-                  {contract.status}
+                  {t(contract.status)}
                 </span>
               )}
             </div>
@@ -309,24 +328,24 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
               return issues.length > 0 ? (
                 <div className="flex flex-col gap-2">
                   <p className="text-sm text-ink-muted">
-                    Fill in the following before a contract can be created:
+                    {t("Fill in the following before a contract can be created:")}
                   </p>
                   <ul className="text-sm text-amber-600 list-disc pl-5">
                     {issues.map((issue) => (
-                      <li key={issue}>{issue}</li>
+                      <li key={issue}>{t(issue)}</li>
                     ))}
                   </ul>
                   {issues.some((i) => i !== "Employee hasn't completed onboarding yet") && (
                     <Link href={`/hr/employees/${employee.id}/edit`} className="btn-secondary self-start">
-                      <Pencil size={15} /> Edit employee
+                      <Pencil size={15} /> {t("Edit employee")}
                     </Link>
                   )}
                 </div>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <p className="text-sm text-ink-muted">No contract has been created yet.</p>
+                  <p className="text-sm text-ink-muted">{t("No contract has been created yet.")}</p>
                   <Link href={`/hr/employees/${employee.id}/contract`} className="btn-secondary self-start">
-                    <FileText size={15} /> Create contract
+                    <FileText size={15} /> {t("Create contract")}
                   </Link>
                 </div>
               );
@@ -334,10 +353,10 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
 
             {contract && contract.status === "DRAFT" && (
               <div className="flex flex-col gap-3">
-                <p className="text-sm text-ink-muted">Draft — not yet sent to {employee.name}.</p>
+                <p className="text-sm text-ink-muted">{t("Draft — not yet sent to {name}.", { name: employee.name })}</p>
                 <div className="flex flex-wrap gap-2">
                   <Link href={`/hr/employees/${employee.id}/contract`} className="btn-secondary">
-                    <Pencil size={15} /> Edit
+                    <Pencil size={15} /> {t("Edit")}
                   </Link>
                   <DownloadPdfButton url={`/api/employees/${employee.id}/contract/pdf`} />
                   <SendEmailButton
@@ -345,8 +364,11 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                     id={employee.id}
                     endpoint={`/api/employees/${employee.id}/contract/email`}
                     defaultTo={contractEmail}
-                    defaultSubject="Your employment contract"
-                    defaultBody={`Hi ${employee.name},\n\nPlease review and sign your employment contract using the button below.`}
+                    defaultSubject={t("Your employment contract")}
+                    defaultBody={t(
+                      "Hi {name},\n\nPlease review and sign your employment contract using the button below.",
+                      { name: employee.name }
+                    )}
                     emailValid={isValidEmail(contractEmail)}
                   />
                 </div>
@@ -355,14 +377,14 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
 
             {contract && contract.status === "SENT" && (
               <div className="flex flex-col gap-3">
-                <p className="text-sm text-ink-muted">Sent — waiting for {employee.name} to sign.</p>
+                <p className="text-sm text-ink-muted">{t("Sent — waiting for {name} to sign.", { name: employee.name })}</p>
                 <div className="flex flex-wrap gap-2">
                   <DownloadPdfButton url={`/api/employees/${employee.id}/contract/pdf`} />
                   {contractSigningUrl && (
                     <CopySigningLinkButton
                       url={contractSigningUrl}
-                      label="Copy signing link"
-                      title="Copy the public review & sign link"
+                      label={t("Copy signing link")}
+                      title={t("Copy the public review & sign link")}
                     />
                   )}
                   <SendEmailButton
@@ -370,8 +392,11 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                     id={employee.id}
                     endpoint={`/api/employees/${employee.id}/contract/email`}
                     defaultTo={contractEmail}
-                    defaultSubject="Your employment contract"
-                    defaultBody={`Hi ${employee.name},\n\nJust a reminder to review and sign your employment contract using the button below.`}
+                    defaultSubject={t("Your employment contract")}
+                    defaultBody={t(
+                      "Hi {name},\n\nJust a reminder to review and sign your employment contract using the button below.",
+                      { name: employee.name }
+                    )}
                     emailValid={isValidEmail(contractEmail)}
                   />
                 </div>
@@ -381,9 +406,14 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
             {contract && contract.status === "SIGNED" && (
               <div className="flex flex-col gap-3">
                 <p className="text-sm text-ink-muted">
-                  Signed by {contract.signerName || employee.name}
-                  {contract.signedAt ? ` on ${formatDateTime(contract.signedAt)}` : ""} — please review before
-                  verifying.
+                  {contract.signedAt
+                    ? t("Signed by {name} on {date} — please review before verifying.", {
+                        name: contract.signerName || employee.name,
+                        date: formatDateTime(contract.signedAt),
+                      })
+                    : t("Signed by {name} — please review before verifying.", {
+                        name: contract.signerName || employee.name,
+                      })}
                 </p>
                 {contract.signedDocumentData ? (
                   <a
@@ -391,20 +421,20 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                     className="btn-secondary self-start"
                   >
                     <FileDown size={15} />
-                    Download {contract.signedDocumentName || "signed document"}
+                    {t("Download {name}", { name: contract.signedDocumentName || t("signed document") })}
                   </a>
                 ) : (
                   contract.signatureData && (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={contract.signatureData}
-                      alt="Signature"
+                      alt={t("Signature")}
                       className="max-h-20 bg-white rounded-lg border border-line"
                     />
                   )
                 )}
                 {contract.signedDocumentData && (
-                  <p className="text-xs text-ink-faint">Uploaded a scanned/printed document</p>
+                  <p className="text-xs text-ink-faint">{t("Uploaded a scanned/printed document")}</p>
                 )}
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <DownloadPdfButton url={`/api/employees/${employee.id}/contract/pdf`} />
@@ -416,8 +446,9 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
             {contract && contract.status === "VERIFIED" && (
               <div className="flex flex-col gap-2">
                 <p className="text-sm text-ink-muted">
-                  Verified{contract.verifiedAt ? ` on ${formatDateTime(contract.verifiedAt)}` : ""} — employee is
-                  Active.
+                  {contract.verifiedAt
+                    ? t("Verified on {date} — employee is Active.", { date: formatDateTime(contract.verifiedAt) })
+                    : t("Verified — employee is Active.")}
                 </p>
                 <div className="flex flex-wrap gap-2">
                   <DownloadPdfButton url={`/api/employees/${employee.id}/contract/pdf`} />
@@ -428,7 +459,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                       rel="noopener noreferrer"
                       className="btn-secondary"
                     >
-                      <ExternalLink size={15} /> Contract on Drive
+                      <ExternalLink size={15} /> {t("Contract on Drive")}
                     </a>
                   )}
                 </div>
@@ -440,17 +471,33 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
                 <DeleteButton
                   url={`/api/employees/${employee.id}/contract`}
                   confirmNumber={employee.name}
-                  itemLabel="contract"
+                  itemLabel={t("contract")}
                   redirectTo={`/hr/employees/${employee.id}/contract`}
-                  label="Delete & regenerate"
+                  label={t("Delete & regenerate")}
                   extraWarning={
                     contract.status === "DRAFT"
                       ? undefined
-                      : `This permanently deletes the ${contract.status.toLowerCase()} contract${
-                          contract.status === "SIGNED" || contract.status === "VERIFIED"
-                            ? ", including the signature on file,"
-                            : ""
-                        } so you can create a new one from scratch.`
+                      : contract.status === "SIGNED" || contract.status === "VERIFIED"
+                      ? t(
+                          "This permanently deletes the {status} contract, including the signature on file, so you can create a new one from scratch.",
+                          {
+                            status:
+                              contract.status === "SIGNED"
+                                ? t("signed")
+                                : t("verified"),
+                          }
+                        )
+                      : t(
+                          "This permanently deletes the {status} contract so you can create a new one from scratch.",
+                          {
+                            status:
+                              contract.status === "SENT"
+                                ? t("sent")
+                                : contract.status === "CANCELLED"
+                                ? t("cancelled")
+                                : t(contract.status),
+                          }
+                        )
                   }
                 />
               </div>
@@ -459,7 +506,7 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
         )}
 
         <div className="card p-5">
-          <h2 className="font-display text-lg font-semibold mb-3">Leave requests</h2>
+          <h2 className="font-display text-lg font-semibold mb-3">{t("Leave requests")}</h2>
           <LeaveRequestActions
             employeeId={employee.id}
             requests={employee.leaveRequests.map((r: any) => ({
@@ -485,38 +532,38 @@ export default async function EmployeeDetailPage({ params }: { params: { id: str
             query above never even fetched these columns. */}
         {isAdmin && (
           <div className="card p-5">
-            <h2 className="font-display text-lg font-semibold mb-3">Personal</h2>
+            <h2 className="font-display text-lg font-semibold mb-3">{t("Personal")}</h2>
             <div className="flex flex-col gap-2 text-sm">
-              <Row label="Chinese name" value={employee.nameChinese} />
-              <Row label="HKID" value={employee.hkid} />
-              <Row label="Birthday" value={formatDate(employee.birthday)} />
-              <Row label="Nationality" value={employee.nationality} />
-              <Row label="Phone" value={employee.phone} />
-              <Row label="Personal email" value={employee.personalEmail} />
-              <Row label="Address" value={employee.address} />
+              <Row label={t("Chinese name")} value={employee.nameChinese} />
+              <Row label={t("HKID")} value={employee.hkid} />
+              <Row label={t("Birthday")} value={formatDate(employee.birthday)} />
+              <Row label={t("Nationality")} value={employee.nationality} />
+              <Row label={t("Phone")} value={employee.phone} />
+              <Row label={t("Personal email")} value={employee.personalEmail} />
+              <Row label={t("Address")} value={employee.address} />
             </div>
           </div>
         )}
 
         {isAdmin && (
           <div className="card p-5">
-            <h2 className="font-display text-lg font-semibold mb-3">Emergency contact</h2>
+            <h2 className="font-display text-lg font-semibold mb-3">{t("Emergency contact")}</h2>
             <div className="flex flex-col gap-2 text-sm">
-              <Row label="Name" value={employee.emergencyContactName} />
-              <Row label="Relationship" value={employee.emergencyContactRelationship} />
-              <Row label="Contact number" value={employee.emergencyContactPhone} />
+              <Row label={t("Name")} value={employee.emergencyContactName} />
+              <Row label={t("Relationship")} value={employee.emergencyContactRelationship} />
+              <Row label={t("Contact number")} value={employee.emergencyContactPhone} />
             </div>
           </div>
         )}
 
         {isAdmin && (
           <div className="card p-5">
-            <h2 className="font-display text-lg font-semibold mb-3">Bank details</h2>
+            <h2 className="font-display text-lg font-semibold mb-3">{t("Bank details")}</h2>
             <div className="flex flex-col gap-2 text-sm">
-              <Row label="Bank" value={employee.bankName} />
-              <Row label="Bank code" value={employee.bankCode} />
-              <Row label="Account number" value={employee.bankAccount} />
-              <Row label="Account holder" value={employee.bankCardName} />
+              <Row label={t("Bank")} value={employee.bankName} />
+              <Row label={t("Bank code")} value={employee.bankCode} />
+              <Row label={t("Account number")} value={employee.bankAccount} />
+              <Row label={t("Account holder")} value={employee.bankCardName} />
             </div>
           </div>
         )}

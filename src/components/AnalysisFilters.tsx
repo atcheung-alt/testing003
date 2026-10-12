@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import clsx from "clsx";
+import { useT } from "@/lib/i18n/client";
 
 const GRANULARITIES: { value: "week" | "month" | "year"; label: string }[] = [
   { value: "week", label: "Week" },
@@ -32,6 +33,7 @@ export default function AnalysisFilters({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const t = useT();
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 7 }, (_, i) => currentYear - 5 + i); // last 5 years .. next year
@@ -62,7 +64,7 @@ export default function AnalysisFilters({
                 : "border-line text-ink-muted"
             )}
           >
-            {g.label}
+            {t(g.label)}
           </button>
         ))}
       </div>
@@ -85,7 +87,7 @@ export default function AnalysisFilters({
           >
             {MONTH_NAMES.map((name, i) => (
               <option key={i} value={i}>
-                {name}
+                {t(name)}
               </option>
             ))}
           </select>

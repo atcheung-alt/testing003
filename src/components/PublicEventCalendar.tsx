@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import clsx from "clsx";
 import { dateKey, availabilityLevel, readJsonOrThrow, type AvailabilityLevel } from "@/lib/bookingFormat";
+import { useAppLanguage, useT } from "@/lib/i18n/client";
 
 // A month-grid date picker for one event's public booking page — shows
 // at-a-glance availability per day ("open / few left / fully booked")
@@ -70,6 +71,8 @@ export default function PublicEventCalendar({
   selectedDate: string | null;
   onSelectDate: (date: string) => void;
 }) {
+  const t = useT();
+  const language = useAppLanguage();
   const today = useMemo(() => startOfDay(new Date()), []);
   const initialMonth = useMemo(() => {
     const start = startOfDay(minDate) > today ? minDate : today;
@@ -116,7 +119,7 @@ export default function PublicEventCalendar({
     setMonthDate((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
   }
 
-  const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(monthDate);
+  const monthLabel = new Intl.DateTimeFormat(language === "zh" ? "zh-HK" : "en-US", { month: "long", year: "numeric" }).format(monthDate);
 
   return (
     <div>
@@ -127,7 +130,7 @@ export default function PublicEventCalendar({
             type="button"
             onClick={goPrevMonth}
             disabled={atFirstMonth}
-            aria-label="Previous month"
+            aria-label={t("Previous month")}
             className="btn-secondary px-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronLeft size={16} />
@@ -136,7 +139,7 @@ export default function PublicEventCalendar({
             type="button"
             onClick={goNextMonth}
             disabled={atLastMonth}
-            aria-label="Next month"
+            aria-label={t("Next month")}
             className="btn-secondary px-2.5 disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <ChevronRight size={16} />
@@ -147,7 +150,7 @@ export default function PublicEventCalendar({
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAY_LABELS.map((label) => (
           <div key={label} className="text-center text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            {label}
+            {t(label)}
           </div>
         ))}
       </div>
@@ -171,7 +174,7 @@ export default function PublicEventCalendar({
                 type="button"
                 disabled={disabled || showLoading}
                 onClick={() => onSelectDate(key)}
-                title={level ? LEVEL_LABELS[level] : undefined}
+                title={level ? t(LEVEL_LABELS[level]) : undefined}
                 className={clsx(
                   "flex flex-col items-center justify-center gap-0.5 rounded-lg border py-1.5 text-xs transition-colors min-h-[46px]",
                   !inMonth && "border-transparent text-ink-faint/50 cursor-default",
@@ -185,7 +188,7 @@ export default function PublicEventCalendar({
                 {showLoading ? (
                   <Loader2 size={10} className="animate-spin text-ink-faint" />
                 ) : inMonth && !outOfRange && level ? (
-                  <span className="text-[9px] leading-none">{LEVEL_LABELS[level]}</span>
+                  <span className="text-[9px] leading-none">{t(LEVEL_LABELS[level])}</span>
                 ) : null}
               </button>
             );
@@ -193,17 +196,17 @@ export default function PublicEventCalendar({
         )}
       </div>
 
-      {error && <p className="text-xs text-danger-600 mt-2">{error}</p>}
+      {error && <p className="text-xs text-danger-600 mt-2">{t(error)}</p>}
 
       <div className="flex flex-wrap items-center gap-3 mt-3 text-[11px] text-ink-muted">
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-brand-100 border border-brand-300" /> Open
+          <span className="w-2.5 h-2.5 rounded-full bg-brand-100 border border-brand-300" /> {t("Open")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-amber-100 border border-amber-300" /> Few left
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-100 border border-amber-300" /> {t("Few left")}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-paper border border-line" /> Full
+          <span className="w-2.5 h-2.5 rounded-full bg-paper border border-line" /> {t("Full")}
         </span>
       </div>
     </div>

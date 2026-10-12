@@ -6,6 +6,7 @@ import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, X, ExternalLink } fr
 import clsx from "clsx";
 import Portal from "@/components/Portal";
 import { formatDateLabel } from "@/lib/bookingFormat";
+import { useT } from "@/lib/i18n/client";
 
 // A read-only month calendar of every booking event, laid out as multi-day
 // bars — so staff can see at a glance which events are running (or upcoming)
@@ -25,6 +26,10 @@ export type BookingEventCalendarItem = {
 type NormEvent = BookingEventCalendarItem & { start: Date; end: Date };
 
 const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const MONTH_NAMES = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
 
 const MAX_LANES = 3;
 const BAR_HEIGHT = 20;
@@ -147,6 +152,7 @@ function WeekRow({
   onEventClick: (ev: NormEvent) => void;
   onMoreClick: (day: Date, events: NormEvent[]) => void;
 }) {
+  const t = useT();
   const weekStart = week[0];
   const weekEnd = week[6];
 
@@ -245,7 +251,7 @@ function WeekRow({
               left: `${(i / 7) * 100}%`,
             }}
           >
-            +{hiddenByDay[i].length} more
+            {t("+{count} more", { count: hiddenByDay[i].length })}
           </button>
         ) : null
       )}
@@ -254,6 +260,7 @@ function WeekRow({
 }
 
 function BookingEventDetail({ ev }: { ev: NormEvent }) {
+  const t = useT();
   const spansDays = !isSameDay(ev.start, ev.end);
   const color = colorFor(ev.id);
 
@@ -264,25 +271,25 @@ function BookingEventDetail({ ev }: { ev: NormEvent }) {
         <div className="min-w-0 flex items-center gap-2">
           <p className="text-sm font-medium text-ink truncate">{ev.name}</p>
           <span className={`stamp ${ev.active ? "border-brand-500 text-brand-500 bg-brand-50" : "border-ink-faint text-ink-faint"}`}>
-            {ev.active ? "Active" : "Hidden"}
+            {ev.active ? t("Active") : t("Hidden")}
           </span>
         </div>
       </div>
 
       <div className="rounded-xl border border-line p-3 text-sm">
         <p className="text-ink">{formatDateLabel(ev.start)}</p>
-        {spansDays && <p className="text-ink-muted mt-0.5">to {formatDateLabel(ev.end)}</p>}
+        {spansDays && <p className="text-ink-muted mt-0.5">{t("to {date}", { date: formatDateLabel(ev.end) })}</p>}
       </div>
 
       {ev.description && (
         <div>
-          <p className="label mb-1">Description</p>
+          <p className="label mb-1">{t("Description")}</p>
           <p className="text-sm text-ink-muted whitespace-pre-wrap">{ev.description}</p>
         </div>
       )}
 
       <Link href={`/bookings/${ev.id}`} className="btn-secondary self-start">
-        <ExternalLink size={15} /> Open event
+        <ExternalLink size={15} /> {t("Open event")}
       </Link>
     </div>
   );
@@ -298,6 +305,7 @@ export default function BookingEventsCalendar({ events }: { events: BookingEvent
   const [monthDate, setMonthDate] = useState(() => startOfDay(new Date(today.getFullYear(), today.getMonth(), 1)));
   const [modal, setModal] = useState<ModalState>(null);
   const [collapsed, setCollapsed] = useState(false);
+  const t = useT();
 
   const normalized = useMemo(() => normalizeEvents(events), [events]);
 
@@ -321,7 +329,10 @@ export default function BookingEventsCalendar({ events }: { events: BookingEvent
     setMonthDate(new Date(today.getFullYear(), today.getMonth(), 1));
   }
 
-  const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(monthDate);
+  const monthLabel = t("{month} {year}", {
+    month: t(MONTH_NAMES[monthDate.getMonth()]),
+    year: monthDate.getFullYear(),
+  });
 
   return (
     <div className="card p-4 sm:p-5">
@@ -338,12 +349,12 @@ export default function BookingEventsCalendar({ events }: { events: BookingEvent
         {!collapsed && (
           <div className="flex items-center gap-1.5" onClick={(e) => e.stopPropagation()}>
             <button type="button" onClick={goToday} className="btn-secondary">
-              Today
+              {t("Today")}
             </button>
-            <button type="button" onClick={goPrevMonth} aria-label="Previous month" className="btn-secondary px-2.5">
+            <button type="button" onClick={goPrevMonth} aria-label={t("Previous month")} className="btn-secondary px-2.5">
               <ChevronLeft size={16} />
             </button>
-            <button type="button" onClick={goNextMonth} aria-label="Next month" className="btn-secondary px-2.5">
+            <button type="button" onClick={goNextMonth} aria-label={t("Next month")} className="btn-secondary px-2.5">
               <ChevronRight size={16} />
             </button>
           </div>
@@ -355,7 +366,7 @@ export default function BookingEventsCalendar({ events }: { events: BookingEvent
           <div className="grid grid-cols-7 border-b border-line pb-2 mb-1">
             {WEEKDAY_LABELS.map((label) => (
               <div key={label} className="text-center text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                {label}
+                {t(label)}
               </div>
             ))}
           </div>
@@ -377,7 +388,7 @@ export default function BookingEventsCalendar({ events }: { events: BookingEvent
 
           {normalized.length === 0 && (
             <p className="text-sm text-ink-muted mt-4">
-              No booking events yet — once you create one, it&apos;ll show up here across the days it runs.
+              {t("No booking events yet — once you create one, it'll show up here across the days it runs.")}
             </p>
           )}
         </div>
@@ -392,13 +403,13 @@ export default function BookingEventsCalendar({ events }: { events: BookingEvent
             <div className="card p-6 max-w-sm w-full animate-scale-in" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-display text-lg font-semibold text-ink">
-                  {modal.mode === "event" ? "Booking event" : formatDateLabel(modal.date)}
+                  {modal.mode === "event" ? t("Booking event") : formatDateLabel(modal.date)}
                 </h2>
                 <button
                   type="button"
                   onClick={() => setModal(null)}
                   className="text-ink-faint hover:text-ink transition-colors"
-                  aria-label="Close"
+                  aria-label={t("Close")}
                 >
                   <X size={18} />
                 </button>

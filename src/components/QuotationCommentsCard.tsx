@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { MessageSquare, Send, Loader2, AlertCircle } from "lucide-react";
 import { formatDate } from "@/lib/calculations";
 import type { QuotationComment } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 export default function QuotationCommentsCard({
   quotationId,
@@ -13,6 +14,7 @@ export default function QuotationCommentsCard({
   quotationId: string;
   comments: QuotationComment[];
 }) {
+  const t = useT();
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
@@ -43,13 +45,14 @@ export default function QuotationCommentsCard({
     <div className="card p-5 flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <MessageSquare size={17} className="text-brand-600" />
-        <h2 className="font-display text-lg font-semibold">Comments &amp; feedback</h2>
+        <h2 className="font-display text-lg font-semibold">{t("Comments & feedback")}</h2>
       </div>
 
       {comments.length === 0 ? (
         <p className="text-sm text-ink-muted">
-          No feedback yet. If the client requests changes on the signing page, it will show up
-          here.
+          {t(
+            "No feedback yet. If the client requests changes on the signing page, it will show up here."
+          )}
         </p>
       ) : (
         <div className="flex flex-col gap-3">
@@ -64,7 +67,7 @@ export default function QuotationCommentsCard({
             >
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs font-semibold text-ink">
-                  {c.author === "STAFF" ? `${c.authorName} (HR Plus)` : c.authorName}
+                  {c.author === "STAFF" ? t("{name} (HR Plus)", { name: c.authorName }) : c.authorName}
                 </span>
                 <span className="text-xs text-ink-faint">{formatDate(c.createdAt)}</span>
               </div>
@@ -77,15 +80,15 @@ export default function QuotationCommentsCard({
       {error && (
         <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
-          <span>{error}</span>
+          <span>{t(error)}</span>
         </div>
       )}
 
       <div className="flex flex-col gap-2">
-        <label className="label">Reply to the client</label>
+        <label className="label">{t("Reply to the client")}</label>
         <textarea
           className="input min-h-[90px]"
-          placeholder="Type a reply — the client will be emailed a copy."
+          placeholder={t("Type a reply — the client will be emailed a copy.")}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
         />
@@ -97,11 +100,11 @@ export default function QuotationCommentsCard({
         >
           {sending ? (
             <>
-              <Loader2 size={15} className="animate-spin" /> Sending…
+              <Loader2 size={15} className="animate-spin" /> {t("Sending…")}
             </>
           ) : (
             <>
-              <Send size={15} /> Send reply
+              <Send size={15} /> {t("Send reply")}
             </>
           )}
         </button>

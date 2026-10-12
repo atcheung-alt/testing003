@@ -15,6 +15,7 @@ import {
   type DocumentLanguage,
 } from "@/lib/settings";
 import type { Invoice, LineItem, CustomerDetails } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 function toDateInput(value?: string | null) {
   if (!value) return "";
@@ -38,6 +39,7 @@ function computeDueDateLabel(issueDateInput: string, paymentDueDays: number): st
 
 export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
   const router = useRouter();
+  const t = useT();
   const [customer, setCustomer] = useState<CustomerDetails>(
     invoice
       ? {
@@ -112,15 +114,15 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
     setError(null);
 
     if (!customer.customerName.trim()) {
-      setError("Please enter the company name.");
+      setError(t("Please enter the company name."));
       return;
     }
     if (items.some((i) => !i.name.trim())) {
-      setError("Every line item needs a name.");
+      setError(t("Every line item needs a name."));
       return;
     }
     if (eventStartDate && eventEndDate && eventEndDate < eventStartDate) {
-      setError("Event end date must be on or after the start date.");
+      setError(t("Event end date must be on or after the start date."));
       return;
     }
 
@@ -150,7 +152,7 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong."));
 
       const redirectTo = `/invoices/${data.id}`;
       const customerEmail = (customer.customerEmail || "").trim();
@@ -194,35 +196,35 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
       )}
 
       <div className="card p-5">
-        <label className="label">Title / subject</label>
+        <label className="label">{t("Title / subject")}</label>
         <input
           type="text"
           className="input"
-          placeholder="e.g. HR Management System"
+          placeholder={t("e.g. HR Management System")}
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
       </div>
 
       <div className="card p-5">
-        <label className="label">PO Number (optional)</label>
+        <label className="label">{t("PO Number (optional)")}</label>
         <input
           type="text"
           className="input"
-          placeholder="e.g. PO4225"
+          placeholder={t("e.g. PO4225")}
           value={poNumber}
           onChange={(e) => setPoNumber(e.target.value)}
         />
       </div>
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Customer</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Customer")}</h2>
         <CustomerFields value={customer} onChange={setCustomer} />
       </div>
 
       <div className="card p-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="label">Issue date</label>
+          <label className="label">{t("Issue date")}</label>
           <input
             type="date"
             className="input"
@@ -231,23 +233,18 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
           />
         </div>
         <div>
-          <label className="label">Due date</label>
+          <label className="label">{t("Due date")}</label>
           <p className="input flex items-center bg-paper text-ink-muted cursor-default">{dueDateLabel}</p>
-          <p className="mt-1.5 text-xs text-ink-faint">
-            Calculated automatically from the issue date and payment terms below.
-          </p>
+          <p className="mt-1.5 text-xs text-ink-faint">{t("Calculated automatically from the issue date and payment terms below.")}</p>
         </div>
       </div>
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Event date &amp; time</h2>
-        <p className="text-xs text-ink-faint mb-4">
-          Optional — fill in once you know when the actual event is, then use &quot;Mark on
-          calendar&quot; from the invoice page to put it on the Calendar.
-        </p>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Event date & time")}</h2>
+        <p className="text-xs text-ink-faint mb-4">{t("Optional — fill in once you know when the actual event is, then use \"Mark on calendar\" from the invoice page to put it on the Calendar.")}</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">Event start date</label>
+            <label className="label">{t("Event start date")}</label>
             <input
               type="date"
               className="input"
@@ -256,7 +253,7 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
             />
           </div>
           <div>
-            <label className="label">Event start time</label>
+            <label className="label">{t("Event start time")}</label>
             <input
               type="time"
               className="input"
@@ -265,7 +262,7 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
             />
           </div>
           <div>
-            <label className="label">Event end date</label>
+            <label className="label">{t("Event end date")}</label>
             <input
               type="date"
               className="input"
@@ -275,7 +272,7 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
             />
           </div>
           <div>
-            <label className="label">Event end time</label>
+            <label className="label">{t("Event end time")}</label>
             <input
               type="time"
               className="input"
@@ -287,11 +284,8 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
       </div>
 
       <div className="card p-5 overflow-visible">
-        <h2 className="font-display text-lg font-semibold mb-1">Line items</h2>
-        <p className="text-sm text-ink-muted mb-4">
-          Click the item name and search items you have billed before, or the item library. Click a
-          result to fill the line — you can still edit anything afterwards.
-        </p>
+        <h2 className="font-display text-lg font-semibold mb-1">{t("Line items")}</h2>
+        <p className="text-sm text-ink-muted mb-4">{t("Click the item name and search items you have billed before, or the item library. Click a result to fill the line — you can still edit anything afterwards.")}</p>
         <LineItemsEditor
           items={items}
           onItemsChange={setItems}
@@ -321,10 +315,10 @@ export default function InvoiceForm({ invoice }: { invoice?: Invoice }) {
 
       <div className="flex gap-3">
         <button type="submit" disabled={saving} className="btn-primary">
-          {saving ? "Saving…" : invoice ? "Save changes" : "Create invoice"}
+          {saving ? t("Saving…") : invoice ? t("Save changes") : t("Create invoice")}
         </button>
         <button type="button" onClick={() => router.back()} className="btn-secondary">
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
 

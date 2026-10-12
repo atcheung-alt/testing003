@@ -1,4 +1,5 @@
 import { LucideIcon } from "lucide-react";
+import { getT } from "@/lib/i18n/server";
 
 export default function StatCard({
   label,
@@ -11,6 +12,7 @@ export default function StatCard({
   icon: LucideIcon;
   accent?: "brand" | "accent" | "ink" | "danger";
 }) {
+  const t = getT();
   const accentClasses =
     accent === "accent"
       ? "bg-accent-100 text-accent-600"
@@ -24,7 +26,7 @@ export default function StatCard({
     <div className="card p-5 flex items-start justify-between">
       <div>
         <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-          {label}
+          {t(label)}
         </p>
         <p className="font-mono text-2xl font-semibold text-ink">{value}</p>
       </div>

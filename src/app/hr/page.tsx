@@ -2,6 +2,7 @@ import Link from "next/link";
 import { IdCard, Clock3, UserPlus, Wallet, CalendarClock, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { requireAdminPage } from "@/lib/auth";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -11,6 +12,7 @@ export const dynamic = "force-dynamic";
  *  just a re-skinned employee list. Admin-only — every non-admin account
  *  is redirected to /hr/profile, the one tab they can see. */
 export default async function HrDashboardPage() {
+  const t = getT();
   await requireAdminPage();
 
   const [active, onboarding, former, pendingLeave, pendingOnboarding, draftPayrollRuns] = await Promise.all([
@@ -25,23 +27,23 @@ export default async function HrDashboardPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink mb-1">HR System</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("HR System")}</h1>
         <p className="text-sm text-ink-muted">
-          Employee records, onboarding, leave, contracts, and payroll — with attendance on the way.
+          {t("Employee records, onboarding, leave, contracts, and payroll — with attendance on the way.")}
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="card p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">Active employees</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">{t("Active employees")}</p>
           <p className="font-mono text-2xl font-semibold text-ink">{active}</p>
         </div>
         <div className="card p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">Onboarding</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">{t("Onboarding")}</p>
           <p className="font-mono text-2xl font-semibold text-brand-600">{onboarding}</p>
         </div>
         <div className="card p-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">Former</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">{t("Former")}</p>
           <p className="font-mono text-2xl font-semibold text-ink-faint">{former}</p>
         </div>
       </div>
@@ -56,8 +58,10 @@ export default async function HrDashboardPage() {
               <UserPlus size={18} />
             </div>
             <div>
-              <p className="text-sm font-medium text-ink">Onboarding awaiting completion</p>
-              <p className="text-xs text-ink-muted">{pendingOnboarding} invite(s) sent, not yet completed</p>
+              <p className="text-sm font-medium text-ink">{t("Onboarding awaiting completion")}</p>
+              <p className="text-xs text-ink-muted">
+                {t("{count} invite(s) sent, not yet completed", { count: pendingOnboarding })}
+              </p>
             </div>
           </div>
           <ArrowRight size={16} className="text-ink-faint shrink-0" />
@@ -72,8 +76,10 @@ export default async function HrDashboardPage() {
               <Clock3 size={18} />
             </div>
             <div>
-              <p className="text-sm font-medium text-ink">Pending leave requests</p>
-              <p className="text-xs text-ink-muted">{pendingLeave} request(s) waiting for a decision</p>
+              <p className="text-sm font-medium text-ink">{t("Pending leave requests")}</p>
+              <p className="text-xs text-ink-muted">
+                {t("{count} request(s) waiting for a decision", { count: pendingLeave })}
+              </p>
             </div>
           </div>
           <ArrowRight size={16} className="text-ink-faint shrink-0" />
@@ -88,8 +94,10 @@ export default async function HrDashboardPage() {
               <Wallet size={18} />
             </div>
             <div>
-              <p className="text-sm font-medium text-ink">Payroll runs in draft</p>
-              <p className="text-xs text-ink-muted">{draftPayrollRuns} run(s) not yet finalized</p>
+              <p className="text-sm font-medium text-ink">{t("Payroll runs in draft")}</p>
+              <p className="text-xs text-ink-muted">
+                {t("{count} run(s) not yet finalized", { count: draftPayrollRuns })}
+              </p>
             </div>
           </div>
           <ArrowRight size={16} className="text-ink-faint shrink-0" />
@@ -98,7 +106,7 @@ export default async function HrDashboardPage() {
 
       <div className="card p-5">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-lg font-semibold">Modules</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Modules")}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Link
@@ -106,26 +114,26 @@ export default async function HrDashboardPage() {
             className="rounded-xl border border-line p-4 flex flex-col gap-2 hover:bg-brand-50/60 transition-colors"
           >
             <IdCard size={18} className="text-brand-600" />
-            <p className="text-sm font-medium text-ink">Employees</p>
-            <p className="text-xs text-ink-muted">Records, onboarding, leave &amp; contracts</p>
+            <p className="text-sm font-medium text-ink">{t("Employees")}</p>
+            <p className="text-xs text-ink-muted">{t("Records, onboarding, leave & contracts")}</p>
           </Link>
           <Link
             href="/hr/payroll"
             className="rounded-xl border border-line p-4 flex flex-col gap-2 hover:bg-brand-50/60 transition-colors"
           >
             <Wallet size={18} className="text-brand-600" />
-            <p className="text-sm font-medium text-ink">Payroll</p>
-            <p className="text-xs text-ink-muted">Salary runs, MPF, payslips</p>
+            <p className="text-sm font-medium text-ink">{t("Payroll")}</p>
+            <p className="text-xs text-ink-muted">{t("Salary runs, MPF, payslips")}</p>
           </Link>
           <div className="rounded-xl border border-dashed border-line p-4 flex flex-col gap-2 text-ink-faint">
             <CalendarClock size={18} />
             <p className="text-sm font-medium flex items-center gap-2">
-              Attendance
+              {t("Attendance")}
               <span className="text-[9px] font-semibold uppercase tracking-wide border border-line rounded-full px-1.5 py-0.5">
-                Soon
+                {t("Soon")}
               </span>
             </p>
-            <p className="text-xs">Clock-in/out &amp; timesheets</p>
+            <p className="text-xs">{t("Clock-in/out & timesheets")}</p>
           </div>
         </div>
       </div>

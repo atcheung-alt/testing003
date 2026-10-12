@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { CheckCircle2, Sun, Moon, Monitor, Building2 } from "lucide-react";
 import clsx from "clsx";
 import type { ThemeMode } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 // `null` = "no personal override — use the company default from Settings".
 type Choice = ThemeMode | null;
@@ -25,6 +26,7 @@ const OPTIONS: { value: Choice; label: string; icon: typeof Sun }[] = [
  * `<html>` — see globals.css for how "light"/"dark"/"auto" actually resolve.
  */
 export default function ThemeModeControl() {
+  const t = useT();
   const router = useRouter();
   const [choice, setChoice] = useState<Choice>(null);
   const [companyDefault, setCompanyDefault] = useState<ThemeMode>("LIGHT");
@@ -61,7 +63,7 @@ export default function ThemeModeControl() {
         body: JSON.stringify({ themeMode: value }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not save your preference.");
+      if (!res.ok) throw new Error(data.error || t("Could not save your preference."));
       setSaved(true);
       router.refresh();
     } catch (err: any) {
@@ -72,7 +74,7 @@ export default function ThemeModeControl() {
   }
 
   if (loading) {
-    return <p className="text-sm text-ink-muted">Loading…</p>;
+    return <p className="text-sm text-ink-muted">{t("Loading…")}</p>;
   }
 
   return (
@@ -91,12 +93,12 @@ export default function ThemeModeControl() {
             )}
           >
             <Icon size={15} />
-            {label}
+            {t(label)}
           </button>
         ))}
         {saved && (
           <span className="flex items-center gap-1 px-2 text-xs text-emerald-600">
-            <CheckCircle2 size={13} /> Saved
+            <CheckCircle2 size={13} /> {t("Saved")}
           </span>
         )}
       </div>

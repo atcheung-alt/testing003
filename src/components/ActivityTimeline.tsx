@@ -14,6 +14,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { formatDateTime } from "@/lib/calculations";
+import { getT } from "@/lib/i18n/server";
+import type { TFunction } from "@/lib/i18n/translate";
 
 const ICONS: Record<string, LucideIcon> = {
   CREATED: FilePlus,
@@ -49,10 +51,10 @@ const LABELS: Record<string, string> = {
 // that name-resolution existed. CLIENT events use whatever name the client
 // actually typed (signing, comments, payment claims); SYSTEM events are
 // fully automated with no individual to attribute.
-function actorLabel(actor: string, actorName?: string | null): string {
-  if (actor === "CLIENT") return actorName ? `${actorName} (client)` : "Client";
-  if (actor === "SYSTEM") return "Automatic";
-  return actorName || "Staff";
+function actorLabel(actor: string, actorName: string | null | undefined, t: TFunction): string {
+  if (actor === "CLIENT") return actorName ? t("{name} (client)", { name: actorName }) : t("Client");
+  if (actor === "SYSTEM") return t("Automatic");
+  return actorName || t("Staff");
 }
 
 export type ActivityTimelineEvent = {
@@ -65,17 +67,19 @@ export type ActivityTimelineEvent = {
 };
 
 export default function ActivityTimeline({ events }: { events: ActivityTimelineEvent[] }) {
+  const t = getT();
   return (
     <div className="card p-5">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-4">
-        Activity
+        {t("Activity")}
       </h2>
       {events.length === 0 ? (
-        <p className="text-sm text-ink-muted">No activity recorded yet.</p>
+        <p className="text-sm text-ink-muted">{t("No activity recorded yet.")}</p>
       ) : (
         <ol className="flex flex-col gap-4">
           {events.map((event) => {
             const Icon = ICONS[event.type] || Clock;
+            const label = t(LABELS[event.type] || event.type);
             return (
               <li key={event.id} className="flex gap-3">
                 <div className="w-7 h-7 rounded-full bg-paper flex items-center justify-center shrink-0 text-ink-muted">
@@ -83,16 +87,13 @@ export default function ActivityTimeline({ events }: { events: ActivityTimelineE
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                    <p className="text-sm font-medium text-ink">
-                      {LABELS[event.type] || event.type}
-                    </p>
+                    <p className="text-sm font-medium text-ink">{label}</p>
                     <span className="text-xs text-ink-faint shrink-0">
                       {formatDateTime(event.createdAt)}
                     </span>
                   </div>
                   <p className="text-xs text-ink-muted">
-                    {event.description || LABELS[event.type]} ·{" "}
-                    {actorLabel(event.actor, event.actorName)}
+                    {event.description || label} · {actorLabel(event.actor, event.actorName, t)}
                   </p>
                 </div>
               </li>

@@ -3,6 +3,10 @@ import { headers } from "next/headers";
 import { Fraunces, Inter, IBM_Plex_Mono, Allura } from "next/font/google";
 import { getEffectiveAnimationsEnabled, getEffectiveThemeModeFor } from "@/lib/appSettings";
 import { getCurrentUser } from "@/lib/auth";
+import { LanguageProvider } from "@/lib/i18n/client";
+import { htmlLang } from "@/lib/i18n/language";
+import { getAppLanguage } from "@/lib/i18n/server";
+import PublicLanguageSwitch from "@/components/PublicLanguageSwitch";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -66,15 +70,21 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await getCurrentUser();
   const followSystemTheme = headers().get("x-theme-follow-system") === "1";
   const themeMode = followSystemTheme ? "AUTO" : await getEffectiveThemeModeFor(user?.userId);
+  const language = getAppLanguage();
 
   return (
     <html
-      lang="en"
+      lang={htmlLang(language)}
       data-animations={animationsEnabled ? "on" : "off"}
       data-theme={themeMode.toLowerCase()}
       className={`${fraunces.variable} ${inter.variable} ${plexMono.variable} ${allura.variable}`}
     >
-      <body>{children}</body>
+      <body>
+        <LanguageProvider language={language}>
+          <PublicLanguageSwitch />
+          {children}
+        </LanguageProvider>
+      </body>
     </html>
   );
 }

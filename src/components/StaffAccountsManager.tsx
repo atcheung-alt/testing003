@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Loader2, AlertCircle, UserCircle2 } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 type StaffAccount = {
   id: string;
@@ -12,6 +13,7 @@ type StaffAccount = {
 const emptyDraft = { email: "", name: "" };
 
 export default function StaffAccountsManager() {
+  const t = useT();
   const [accounts, setAccounts] = useState<StaffAccount[]>([]);
   const [loading, setLoading] = useState(true);
   const [draft, setDraft] = useState(emptyDraft);
@@ -69,23 +71,23 @@ export default function StaffAccountsManager() {
   return (
     <div className="card p-5 flex flex-col gap-4 max-w-2xl">
       <div>
-        <h2 className="font-display text-lg font-semibold">Staff accounts</h2>
+        <h2 className="font-display text-lg font-semibold">{t("Staff accounts")}</h2>
         <p className="text-sm text-ink-muted mt-0.5">
-          Who can log in — everyone signs in with their Google Workspace account, so just add
-          their work email below. There&apos;s no password to set; the first sign-in with that
-          email creates their session automatically.
+          {t(
+            "Who can log in — everyone signs in with their Google Workspace account, so just add their work email below. There's no password to set; the first sign-in with that email creates their session automatically."
+          )}
         </p>
       </div>
 
       {error && (
         <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
-          <span>{error}</span>
+          <span>{t(error)}</span>
         </div>
       )}
 
       {loading ? (
-        <p className="text-sm text-ink-muted">Loading…</p>
+        <p className="text-sm text-ink-muted">{t("Loading…")}</p>
       ) : (
         <div className="flex flex-col divide-y divide-line">
           {accounts.map((a) => (
@@ -101,7 +103,7 @@ export default function StaffAccountsManager() {
                 type="button"
                 onClick={() => removeAccount(a.id)}
                 disabled={deletingId === a.id}
-                aria-label={`Remove ${a.email}`}
+                aria-label={t("Remove {name}", { name: a.email })}
                 className="text-ink-faint hover:text-danger-500 transition-colors shrink-0"
               >
                 {deletingId === a.id ? (
@@ -117,17 +119,17 @@ export default function StaffAccountsManager() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <div>
-          <label className="label">Name (optional)</label>
+          <label className="label">{t("Name (optional)")}</label>
           <input
             type="text"
             className="input"
-            placeholder="Jamie Tan"
+            placeholder={t("Jamie Tan")}
             value={draft.name}
             onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
           />
         </div>
         <div>
-          <label className="label">Google Workspace email</label>
+          <label className="label">{t("Google Workspace email")}</label>
           <input
             type="email"
             className="input"
@@ -144,7 +146,7 @@ export default function StaffAccountsManager() {
         className="btn-secondary self-start"
       >
         {saving ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
-        Add account
+        {t("Add account")}
       </button>
     </div>
   );

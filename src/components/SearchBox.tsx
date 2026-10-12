@@ -3,8 +3,10 @@
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Search } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useT } from "@/lib/i18n/client";
 
-export default function SearchBox({ placeholder = "Search…" }: { placeholder?: string }) {
+export default function SearchBox({ placeholder }: { placeholder?: string }) {
+  const t = useT();
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -29,7 +31,7 @@ export default function SearchBox({ placeholder = "Search…" }: { placeholder?:
       <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" />
       <input
         className="input pl-9"
-        placeholder={placeholder}
+        placeholder={t(placeholder ?? "Search…")}
         value={value}
         onChange={(e) => setValue(e.target.value)}
       />

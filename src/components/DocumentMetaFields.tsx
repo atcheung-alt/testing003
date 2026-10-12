@@ -9,6 +9,7 @@ import {
   renderTerms,
   type DocumentLanguage,
 } from "@/lib/settings";
+import { useT } from "@/lib/i18n/client";
 
 type Props = {
   notes: string;
@@ -46,22 +47,23 @@ export default function DocumentMetaFields({
   language,
   onLanguageChange,
 }: Props) {
+  const t = useT();
   return (
     <div className="flex flex-col gap-6">
       <div className="card p-5">
-        <label className="label">Notes for customer</label>
+        <label className="label">{t("Notes for customer")}</label>
         <textarea
           className="input min-h-[80px]"
           value={notes}
           onChange={(e) => onNotesChange(e.target.value)}
-          placeholder="Thank you for the opportunity to work with you."
+          placeholder={t("Thank you for the opportunity to work with you.")}
         />
       </div>
 
       <div className="card p-5 flex flex-col gap-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="label">Payment due (days)</label>
+            <label className="label">{t("Payment due (days)")}</label>
             <input
               type="number"
               min={0}
@@ -75,12 +77,12 @@ export default function DocumentMetaFields({
               }}
             />
             <p className="mt-1.5 text-xs text-ink-faint">
-              Sets the invoice due date and the &ldquo;Payment Terms&rdquo; line shown on invoices.
+              {t("Sets the invoice due date and the “Payment Terms” line shown on invoices.")}
             </p>
           </div>
 
           <div>
-            <label className="label">Language</label>
+            <label className="label">{t("Language")}</label>
             <select
               className="input"
               value={language}
@@ -88,13 +90,12 @@ export default function DocumentMetaFields({
             >
               {VALID_DOCUMENT_LANGUAGES.map((l) => (
                 <option key={l} value={l}>
-                  {DOCUMENT_LANGUAGE_LABELS[l]}
+                  {t(DOCUMENT_LANGUAGE_LABELS[l])}
                 </option>
               ))}
             </select>
             <p className="mt-1.5 text-xs text-ink-faint">
-              Regenerates the Reminder/Terms text below and the generated PDF&rsquo;s labels in
-              the selected language.
+              {t("Regenerates the Reminder/Terms text below and the generated PDF's labels in the selected language.")}
             </p>
           </div>
         </div>
@@ -103,13 +104,13 @@ export default function DocumentMetaFields({
           <>
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="label !mb-0">Reminder</label>
+                <label className="label !mb-0">{t("Reminder")}</label>
                 <button
                   type="button"
                   onClick={() => onReminderChange(DEFAULT_REMINDER_TEMPLATES[language])}
                   className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700"
                 >
-                  <RotateCcw size={12} /> Reset to default
+                  <RotateCcw size={12} /> {t("Reset to default")}
                 </button>
               </div>
               <textarea
@@ -122,7 +123,7 @@ export default function DocumentMetaFields({
 
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="label !mb-0">Terms &amp; conditions</label>
+                <label className="label !mb-0">{t("Terms & conditions")}</label>
                 <button
                   type="button"
                   onClick={() =>
@@ -130,7 +131,7 @@ export default function DocumentMetaFields({
                   }
                   className="inline-flex items-center gap-1 text-xs text-brand-600 hover:text-brand-700"
                 >
-                  <RotateCcw size={12} /> Reset to standard template
+                  <RotateCcw size={12} /> {t("Reset to standard template")}
                 </button>
               </div>
               <textarea
@@ -139,9 +140,7 @@ export default function DocumentMetaFields({
                 onChange={(e) => onTermsChange(e.target.value)}
               />
               <p className="mt-1.5 text-xs text-ink-faint">
-                Auto-filled from the standardized template. Editing here only affects this
-                document; the shared template lives in{" "}
-                <code className="text-ink-muted">src/lib/settings.ts</code>.
+                {t("Auto-filled from the standardized template. Editing here only affects this document; the shared template lives in {path}.", { path: "src/lib/settings.ts" })}
               </p>
             </div>
           </>

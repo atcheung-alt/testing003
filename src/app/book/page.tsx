@@ -4,14 +4,18 @@ import { CalendarDays, ArrowRight } from "lucide-react";
 import { getEffectiveCompany } from "@/lib/appSettings";
 import { listBookingEvents, formatDateLabel } from "@/lib/bookings";
 import PublicCompanyHeader from "@/components/PublicCompanyHeader";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Book an appointment",
-  // A generic public listing, not a per-client link — fine to index, unlike
-  // the token-scoped public pages elsewhere in the app.
-};
+export function generateMetadata(): Metadata {
+  const t = getT();
+  return {
+    title: t("Book an appointment"),
+    // A generic public listing, not a per-client link — fine to index, unlike
+    // the token-scoped public pages elsewhere in the app.
+  };
+}
 
 /** "24/08/2026" or "24/08/2026 – 26/08/2026" once an event spans more than
  *  one day. */
@@ -22,6 +26,7 @@ function dateRangeLabel(startDate: string, endDate: string): string {
 }
 
 export default async function BookEventsPage() {
+  const t = getT();
   const [company, events] = await Promise.all([getEffectiveCompany(), listBookingEvents({ activeOnly: true })]);
 
   return (
@@ -31,12 +36,12 @@ export default async function BookEventsPage() {
       />
 
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink">Book an appointment</h1>
-        <p className="text-sm text-ink-muted mt-0.5">Pick what you&apos;d like to book below.</p>
+        <h1 className="font-display text-2xl font-semibold text-ink">{t("Book an appointment")}</h1>
+        <p className="text-sm text-ink-muted mt-0.5">{t("Pick what you'd like to book below.")}</p>
       </div>
 
       {events.length === 0 ? (
-        <div className="card p-8 text-center text-sm text-ink-muted">Nothing is available to book right now.</div>
+        <div className="card p-8 text-center text-sm text-ink-muted">{t("Nothing is available to book right now.")}</div>
       ) : (
         <div className="flex flex-col gap-3">
           {events.map((e) => (

@@ -1,4 +1,7 @@
+"use client";
+
 import clsx from "clsx";
+import { useT } from "@/lib/i18n/client";
 
 const STYLES: Record<string, string> = {
   DRAFT: "border-ink-faint text-ink-muted",
@@ -21,9 +24,10 @@ const LABELS: Record<string, string> = {
 };
 
 export default function StatusBadge({ status }: { status: string }) {
+  const t = useT();
   return (
     <span className={clsx("stamp", STYLES[status] || "border-ink-faint text-ink-muted")}>
-      {LABELS[status] || status}
+      {t(LABELS[status] || status)}
     </span>
   );
 }

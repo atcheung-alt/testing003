@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export default function VerifyPaymentButton({ invoiceId }: { invoiceId: string }) {
+  const t = useT();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -12,7 +14,9 @@ export default function VerifyPaymentButton({ invoiceId }: { invoiceId: string }
   async function handleVerify() {
     if (
       !window.confirm(
-        "Confirm payment has landed and mark this invoice as Paid? This will generate the receipt and email it to the client."
+        t(
+          "Confirm payment has landed and mark this invoice as Paid? This will generate the receipt and email it to the client."
+        )
       )
     ) {
       return;
@@ -42,9 +46,9 @@ export default function VerifyPaymentButton({ invoiceId }: { invoiceId: string }
   return (
     <div className="flex flex-col items-end gap-1">
       <button type="button" onClick={handleVerify} disabled={busy} className="btn-primary">
-        <BadgeCheck size={15} /> {busy ? "Verifying…" : "Verify payment"}
+        <BadgeCheck size={15} /> {busy ? t("Verifying…") : t("Verify payment")}
       </button>
-      {error && <span className="text-xs text-danger-500 max-w-[220px] text-right">{error}</span>}
+      {error && <span className="text-xs text-danger-500 max-w-[220px] text-right">{t(error)}</span>}
     </div>
   );
 }

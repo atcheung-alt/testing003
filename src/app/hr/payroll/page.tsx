@@ -4,10 +4,13 @@ import { formatCurrency, formatDate } from "@/lib/calculations";
 import { periodLabel } from "@/lib/payroll";
 import NewPayrollRunButton from "@/components/NewPayrollRunButton";
 import ClickableTableRow from "@/components/ClickableTableRow";
+import { getAppLanguage, getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function PayrollListPage() {
+  const t = getT();
+  const periodLanguage = getAppLanguage() === "zh" ? "ZH_HANT" : undefined;
   await requireAdminPage();
 
   const runs = await prisma.payrollRun.findMany({
@@ -19,10 +22,11 @@ export default async function PayrollListPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink mb-1">Payroll</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Payroll")}</h1>
           <p className="text-sm text-ink-muted">
-            One run per calendar month — salary, day/hourly-rate, and project-fee pay all
-            calculated together, with Mandatory Provident Fund (MPF) contributions and payslips.
+            {t(
+              "One run per calendar month — salary, day/hourly-rate, and project-fee pay all calculated together, with Mandatory Provident Fund (MPF) contributions and payslips."
+            )}
           </p>
         </div>
         <NewPayrollRunButton />
@@ -30,18 +34,18 @@ export default async function PayrollListPage() {
 
       {runs.length === 0 ? (
         <div className="card p-8 text-center text-sm text-ink-muted">
-          No payroll runs yet — create one for the current month to get started.
+          {t("No payroll runs yet — create one for the current month to get started.")}
         </div>
       ) : (
         <div className="card overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                <th className="px-5 py-3">Period</th>
-                <th className="px-5 py-3">Employees</th>
-                <th className="px-5 py-3">Gross total</th>
-                <th className="px-5 py-3">Net total</th>
-                <th className="px-5 py-3">Created</th>
+                <th className="px-5 py-3">{t("Period")}</th>
+                <th className="px-5 py-3">{t("Employees")}</th>
+                <th className="px-5 py-3">{t("Gross total")}</th>
+                <th className="px-5 py-3">{t("Net total")}</th>
+                <th className="px-5 py-3">{t("Created")}</th>
               </tr>
             </thead>
             <tbody>
@@ -55,7 +59,7 @@ export default async function PayrollListPage() {
                     className="border-b border-line last:border-0 hover:bg-brand-50/40"
                   >
                     <td className="px-5 py-3">
-                      <span className="font-medium text-brand-600">{periodLabel(run.period)}</span>
+                      <span className="font-medium text-brand-600">{periodLabel(run.period, periodLanguage)}</span>
                     </td>
                     <td className="px-5 py-3 text-ink-muted">{run.entries.length}</td>
                     <td className="px-5 py-3 font-mono">{formatCurrency(totalGross)}</td>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Pencil, Loader2, AlertCircle, Search, Building2, UserRound, ChevronDown, ChevronUp } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export type ContactPerson = {
   id: string;
@@ -33,6 +34,7 @@ function CustomerForm({
   const [contactEmail, setContactEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   // Contact name/email are both optional — leaving them blank shouldn't
   // block adding the client itself (see matching API-side comment).
@@ -50,7 +52,7 @@ function CustomerForm({
         body: JSON.stringify(body),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not save this client.");
+      if (!res.ok) throw new Error(data.error || t("Could not save this client."));
       onSaved();
     } catch (err: any) {
       setError(err.message);
@@ -69,11 +71,11 @@ function CustomerForm({
       )}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
-          <label className="label">Company name</label>
+          <label className="label">{t("Company name")}</label>
           <input type="text" className="input" value={name} onChange={(e) => setName(e.target.value)} />
         </div>
         <div>
-          <label className="label">Company address</label>
+          <label className="label">{t("Company address")}</label>
           <input type="text" className="input" value={address} onChange={(e) => setAddress(e.target.value)} />
         </div>
       </div>
@@ -81,10 +83,10 @@ function CustomerForm({
       {!initial && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3 border-t border-line">
           <p className="text-xs text-ink-muted sm:col-span-2 -mb-1">
-            Every company needs at least one contact person to start with.
+            {t("Every company needs at least one contact person to start with.")}
           </p>
           <div>
-            <label className="label">Contact name (optional)</label>
+            <label className="label">{t("Contact name (optional)")}</label>
             <input
               type="text"
               className="input"
@@ -93,7 +95,7 @@ function CustomerForm({
             />
           </div>
           <div>
-            <label className="label">Contact email (optional)</label>
+            <label className="label">{t("Contact email (optional)")}</label>
             <input
               type="email"
               className="input"
@@ -107,10 +109,10 @@ function CustomerForm({
       <div className="flex gap-2">
         <button type="button" onClick={save} disabled={saving || !canSave} className="btn-primary">
           {saving ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
-          {initial ? "Save changes" : "Add client"}
+          {initial ? t("Save changes") : t("Add client")}
         </button>
         <button type="button" onClick={onCancel} className="btn-secondary">
-          Cancel
+          {t("Cancel")}
         </button>
       </div>
     </div>
@@ -132,6 +134,7 @@ function ContactsPanel({
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   async function addContact() {
     setSaving(true);
@@ -143,7 +146,7 @@ function ContactsPanel({
         body: JSON.stringify({ name, email }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not add this contact.");
+      if (!res.ok) throw new Error(data.error || t("Could not add this contact."));
       setName("");
       setEmail("");
       setAdding(false);
@@ -161,7 +164,7 @@ function ContactsPanel({
     try {
       const res = await fetch(`/api/customers/${customerId}/contacts/${contactId}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not remove this contact.");
+      if (!res.ok) throw new Error(data.error || t("Could not remove this contact."));
       onChanged();
     } catch (err: any) {
       setError(err.message);
@@ -172,7 +175,7 @@ function ContactsPanel({
 
   return (
     <div className="bg-paper rounded-xl p-3 flex flex-col gap-2">
-      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Contact persons</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t("Contact persons")}</p>
 
       {error && (
         <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-xs rounded-lg px-3 py-2">
@@ -186,7 +189,7 @@ function ContactsPanel({
           <div className="flex items-center gap-2 min-w-0">
             <UserRound size={13} className="text-ink-faint shrink-0" />
             <div className="min-w-0">
-              <p className="text-sm text-ink truncate">{c.name || c.email || "(no name or email)"}</p>
+              <p className="text-sm text-ink truncate">{c.name || c.email || t("(no name or email)")}</p>
               {c.name && c.email && <p className="text-xs text-ink-faint truncate">{c.email}</p>}
             </div>
           </div>
@@ -194,8 +197,8 @@ function ContactsPanel({
             type="button"
             onClick={() => removeContact(c.id)}
             disabled={deletingId === c.id || contacts.length <= 1}
-            title={contacts.length <= 1 ? "A company needs at least one contact" : "Remove contact"}
-            aria-label={`Remove ${c.name || c.email}`}
+            title={contacts.length <= 1 ? t("A company needs at least one contact") : t("Remove contact")}
+            aria-label={t("Remove {name}", { name: c.name || c.email || "" })}
             className="text-ink-faint hover:text-danger-500 transition-colors shrink-0 disabled:opacity-30 disabled:hover:text-ink-faint"
           >
             {deletingId === c.id ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
@@ -209,7 +212,7 @@ function ContactsPanel({
             <input
               type="text"
               className="input"
-              placeholder="Name (optional)"
+              placeholder={t("Name (optional)")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoFocus
@@ -217,7 +220,7 @@ function ContactsPanel({
             <input
               type="email"
               className="input"
-              placeholder="Email (optional)"
+              placeholder={t("Email (optional)")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -230,20 +233,20 @@ function ContactsPanel({
               className="btn-primary !py-1.5 !text-xs"
             >
               {saving ? <Loader2 size={13} className="animate-spin" /> : <Plus size={13} />}
-              Save contact
+              {t("Save contact")}
             </button>
             <button
               type="button"
               onClick={() => setAdding(false)}
               className="btn-secondary !py-1.5 !text-xs"
             >
-              Cancel
+              {t("Cancel")}
             </button>
           </div>
         </div>
       ) : (
         <button type="button" onClick={() => setAdding(true)} className="btn-ghost !px-2 text-xs self-start">
-          <Plus size={13} /> Add contact person
+          <Plus size={13} /> {t("Add contact person")}
         </button>
       )}
     </div>
@@ -259,6 +262,7 @@ export default function ClientsManager() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   function load(q: string) {
     setLoading(true);
@@ -280,7 +284,7 @@ export default function ClientsManager() {
     try {
       const res = await fetch(`/api/customers/${id}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not remove this client.");
+      if (!res.ok) throw new Error(data.error || t("Could not remove this client."));
       load(query);
     } catch (err: any) {
       setError(err.message);
@@ -303,13 +307,13 @@ export default function ClientsManager() {
           <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" />
           <input
             className="input pl-9"
-            placeholder="Search clients or contacts…"
+            placeholder={t("Search clients or contacts…")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
         <button type="button" onClick={() => setShowAddForm((v) => !v)} className="btn-primary shrink-0">
-          <Plus size={15} /> Add client
+          <Plus size={15} /> {t("Add client")}
         </button>
       </div>
 
@@ -324,10 +328,10 @@ export default function ClientsManager() {
       )}
 
       {loading ? (
-        <p className="text-sm text-ink-muted">Loading…</p>
+        <p className="text-sm text-ink-muted">{t("Loading…")}</p>
       ) : customers.length === 0 ? (
         <p className="text-sm text-ink-muted">
-          {query ? "No clients match your search." : "No clients saved yet — add your first one above."}
+          {query ? t("No clients match your search.") : t("No clients saved yet — add your first one above.")}
         </p>
       ) : (
         <div className="card divide-y divide-line">
@@ -357,8 +361,10 @@ export default function ClientsManager() {
                     <div className="min-w-0">
                       <p className="text-sm text-ink truncate">{c.name}</p>
                       <p className="text-xs text-ink-faint truncate">
-                        {c.address || "No address on file"} · {c.contacts.length} contact
-                        {c.contacts.length === 1 ? "" : "s"}
+                        {c.address || t("No address on file")} ·{" "}
+                        {c.contacts.length === 1
+                          ? t("{count} contact", { count: c.contacts.length })
+                          : t("{count} contacts", { count: c.contacts.length })}
                       </p>
                     </div>
                     {expandedId === c.id ? (
@@ -371,7 +377,7 @@ export default function ClientsManager() {
                     <button
                       type="button"
                       onClick={() => setEditingId(c.id)}
-                      aria-label={`Edit ${c.name}`}
+                      aria-label={t("Edit {name}", { name: c.name })}
                       className="text-ink-faint hover:text-ink transition-colors"
                     >
                       <Pencil size={15} />
@@ -380,7 +386,7 @@ export default function ClientsManager() {
                       type="button"
                       onClick={() => removeCustomer(c.id)}
                       disabled={deletingId === c.id}
-                      aria-label={`Remove ${c.name}`}
+                      aria-label={t("Remove {name}", { name: c.name })}
                       className="text-ink-faint hover:text-danger-500 transition-colors"
                     >
                       {deletingId === c.id ? (

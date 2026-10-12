@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 export default function DeleteButton({
   url,
@@ -29,6 +30,7 @@ export default function DeleteButton({
   const [typed, setTyped] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   const canConfirm = typed.trim() === confirmNumber;
 
@@ -39,7 +41,7 @@ export default function DeleteButton({
     try {
       const res = await fetch(url, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not delete.");
+      if (!res.ok) throw new Error(data.error || t("Could not delete."));
 
       if (redirectTo) {
         router.push(redirectTo);
@@ -60,7 +62,7 @@ export default function DeleteButton({
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="btn-danger">
-        <Trash2 size={15} /> {label}
+        <Trash2 size={15} /> {t(label)}
       </button>
 
       {open && (
@@ -72,13 +74,25 @@ export default function DeleteButton({
                 <AlertTriangle size={18} />
               </div>
               <div>
-                <h2 className="font-display text-lg font-semibold text-ink">Delete this {itemLabel}?</h2>
+                <h2 className="font-display text-lg font-semibold text-ink">
+                  {t("Delete this {itemLabel}?", { itemLabel: t(itemLabel) })}
+                </h2>
                 {extraWarning && (
                   <p className="text-sm text-danger-600 font-medium mt-1">{extraWarning}</p>
                 )}
                 <p className="text-sm text-ink-muted mt-1">
-                  This cannot be undone. Type <strong className="font-mono">{confirmNumber}</strong> to
-                  confirm.
+                  {t("This cannot be undone. Type {number} to confirm.", { number: "\u0000" })
+                    .split("\u0000")
+                    .map((part, i) =>
+                      i === 0 ? (
+                        <span key={i}>{part}</span>
+                      ) : (
+                        <span key={i}>
+                          <strong className="font-mono">{confirmNumber}</strong>
+                          {part}
+                        </span>
+                      )
+                    )}
                 </p>
               </div>
             </div>
@@ -106,7 +120,7 @@ export default function DeleteButton({
                 className="btn-danger flex-1 min-w-0 justify-center"
               >
                 {busy ? <Loader2 size={15} className="animate-spin shrink-0" /> : <Trash2 size={15} className="shrink-0" />}
-                <span className="truncate">{busy ? "Deleting…" : "Delete"}</span>
+                <span className="truncate">{busy ? t("Deleting…") : t("Delete")}</span>
               </button>
               <button
                 type="button"
@@ -114,7 +128,7 @@ export default function DeleteButton({
                 disabled={busy}
                 className="btn-secondary flex-1 min-w-0 justify-center"
               >
-                <span className="truncate">Cancel</span>
+                <span className="truncate">{t("Cancel")}</span>
               </button>
             </div>
           </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Loader2, AlertCircle, Tag } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 type ExpenseCategory = {
   id: string;
@@ -15,6 +16,7 @@ export default function ExpenseCategoriesManager() {
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   function load() {
     fetch("/api/expense-categories")
@@ -38,7 +40,7 @@ export default function ExpenseCategoriesManager() {
         body: JSON.stringify({ name: name.trim() }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not add the category.");
+      if (!res.ok) throw new Error(data.error || t("Could not add the category."));
       setName("");
       load();
     } catch (err: any) {
@@ -54,7 +56,7 @@ export default function ExpenseCategoriesManager() {
     try {
       const res = await fetch(`/api/expense-categories/${id}`, { method: "DELETE" });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Could not remove the category.");
+      if (!res.ok) throw new Error(data.error || t("Could not remove the category."));
       load();
     } catch (err: any) {
       setError(err.message);
@@ -66,10 +68,9 @@ export default function ExpenseCategoriesManager() {
   return (
     <div className="card p-5 flex flex-col gap-4 max-w-2xl">
       <div>
-        <h2 className="font-display text-lg font-semibold">Expense categories</h2>
+        <h2 className="font-display text-lg font-semibold">{t("Expense categories")}</h2>
         <p className="text-sm text-ink-muted mt-0.5">
-          Offered as a dropdown when logging expenses on an invoice. &ldquo;Others&rdquo; is
-          always available and doesn&apos;t need to be added here.
+          {t("Offered as a dropdown when logging expenses on an invoice. “Others” is always available and doesn't need to be added here.")}
         </p>
       </div>
 
@@ -81,10 +82,10 @@ export default function ExpenseCategoriesManager() {
       )}
 
       {loading ? (
-        <p className="text-sm text-ink-muted">Loading…</p>
+        <p className="text-sm text-ink-muted">{t("Loading…")}</p>
       ) : categories.length === 0 ? (
         <p className="text-sm text-ink-muted">
-          No categories yet — add your first one below (e.g. &ldquo;Venue&rdquo;, &ldquo;Staffing&rdquo;).
+          {t("No categories yet — add your first one below (e.g. “Venue”, “Staffing”).")}
         </p>
       ) : (
         <div className="flex flex-wrap gap-2">
@@ -99,7 +100,7 @@ export default function ExpenseCategoriesManager() {
                 type="button"
                 onClick={() => removeCategory(c.id)}
                 disabled={deletingId === c.id}
-                aria-label={`Remove ${c.name}`}
+                aria-label={t("Remove {name}", { name: c.name })}
                 className="text-ink-faint hover:text-danger-500 transition-colors ml-1"
               >
                 {deletingId === c.id ? (
@@ -117,7 +118,7 @@ export default function ExpenseCategoriesManager() {
         <input
           type="text"
           className="input flex-1"
-          placeholder="e.g. Venue, Staffing, Transport"
+          placeholder={t("e.g. Venue, Staffing, Transport")}
           value={name}
           onChange={(e) => setName(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addCategory()}
@@ -129,7 +130,7 @@ export default function ExpenseCategoriesManager() {
           className="btn-secondary shrink-0"
         >
           {saving ? <Loader2 size={15} className="animate-spin" /> : <Plus size={15} />}
-          Add
+          {t("Add")}
         </button>
       </div>
     </div>

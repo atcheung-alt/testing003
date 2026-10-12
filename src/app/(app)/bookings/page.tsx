@@ -5,6 +5,7 @@ import { listBookingEvents } from "@/lib/bookings";
 import EmptyState from "@/components/EmptyState";
 import BookingEventListClient from "@/components/BookingEventListClient";
 import BookingEventsCalendar from "@/components/BookingEventsCalendar";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,7 @@ export const dynamic = "force-dynamic";
  * single-resource massage calendar was replaced by this event system.
  */
 export default async function BookingsPage() {
+  const t = getT();
   await requireAdminPage();
 
   const events = await listBookingEvents();
@@ -33,24 +35,25 @@ export default async function BookingsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink mb-1">Bookings</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Bookings")}</h1>
           <p className="text-sm text-ink-muted">
-            Create a bookable event — a massage day, a DIY workshop, anything with its own time
-            slots and quota — then share its own booking page with clients.
+            {t(
+              "Create a bookable event — a massage day, a DIY workshop, anything with its own time slots and quota — then share its own booking page with clients."
+            )}
           </p>
         </div>
         <Link href="/bookings/new" className="btn-primary shrink-0">
-          <Plus size={15} /> New event
+          <Plus size={15} /> {t("New event")}
         </Link>
       </div>
 
       {events.length === 0 ? (
         <EmptyState
           icon={CalendarCheck}
-          title="No booking events yet"
-          description="Create your first event to start taking bookings."
+          title={t("No booking events yet")}
+          description={t("Create your first event to start taking bookings.")}
           actionHref="/bookings/new"
-          actionLabel="New event"
+          actionLabel={t("New event")}
         />
       ) : (
         <>

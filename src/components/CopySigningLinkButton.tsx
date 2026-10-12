@@ -2,12 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Link2, Check } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export default function CopySigningLinkButton({
   url,
-  label = "Copy signing link",
-  copiedLabel = "Copied",
-  title = "Copy the public signing link",
+  label,
+  copiedLabel,
+  title,
 }: {
   url: string;
   label?: string;
@@ -16,6 +17,10 @@ export default function CopySigningLinkButton({
 }) {
   const [copied, setCopied] = useState(false);
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const t = useT();
+  const resolvedLabel = label ?? t("Copy signing link");
+  const resolvedCopiedLabel = copiedLabel ?? t("Copied");
+  const resolvedTitle = title ?? t("Copy the public signing link");
 
   useEffect(() => {
     return () => {
@@ -31,14 +36,14 @@ export default function CopySigningLinkButton({
       timeoutRef.current = setTimeout(() => setCopied(false), 2000);
     } catch {
       // Clipboard API unavailable (e.g. insecure context) — fall back silently.
-      window.prompt("Copy the link:", url);
+      window.prompt(t("Copy the link:"), url);
     }
   }
 
   return (
-    <button type="button" onClick={copy} className="btn-secondary" title={title}>
+    <button type="button" onClick={copy} className="btn-secondary" title={resolvedTitle}>
       {copied ? <Check size={15} /> : <Link2 size={15} />}
-      {copied ? copiedLabel : label}
+      {copied ? resolvedCopiedLabel : resolvedLabel}
     </button>
   );
 }

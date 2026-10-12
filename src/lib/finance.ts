@@ -12,8 +12,8 @@ function monthKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function monthLabel(date: Date): string {
-  return new Intl.DateTimeFormat("en-US", { month: "short", year: "numeric" }).format(date);
+function monthLabel(date: Date, locale = "en-US"): string {
+  return new Intl.DateTimeFormat(locale, { month: "short", year: "numeric" }).format(date);
 }
 
 /**
@@ -73,8 +73,8 @@ function dayKey(date: Date): string {
   return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}`;
 }
 
-function dayLabel(date: Date, withWeekday: boolean): string {
-  return new Intl.DateTimeFormat("en-US", {
+function dayLabel(date: Date, withWeekday: boolean, locale = "en-US"): string {
+  return new Intl.DateTimeFormat(locale, {
     weekday: withWeekday ? "short" : undefined,
     month: "short",
     day: "numeric",
@@ -100,7 +100,7 @@ type PeriodRange = {
 };
 
 /** Shared by getFinanceByPeriod, getPeriodTotals, and the "previous period" comparison. */
-function periodRange(granularity: FinanceGranularity, referenceDate: Date): PeriodRange {
+function periodRange(granularity: FinanceGranularity, referenceDate: Date, locale = "en-US"): PeriodRange {
   if (granularity === "week") {
     const rangeStart = startOfWeek(referenceDate);
     const rangeEndExclusive = new Date(rangeStart);
@@ -109,14 +109,14 @@ function periodRange(granularity: FinanceGranularity, referenceDate: Date): Peri
     for (let i = 0; i < 7; i++) {
       const d = new Date(rangeStart);
       d.setDate(d.getDate() + i);
-      emptyBuckets.push({ month: dayKey(d), label: dayLabel(d, true), revenue: 0, expenses: 0, profit: 0 });
+      emptyBuckets.push({ month: dayKey(d), label: dayLabel(d, true, locale), revenue: 0, expenses: 0, profit: 0 });
     }
     const rangeEndInclusive = new Date(rangeEndExclusive);
     rangeEndInclusive.setDate(rangeEndInclusive.getDate() - 1);
     return {
       rangeStart,
       rangeEndExclusive,
-      rangeLabel: `${dayLabel(rangeStart, false)} – ${dayLabel(rangeEndInclusive, false)}, ${rangeStart.getFullYear()}`,
+      rangeLabel: `${dayLabel(rangeStart, false, locale)} – ${dayLabel(rangeEndInclusive, false, locale)}, ${rangeStart.getFullYear()}`,
       bucketKeyFor: dayKey,
       emptyBuckets,
     };
@@ -135,7 +135,7 @@ function periodRange(granularity: FinanceGranularity, referenceDate: Date): Peri
     return {
       rangeStart,
       rangeEndExclusive,
-      rangeLabel: new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric" }).format(rangeStart),
+      rangeLabel: new Intl.DateTimeFormat(locale, { month: "long", year: "numeric" }).format(rangeStart),
       bucketKeyFor: dayKey,
       emptyBuckets,
     };
@@ -146,7 +146,7 @@ function periodRange(granularity: FinanceGranularity, referenceDate: Date): Peri
   const emptyBuckets: FinanceBucket[] = [];
   for (let m = 0; m < 12; m++) {
     const d = new Date(year, m, 1);
-    emptyBuckets.push({ month: monthKey(d), label: monthLabel(d), revenue: 0, expenses: 0, profit: 0 });
+    emptyBuckets.push({ month: monthKey(d), label: monthLabel(d, locale), revenue: 0, expenses: 0, profit: 0 });
   }
   return { rangeStart, rangeEndExclusive, rangeLabel: String(year), bucketKeyFor: monthKey, emptyBuckets };
 }
@@ -169,11 +169,13 @@ export function previousReferenceDate(granularity: FinanceGranularity, reference
  */
 export async function getFinanceByPeriod(
   granularity: FinanceGranularity,
-  referenceDate: Date
+  referenceDate: Date,
+  locale = "en-US"
 ): Promise<{ buckets: FinanceBucket[]; rangeLabel: string }> {
   const { rangeStart, rangeEndExclusive, rangeLabel, bucketKeyFor, emptyBuckets } = periodRange(
     granularity,
-    referenceDate
+    referenceDate,
+    locale
   );
 
   const invoices = await prisma.invoice.findMany({
@@ -200,9 +202,10 @@ export type PeriodTotals = { revenue: number; expenses: number; profit: number; 
  *  headline summary cards and for comparing against the previous period. */
 export async function getPeriodTotals(
   granularity: FinanceGranularity,
-  referenceDate: Date
+  referenceDate: Date,
+  locale = "en-US"
 ): Promise<PeriodTotals> {
-  const { rangeStart, rangeEndExclusive, rangeLabel } = periodRange(granularity, referenceDate);
+  const { rangeStart, rangeEndExclusive, rangeLabel } = periodRange(granularity, referenceDate, locale);
   const invoices = await prisma.invoice.findMany({
     where: { status: "PAID", paidAt: { gte: rangeStart, lt: rangeEndExclusive } },
     select: { total: true, expenses: { select: { amount: true } } },

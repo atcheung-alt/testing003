@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, Loader2 } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 export default function MarkOnboardingCompleteButton({ employeeId }: { employeeId: string }) {
+  const t = useT();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -12,7 +14,9 @@ export default function MarkOnboardingCompleteButton({ employeeId }: { employeeI
   async function handleClick() {
     if (
       !window.confirm(
-        "Mark this employee's onboarding as complete? This confirms all their personal details are on file and unlocks contract generation."
+        t(
+          "Mark this employee's onboarding as complete? This confirms all their personal details are on file and unlocks contract generation."
+        )
       )
     ) {
       return;
@@ -35,9 +39,9 @@ export default function MarkOnboardingCompleteButton({ employeeId }: { employeeI
     <div className="flex flex-col items-start gap-1">
       <button type="button" onClick={handleClick} disabled={busy} className="btn-secondary">
         {busy ? <Loader2 size={15} className="animate-spin" /> : <CheckCircle2 size={15} />}
-        {busy ? "Marking complete…" : "Mark onboarding complete"}
+        {busy ? t("Marking complete…") : t("Mark onboarding complete")}
       </button>
-      {error && <span className="text-xs text-danger-500 max-w-[260px]">{error}</span>}
+      {error && <span className="text-xs text-danger-500 max-w-[260px]">{t(error)}</span>}
     </div>
   );
 }

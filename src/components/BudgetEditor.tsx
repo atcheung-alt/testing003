@@ -4,16 +4,18 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, AlertCircle } from "lucide-react";
 import { formatCurrency } from "@/lib/calculations";
+import { useT } from "@/lib/i18n/client";
+import type { TFunction } from "@/lib/i18n/translate";
 
 type Budget = { targetRevenue: number; targetExpenses: number } | null;
 
-function varianceLine(label: string, actual: number, target: number) {
+function varianceLine(label: string, actual: number, target: number, t: TFunction) {
   const variance = actual - target;
   const pct = target === 0 ? null : (variance / Math.abs(target)) * 100;
   const favorable = label === "Expenses" ? variance <= 0 : variance >= 0;
   return (
     <div className="flex items-center justify-between text-sm">
-      <span className="text-ink-muted">{label} variance</span>
+      <span className="text-ink-muted">{t("{label} variance", { label: t(label) })}</span>
       <span className={`font-mono font-medium ${favorable ? "text-emerald-600" : "text-danger-500"}`}>
         {variance >= 0 ? "+" : ""}
         {formatCurrency(variance)}
@@ -42,6 +44,7 @@ export default function BudgetEditor({
   const [targetExpenses, setTargetExpenses] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   useEffect(() => {
     setLoading(true);
@@ -68,7 +71,7 @@ export default function BudgetEditor({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not save the budget.");
+      if (!res.ok) throw new Error(data.error || t("Could not save the budget."));
       setBudget(data);
       setEditing(false);
       router.refresh();
@@ -80,7 +83,7 @@ export default function BudgetEditor({
   }
 
   if (loading) {
-    return <p className="text-sm text-ink-muted">Loading budget…</p>;
+    return <p className="text-sm text-ink-muted">{t("Loading budget…")}</p>;
   }
 
   if (!budget || editing) {
@@ -94,7 +97,7 @@ export default function BudgetEditor({
         )}
         <div className="grid grid-cols-2 gap-3 max-w-sm">
           <div>
-            <label className="label">Target revenue</label>
+            <label className="label">{t("Target revenue")}</label>
             <input
               type="number"
               step="any"
@@ -105,7 +108,7 @@ export default function BudgetEditor({
             />
           </div>
           <div>
-            <label className="label">Target expenses</label>
+            <label className="label">{t("Target expenses")}</label>
             <input
               type="number"
               step="any"
@@ -119,11 +122,11 @@ export default function BudgetEditor({
         <div className="flex gap-2">
           <button type="button" onClick={save} disabled={saving} className="btn-primary self-start">
             {saving ? <Loader2 size={15} className="animate-spin" /> : <Save size={15} />}
-            Save budget
+            {t("Save budget")}
           </button>
           {budget && (
             <button type="button" onClick={() => setEditing(false)} className="btn-secondary self-start">
-              Cancel
+              {t("Cancel")}
             </button>
           )}
         </div>
@@ -135,24 +138,24 @@ export default function BudgetEditor({
     <div className="flex flex-col gap-2">
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <p className="text-ink-muted">Target revenue</p>
+          <p className="text-ink-muted">{t("Target revenue")}</p>
           <p className="font-mono">{formatCurrency(budget.targetRevenue)}</p>
         </div>
         <div>
-          <p className="text-ink-muted">Target expenses</p>
+          <p className="text-ink-muted">{t("Target expenses")}</p>
           <p className="font-mono">{formatCurrency(budget.targetExpenses)}</p>
         </div>
       </div>
       <div className="flex flex-col gap-1 pt-2 border-t border-line">
-        {varianceLine("Revenue", actualRevenue, budget.targetRevenue)}
-        {varianceLine("Expenses", actualExpenses, budget.targetExpenses)}
+        {varianceLine("Revenue", actualRevenue, budget.targetRevenue, t)}
+        {varianceLine("Expenses", actualExpenses, budget.targetExpenses, t)}
       </div>
       <button
         type="button"
         onClick={() => setEditing(true)}
         className="text-sm text-brand-500 hover:text-brand-600 self-start mt-1"
       >
-        Edit budget
+        {t("Edit budget")}
       </button>
     </div>
   );

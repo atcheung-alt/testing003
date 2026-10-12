@@ -21,6 +21,8 @@ import clsx from "clsx";
 import Portal from "@/components/Portal";
 import CompanyLogo from "@/components/CompanyLogo";
 import SwitchSystemLink from "@/components/SwitchSystemLink";
+import LanguageSwitch from "@/components/LanguageSwitch";
+import { useT } from "@/lib/i18n/client";
 
 // Deliberately a *different* storage key from Sidebar's — collapsing the
 // Resource Management rail and collapsing this one are independent choices.
@@ -41,16 +43,16 @@ type NavItem = { href: string; label: string; icon: LucideIcon; comingSoon?: boo
 // there's no point showing nav items that would just bounce them back to
 // Profile anyway. Admins see everything, Profile included, since an admin
 // can also be an employee with their own leave balance to check.
-function buildNavItems(isAdmin: boolean): NavItem[] {
+function buildNavItems(isAdmin: boolean, t: (key: string) => string): NavItem[] {
   if (!isAdmin) {
-    return [{ href: "/hr/profile", label: "Profile", icon: UserCircle }];
+    return [{ href: "/hr/profile", label: t("Profile"), icon: UserCircle }];
   }
   return [
-    { href: "/hr", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/hr/employees", label: "Employees", icon: IdCard },
-    { href: "/hr/payroll", label: "Payroll", icon: Wallet },
-    { href: "/hr/attendance", label: "Attendance", icon: Clock },
-    { href: "/hr/profile", label: "Profile", icon: UserCircle },
+    { href: "/hr", label: t("Dashboard"), icon: LayoutDashboard },
+    { href: "/hr/employees", label: t("Employees"), icon: IdCard },
+    { href: "/hr/payroll", label: t("Payroll"), icon: Wallet },
+    { href: "/hr/attendance", label: t("Attendance"), icon: Clock },
+    { href: "/hr/profile", label: t("Profile"), icon: UserCircle },
   ];
 }
 
@@ -65,13 +67,14 @@ function NavLink({
   collapsed?: boolean;
   onNavigate?: () => void;
 }) {
+  const t = useT();
   const { href, label, icon: Icon, comingSoon } = item;
   const active = href === "/hr" ? pathname === "/hr" : pathname.startsWith(href);
 
   if (comingSoon) {
     return (
       <div
-        title="Coming soon"
+        title={t("Coming soon")}
         className={clsx(
           "flex items-center rounded-xl py-2.5 text-sm font-medium text-ink-faint/70 cursor-not-allowed",
           collapsed ? "justify-center px-0" : "gap-3 px-3"
@@ -82,7 +85,7 @@ function NavLink({
           <span className="truncate flex items-center gap-2">
             {label}
             <span className="text-[9px] font-semibold uppercase tracking-wide border border-line rounded-full px-1.5 py-0.5">
-              Soon
+              {t("Soon")}
             </span>
           </span>
         )}
@@ -157,10 +160,11 @@ function SidebarLogo({
  *  clearly a different area of the app even at a glance, on top of the
  *  re-tinted accent color the rest of the shell already picks up. */
 function HrBadge({ collapsed }: { collapsed?: boolean }) {
+  const t = useT();
   if (collapsed) return null;
   return (
     <span className="text-[10px] font-semibold uppercase tracking-wider text-brand-600 -mt-1">
-      HR System
+      {t("HR System")}
     </span>
   );
 }
@@ -172,6 +176,7 @@ function BottomLinks({
   collapsed?: boolean;
   onNavigate?: () => void;
 }) {
+  const t = useT();
   const router = useRouter();
   const [loggingOut, setLoggingOut] = useState(false);
 
@@ -187,11 +192,12 @@ function BottomLinks({
 
   return (
     <div className="mt-auto px-3 pt-3 border-t border-line flex flex-col gap-1 shrink-0">
+      <LanguageSwitch collapsed={collapsed} menuDirection="up" align="left" className={collapsed ? "mx-auto" : undefined} />
       <button
         type="button"
         onClick={handleLogout}
         disabled={loggingOut}
-        title={collapsed ? "Log out" : undefined}
+        title={collapsed ? t("Log out") : undefined}
         className={clsx(
           "flex items-center rounded-xl py-2.5 text-sm font-medium text-ink-muted hover:bg-danger-50 hover:text-danger-500 transition-colors",
           collapsed ? "justify-center px-0" : "gap-3 px-3"
@@ -202,7 +208,7 @@ function BottomLinks({
         ) : (
           <LogOut size={17} strokeWidth={2} className="shrink-0" />
         )}
-        {!collapsed && "Log out"}
+        {!collapsed && t("Log out")}
       </button>
     </div>
   );
@@ -220,9 +226,10 @@ export default function HrSidebar({
   isAdmin?: boolean;
 }) {
   const pathname = usePathname();
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
-  const items = buildNavItems(isAdmin);
+  const items = buildNavItems(isAdmin, t);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(COLLAPSED_STORAGE_KEY);
@@ -253,8 +260,8 @@ export default function HrSidebar({
           <button
             type="button"
             onClick={toggleCollapsed}
-            aria-label="Expand sidebar"
-            title="Expand sidebar"
+            aria-label={t("Expand sidebar")}
+            title={t("Expand sidebar")}
             className="mx-auto mb-6 w-11 h-11 flex items-center justify-center rounded-lg text-ink-muted hover:bg-brand-50 hover:text-brand-600 transition-colors shrink-0"
           >
             {/* Expanding pulls the rail back out from the right edge it's
@@ -276,8 +283,8 @@ export default function HrSidebar({
             <button
               type="button"
               onClick={toggleCollapsed}
-              aria-label="Collapse sidebar"
-              title="Collapse sidebar"
+              aria-label={t("Collapse sidebar")}
+              title={t("Collapse sidebar")}
               className="flex items-center justify-center w-7 h-7 rounded-lg text-ink-muted hover:bg-brand-50 hover:text-brand-600 transition-colors shrink-0"
             >
               {/* Collapsing pushes the rail back toward the right edge it's
@@ -288,15 +295,16 @@ export default function HrSidebar({
           </div>
         )}
 
-        <SwitchSystemLink href="/" label="Resource Management" collapsed={collapsed} />
+        <SwitchSystemLink href="/" label={t("Resource Management")} collapsed={collapsed} />
         <NavLinks items={items} pathname={pathname} collapsed={collapsed} />
         <BottomLinks collapsed={collapsed} />
       </aside>
 
       <div className="lg:hidden">
+        <LanguageSwitch className="fixed top-3.5 left-3 z-40" menuDirection="down" align="left" />
         <button
           onClick={() => setOpen(true)}
-          aria-label="Open navigation menu"
+          aria-label={t("Open navigation menu")}
           className="fixed top-3.5 right-3 z-40 flex items-center justify-center w-10 h-10 rounded-xl bg-surface border border-line shadow-card"
         >
           <Menu size={19} />
@@ -323,13 +331,13 @@ export default function HrSidebar({
                 </div>
                 <button
                   onClick={() => setOpen(false)}
-                  aria-label="Close navigation menu"
+                  aria-label={t("Close navigation menu")}
                   className="text-ink-muted hover:text-ink"
                 >
                   <X size={20} />
                 </button>
               </div>
-              <SwitchSystemLink href="/" label="Resource Management" onNavigate={() => setOpen(false)} />
+              <SwitchSystemLink href="/" label={t("Resource Management")} onNavigate={() => setOpen(false)} />
               <NavLinks items={items} pathname={pathname} onNavigate={() => setOpen(false)} />
               <BottomLinks onNavigate={() => setOpen(false)} />
             </aside>

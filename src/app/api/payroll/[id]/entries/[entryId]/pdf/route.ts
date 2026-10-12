@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdminApi } from "@/lib/auth";
 import { buildPayslipPdf } from "@/lib/pdf/build";
-import { pdfContentDisposition, pdfDownloadLanguage } from "@/lib/pdf/language";
+import { pdfContentDisposition } from "@/lib/pdf/language";
+import { pdfLanguageFromRequest } from "@/lib/i18n/downloadLanguage";
 
 export const runtime = "nodejs";
 
@@ -12,7 +13,7 @@ export async function GET(
   const denied = await requireAdminApi();
   if (denied) return denied;
 
-  const language = pdfDownloadLanguage(request.nextUrl.searchParams.get("lang"));
+  const language = pdfLanguageFromRequest(request);
   const built = await buildPayslipPdf(params.id, params.entryId, language);
   if (!built) {
     return NextResponse.json({ error: "Payslip not found." }, { status: 404 });

@@ -13,6 +13,7 @@ import MonthlyFinanceChart from "@/components/MonthlyFinanceChart";
 import ExpenseBreakdownChart from "@/components/ExpenseBreakdownChart";
 import AnalysisFilters from "@/components/AnalysisFilters";
 import BudgetEditor from "@/components/BudgetEditor";
+import { getAppLanguage, getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
@@ -33,8 +34,9 @@ function parseRefDate(value: string | undefined): Date {
 }
 
 function DeltaBadge({ pct, invertColor = false }: { pct: number | null; invertColor?: boolean }) {
+  const t = getT();
   if (pct === null) {
-    return <span className="text-xs text-ink-faint">n/a vs previous</span>;
+    return <span className="text-xs text-ink-faint">{t("n/a vs previous")}</span>;
   }
   const isUp = pct > 0.05;
   const isDown = pct < -0.05;
@@ -48,8 +50,9 @@ function DeltaBadge({ pct, invertColor = false }: { pct: number | null; invertCo
   return (
     <span className={`inline-flex items-center gap-1 text-xs font-medium ${color}`}>
       <Icon size={12} />
-      {pct >= 0 ? "+" : ""}
-      {pct.toFixed(1)}% vs previous
+      {t("{change}% vs previous", {
+        change: `${pct >= 0 ? "+" : ""}${pct.toFixed(1)}`,
+      })}
     </span>
   );
 }
@@ -59,13 +62,15 @@ export default async function AnalysisPage({
 }: {
   searchParams: { granularity?: string; ref?: string };
 }) {
+  const t = getT();
+  const locale = getAppLanguage() === "zh" ? "zh-HK" : "en-US";
   const granularity = parseGranularity(searchParams.granularity);
   const refDate = parseRefDate(searchParams.ref);
   const previousRef = previousReferenceDate(granularity, refDate);
 
   const [{ buckets, rangeLabel }, previousTotals, expenseBreakdown, ar] = await Promise.all([
-    getFinanceByPeriod(granularity, refDate),
-    getPeriodTotals(granularity, previousRef),
+    getFinanceByPeriod(granularity, refDate, locale),
+    getPeriodTotals(granularity, previousRef, locale),
     getExpenseBreakdown(granularity, refDate),
     getAccountsReceivable(),
   ]);
@@ -78,8 +83,6 @@ export default async function AnalysisPage({
   const expensesDelta = percentChange(previousTotals.expenses, totalExpenses);
   const profitDelta = percentChange(previousTotals.profit, totalProfit);
 
-  const periodNoun = granularity === "week" ? "week" : granularity === "month" ? "month" : "year";
-
   const exportParams = new URLSearchParams({
     granularity,
     ref: refDate.toISOString().slice(0, 10),
@@ -89,13 +92,13 @@ export default async function AnalysisPage({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="font-display text-2xl font-semibold text-ink mb-1">Analysis</h1>
+          <h1 className="font-display text-2xl font-semibold text-ink mb-1">{t("Analysis")}</h1>
           <p className="text-sm text-ink-muted">
-            Revenue, expenses, and net profit — pick a week, month, or year to view.
+            {t("Revenue, expenses, and net profit — pick a week, month, or year to view.")}
           </p>
         </div>
         <a href={`/api/analysis/export?${exportParams.toString()}`} className="btn-secondary shrink-0">
-          <Download size={15} /> Export CSV
+          <Download size={15} /> {t("Export CSV")}
         </a>
       </div>
 
@@ -104,7 +107,11 @@ export default async function AnalysisPage({
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-            Revenue this {periodNoun}
+            {granularity === "week"
+              ? t("Revenue this week")
+              : granularity === "year"
+              ? t("Revenue this year")
+              : t("Revenue this month")}
           </p>
           <p className="font-mono text-2xl font-semibold text-ink">{formatCurrency(totalRevenue)}</p>
           <div className="mt-1">
@@ -113,7 +120,11 @@ export default async function AnalysisPage({
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-            Expenses this {periodNoun}
+            {granularity === "week"
+              ? t("Expenses this week")
+              : granularity === "year"
+              ? t("Expenses this year")
+              : t("Expenses this month")}
           </p>
           <p className="font-mono text-2xl font-semibold text-ink">{formatCurrency(totalExpenses)}</p>
           <div className="mt-1">
@@ -122,7 +133,11 @@ export default async function AnalysisPage({
         </div>
         <div className="card p-5">
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-            Net profit this {periodNoun}
+            {granularity === "week"
+              ? t("Net profit this week")
+              : granularity === "year"
+              ? t("Net profit this year")
+              : t("Net profit this month")}
           </p>
           <p
             className={`font-mono text-2xl font-semibold ${totalProfit < 0 ? "text-danger-500" : "text-ink"}`}
@@ -135,8 +150,20 @@ export default async function AnalysisPage({
         </div>
       </div>
       <p className="text-xs text-ink-faint -mt-3">
-        Horizontal analysis: comparing against the previous {periodNoun} ({previousTotals.rangeLabel}).
-        For expenses, a green arrow means costs went down — favorable, unlike revenue/profit.
+        {granularity === "week"
+          ? t(
+              "Horizontal analysis: comparing against the previous week ({range}). For expenses, a green arrow means costs went down — favorable, unlike revenue/profit.",
+              { range: previousTotals.rangeLabel }
+            )
+          : granularity === "year"
+          ? t(
+              "Horizontal analysis: comparing against the previous year ({range}). For expenses, a green arrow means costs went down — favorable, unlike revenue/profit.",
+              { range: previousTotals.rangeLabel }
+            )
+          : t(
+              "Horizontal analysis: comparing against the previous month ({range}). For expenses, a green arrow means costs went down — favorable, unlike revenue/profit.",
+              { range: previousTotals.rangeLabel }
+            )}
       </p>
 
       <div className="card p-5">
@@ -149,9 +176,9 @@ export default async function AnalysisPage({
 
       {granularity === "month" && (
         <div className="card p-5">
-          <h2 className="font-display text-lg font-semibold mb-1">Budget &amp; variance</h2>
+          <h2 className="font-display text-lg font-semibold mb-1">{t("Budget & variance")}</h2>
           <p className="text-sm text-ink-muted mb-4">
-            Set a monthly target, then see how actuals compared once the month plays out.
+            {t("Set a monthly target, then see how actuals compared once the month plays out.")}
           </p>
           <BudgetEditor
             year={refDate.getFullYear()}
@@ -165,18 +192,18 @@ export default async function AnalysisPage({
       <div className="card p-5">
         <div className="flex items-center gap-2 mb-1">
           <FileText size={17} className="text-brand-600" />
-          <h2 className="font-display text-lg font-semibold">Income statement</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Income statement")}</h2>
         </div>
         <p className="text-sm text-ink-muted mb-4">{rangeLabel}</p>
         <div className="flex flex-col divide-y divide-line text-sm">
           <div className="flex items-center justify-between py-2">
-            <span className="text-ink">Revenue</span>
+            <span className="text-ink">{t("Revenue")}</span>
             <span className="font-mono font-medium">{formatCurrency(totalRevenue)}</span>
           </div>
           <div className="py-2">
-            <p className="text-ink-muted mb-2">Expenses by category (vertical analysis — % of revenue)</p>
+            <p className="text-ink-muted mb-2">{t("Expenses by category (vertical analysis — % of revenue)")}</p>
             {expenseBreakdown.categories.length === 0 ? (
-              <p className="text-xs text-ink-faint">No expenses logged for this period.</p>
+              <p className="text-xs text-ink-faint">{t("No expenses logged for this period.")}</p>
             ) : (
               <div className="flex flex-col gap-1.5">
                 {expenseBreakdown.categories.map((c) => (
@@ -194,11 +221,11 @@ export default async function AnalysisPage({
             )}
           </div>
           <div className="flex items-center justify-between py-2">
-            <span className="text-ink">Total expenses</span>
+            <span className="text-ink">{t("Total expenses")}</span>
             <span className="font-mono font-medium">{formatCurrency(totalExpenses)}</span>
           </div>
           <div className="flex items-center justify-between py-2">
-            <span className="font-semibold text-ink">Net profit</span>
+            <span className="font-semibold text-ink">{t("Net profit")}</span>
             <span
               className={`font-mono font-semibold ${totalProfit < 0 ? "text-danger-500" : "text-ink"}`}
             >
@@ -211,24 +238,24 @@ export default async function AnalysisPage({
       <div className="card p-5">
         <div className="flex items-center gap-2 mb-1">
           <Wallet size={17} className="text-brand-600" />
-          <h2 className="font-display text-lg font-semibold">Cash flow (operating activities)</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Cash flow (operating activities)")}</h2>
         </div>
         <p className="text-xs text-ink-faint mb-4">
-          This app only tracks quotation/invoice/expense cash flow — not a full cash flow
-          statement, which would also need investing and financing activity (loans, equipment,
-          owner contributions) this app doesn&apos;t record.
+          {t(
+            "This app only tracks quotation/invoice/expense cash flow — not a full cash flow statement, which would also need investing and financing activity (loans, equipment, owner contributions) this app doesn't record."
+          )}
         </p>
         <div className="flex flex-col divide-y divide-line text-sm">
           <div className="flex items-center justify-between py-2">
-            <span className="text-ink-muted">Cash in (invoices paid)</span>
+            <span className="text-ink-muted">{t("Cash in (invoices paid)")}</span>
             <span className="font-mono">{formatCurrency(totalRevenue)}</span>
           </div>
           <div className="flex items-center justify-between py-2">
-            <span className="text-ink-muted">Cash out (expenses logged)</span>
+            <span className="text-ink-muted">{t("Cash out (expenses logged)")}</span>
             <span className="font-mono">({formatCurrency(totalExpenses)})</span>
           </div>
           <div className="flex items-center justify-between py-2">
-            <span className="font-semibold text-ink">Net change in cash</span>
+            <span className="font-semibold text-ink">{t("Net change in cash")}</span>
             <span
               className={`font-mono font-semibold ${totalProfit < 0 ? "text-danger-500" : "text-ink"}`}
             >
@@ -241,30 +268,32 @@ export default async function AnalysisPage({
       <div className="card p-5">
         <div className="flex items-center gap-2 mb-1">
           <Receipt size={17} className="text-brand-600" />
-          <h2 className="font-display text-lg font-semibold">Accounts receivable</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Accounts receivable")}</h2>
         </div>
         <p className="text-xs text-ink-faint mb-4">
-          What clients currently owe, as of today — not scoped to the period above. Not a full
-          balance sheet (this app doesn&apos;t track cash balances, assets, liabilities, or
-          equity), but this part is real and derivable.
+          {t(
+            "What clients currently owe, as of today — not scoped to the period above. Not a full balance sheet (this app doesn't track cash balances, assets, liabilities, or equity), but this part is real and derivable."
+          )}
         </p>
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
           {ar.buckets.map((b) => (
             <div key={b.label} className="rounded-xl border border-line p-3">
-              <p className="text-xs text-ink-muted mb-1">{b.label}</p>
+              <p className="text-xs text-ink-muted mb-1">{t(b.label)}</p>
               <p className="font-mono text-sm font-semibold">{formatCurrency(b.amount)}</p>
               <p className="text-xs text-ink-faint">
-                {b.count} invoice{b.count === 1 ? "" : "s"}
+                {b.count === 1
+                  ? t("{count} invoice", { count: b.count })
+                  : t("{count} invoices", { count: b.count })}
               </p>
             </div>
           ))}
         </div>
         <div className="flex items-center justify-between text-sm mb-3 pb-3 border-b border-line">
-          <span className="font-semibold text-ink">Total outstanding</span>
+          <span className="font-semibold text-ink">{t("Total outstanding")}</span>
           <span className="font-mono font-semibold">{formatCurrency(ar.total)}</span>
         </div>
         {ar.invoices.length === 0 ? (
-          <p className="text-sm text-ink-muted">Nothing outstanding right now.</p>
+          <p className="text-sm text-ink-muted">{t("Nothing outstanding right now.")}</p>
         ) : (
           <div className="flex flex-col divide-y divide-line">
             {ar.invoices.slice(0, 10).map((inv) => (
@@ -274,8 +303,9 @@ export default async function AnalysisPage({
                     {inv.number} — {inv.customerName}
                   </p>
                   <p className="text-xs text-ink-faint">
-                    Due {formatDate(inv.dueDate)}
-                    {inv.daysOutstanding > 0 && ` · ${inv.daysOutstanding}d overdue`}
+                    {t("Due {date}", { date: formatDate(inv.dueDate) })}
+                    {inv.daysOutstanding > 0 &&
+                      ` · ${t("{days}d overdue", { days: inv.daysOutstanding })}`}
                   </p>
                 </div>
                 <span className="font-mono shrink-0">{formatCurrency(inv.total)}</span>
@@ -283,7 +313,9 @@ export default async function AnalysisPage({
             ))}
             {ar.invoices.length > 10 && (
               <p className="text-xs text-ink-faint pt-2">
-                +{ar.invoices.length - 10} more — see the Invoices page for the full list.
+                {t("+{count} more — see the Invoices page for the full list.", {
+                  count: ar.invoices.length - 10,
+                })}
               </p>
             )}
           </div>
@@ -293,10 +325,14 @@ export default async function AnalysisPage({
       <div className="card p-5">
         <div className="flex items-center gap-2 mb-1">
           <PieChart size={17} className="text-brand-600" />
-          <h2 className="font-display text-lg font-semibold">Expense breakdown</h2>
+          <h2 className="font-display text-lg font-semibold">{t("Expense breakdown")}</h2>
         </div>
         <p className="text-sm text-ink-muted mb-4">
-          Which expense category takes the biggest share this {periodNoun} — {rangeLabel}.
+          {granularity === "week"
+            ? t("Which expense category takes the biggest share this week — {range}.", { range: rangeLabel })
+            : granularity === "year"
+            ? t("Which expense category takes the biggest share this year — {range}.", { range: rangeLabel })
+            : t("Which expense category takes the biggest share this month — {range}.", { range: rangeLabel })}
         </p>
         <ExpenseBreakdownChart categories={expenseBreakdown.categories} />
       </div>

@@ -19,6 +19,7 @@ import PublicSignaturePad from "@/components/PublicSignaturePad";
 import CompanyLogo from "@/components/CompanyLogo";
 import { formatDate } from "@/lib/calculations";
 import type { PublicQuotationView } from "@/lib/publicQuotation";
+import { useT } from "@/lib/i18n/client";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -39,6 +40,7 @@ function CommentsCard({
   email: string;
   onSubmitted: (comment: Comment) => void;
 }) {
+  const t = useT();
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,7 +80,7 @@ function CommentsCard({
     <div className="card p-5 sm:p-6 flex flex-col gap-4">
       <div className="flex items-center gap-2">
         <MessageSquare size={18} className="text-brand-600" />
-        <h2 className="font-display text-lg font-semibold">Comments &amp; feedback</h2>
+        <h2 className="font-display text-lg font-semibold">{t("Comments & feedback")}</h2>
       </div>
 
       {comments.length > 0 && (
@@ -107,22 +109,24 @@ function CommentsCard({
       {error && (
         <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
-          <span>{error}</span>
+          <span>{t(error)}</span>
         </div>
       )}
 
       {sent && (
         <p className="text-sm text-brand-600">
-          Thanks — your feedback has been sent to {companyShortName}. You can still sign below once
-          things have been sorted out, or leave another comment below.
+          {t(
+            "Thanks — your feedback has been sent to {company}. You can still sign below once things have been sorted out, or leave another comment below.",
+            { company: companyShortName }
+          )}
         </p>
       )}
 
       <div className="flex flex-col gap-2">
-        <label className="label">Not ready to accept as-is? Tell us what needs to change</label>
+        <label className="label">{t("Not ready to accept as-is? Tell us what needs to change")}</label>
         <textarea
           className="input min-h-[90px]"
-          placeholder="e.g. Could we adjust the quantity on item 2, or revisit the pricing?"
+          placeholder={t("e.g. Could we adjust the quantity on item 2, or revisit the pricing?")}
           value={message}
           onChange={(e) => {
             setMessage(e.target.value);
@@ -131,7 +135,7 @@ function CommentsCard({
         />
         {!nameValid || !emailValid ? (
           <p className="text-xs text-ink-faint">
-            Fill in your full name and email above so we know who&apos;s asking.
+            {t("Fill in your full name and email above so we know who's asking.")}
           </p>
         ) : null}
         <button
@@ -142,11 +146,11 @@ function CommentsCard({
         >
           {submitting ? (
             <>
-              <Loader2 size={15} className="animate-spin" /> Sending…
+              <Loader2 size={15} className="animate-spin" /> {t("Sending…")}
             </>
           ) : (
             <>
-              <Send size={15} /> Send feedback / request changes
+              <Send size={15} /> {t("Send feedback / request changes")}
             </>
           )}
         </button>
@@ -173,10 +177,11 @@ function CompanyHeader({ company }: { company: PublicQuotationView["company"] })
 }
 
 function BilledToCard({ customer }: { customer: PublicQuotationView["customer"] }) {
+  const t = useT();
   return (
     <div className="card p-5">
       <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-        Billed to
+        {t("Billed to")}
       </h2>
       <p className="font-medium text-sm">{customer.name}</p>
       {[customer.contact, customer.address, customer.email, customer.phone]
@@ -204,6 +209,7 @@ function SignedSummary({
     signedDocumentName?: string | null;
   } | null;
 }) {
+  const t = useT();
   const signerName = justSigned?.signerName || view.signerName;
   const signedAt = justSigned?.signedAt || view.signedAt;
   const signedDocumentName = justSigned?.signedDocumentName || view.signedDocumentName;
@@ -214,21 +220,31 @@ function SignedSummary({
       <div className="card p-6 sm:p-8 flex flex-col items-center text-center gap-3">
         <CheckCircle2 size={44} className="text-emerald-500" />
         <h2 className="font-display text-xl font-semibold text-ink">
-          {justSigned ? "Quotation accepted — thank you!" : "This quotation has already been signed"}
+          {justSigned ? t("Quotation accepted — thank you!") : t("This quotation has already been signed")}
         </h2>
         <p className="text-sm text-ink-muted max-w-md">
           {justSigned
-            ? `A copy of the signed quotation ${view.number} has been emailed to you and to ${
-                view.company.shortName || view.company.name
-              }.`
-            : `Quotation ${view.number} was signed by ${signerName || "the client"}${
-                signedAt ? ` on ${formatDate(signedAt)}` : ""
-              }.`}
+            ? t("A copy of the signed quotation {number} has been emailed to you and to {company}.", {
+                number: view.number,
+                company: view.company.shortName || view.company.name,
+              })
+            : signedAt
+              ? t("Quotation {number} was signed by {signer} on {date}.", {
+                  number: view.number,
+                  signer: signerName || t("the client"),
+                  date: formatDate(signedAt),
+                })
+              : t("Quotation {number} was signed by {signer}.", {
+                  number: view.number,
+                  signer: signerName || t("the client"),
+                })}
         </p>
         {justSigned?.invoiceNumber && (
           <p className="text-sm text-ink-muted max-w-md">
-            Invoice {justSigned.invoiceNumber} has also been emailed to you, with a link to view
-            it online and let us know once it&apos;s paid.
+            {t(
+              "Invoice {number} has also been emailed to you, with a link to view it online and let us know once it's paid.",
+              { number: justSigned.invoiceNumber }
+            )}
           </p>
         )}
 
@@ -236,16 +252,16 @@ function SignedSummary({
           <div className="mt-2 flex flex-col items-center gap-1">
             <div className="flex items-center gap-2 rounded-xl border border-line bg-paper px-3 py-2">
               <FileText size={16} className="text-brand-600" />
-              <span className="text-sm text-ink">{signedDocumentName || "Signed document"}</span>
+              <span className="text-sm text-ink">{signedDocumentName || t("Signed document")}</span>
             </div>
-            <p className="text-xs text-ink-faint">Uploaded by {signerName}</p>
+            <p className="text-xs text-ink-faint">{t("Uploaded by {name}", { name: signerName || "" })}</p>
           </div>
         ) : view.signatureData ? (
           <div className="mt-2 flex flex-col items-center gap-1">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={view.signatureData}
-              alt="Signature"
+              alt={t("Signature")}
               className="max-h-20 bg-white rounded-lg border border-line"
             />
             <p className="text-xs text-ink-faint">{signerName}</p>
@@ -257,7 +273,7 @@ function SignedSummary({
         <div className="card p-5 sm:p-6 flex flex-col gap-3">
           <div className="flex items-center gap-2">
             <MessageSquare size={18} className="text-brand-600" />
-            <h2 className="font-display text-lg font-semibold">Comments &amp; feedback</h2>
+            <h2 className="font-display text-lg font-semibold">{t("Comments & feedback")}</h2>
           </div>
           {comments.map((c) => (
             <div
@@ -292,6 +308,7 @@ export default function QuotationSigningClient({
   token: string;
   initial: PublicQuotationView;
 }) {
+  const t = useT();
   const [view] = useState(initial);
   const [comments, setComments] = useState<Comment[]>(initial.comments || []);
   const [fullName, setFullName] = useState(view.customer.contact || "");
@@ -382,7 +399,7 @@ export default function QuotationSigningClient({
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-2">
         <div>
           <h1 className="font-display text-2xl font-semibold text-ink">
-            Quotation {view.number}
+            {t("Quotation {number}", { number: view.number })}
           </h1>
           {view.title && <p className="text-sm text-ink-muted mt-0.5">{view.title}</p>}
         </div>
@@ -393,9 +410,10 @@ export default function QuotationSigningClient({
         <SignedSummary view={view} comments={comments} justSigned={justSigned} />
       ) : !view.signable ? (
         <div className="card p-6 text-center text-sm text-ink-muted">
-          This quotation is no longer available for online signing. Please contact{" "}
-          {view.company.contact?.email || view.company.shortName || view.company.name} for
-          assistance.
+          {t(
+            "This quotation is no longer available for online signing. Please contact {contact} for assistance.",
+            { contact: view.company.contact?.email || view.company.shortName || view.company.name }
+          )}
         </div>
       ) : (
         <>
@@ -415,7 +433,7 @@ export default function QuotationSigningClient({
           {view.reminder && (
             <div className="card p-5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-                Reminder
+                {t("Reminder")}
               </h2>
               <p className="text-sm text-ink whitespace-pre-line">{view.reminder}</p>
             </div>
@@ -424,7 +442,7 @@ export default function QuotationSigningClient({
           {view.terms && (
             <div className="card p-5">
               <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-2">
-                Terms &amp; conditions
+                {t("Terms & conditions")}
               </h2>
               <p className="text-sm text-ink whitespace-pre-line">{view.terms}</p>
             </div>
@@ -433,29 +451,29 @@ export default function QuotationSigningClient({
           <div className="card p-5 sm:p-6 flex flex-col gap-5">
             <div className="flex items-center gap-2">
               <ShieldCheck size={18} className="text-brand-600" />
-              <h2 className="font-display text-lg font-semibold">Accept &amp; sign</h2>
+              <h2 className="font-display text-lg font-semibold">{t("Accept & sign")}</h2>
             </div>
 
             {error && (
               <div className="flex items-start gap-2 bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-xl px-3 py-2">
                 <AlertCircle size={16} className="mt-0.5 shrink-0" />
-                <span>{error}</span>
+                <span>{t(error)}</span>
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="label">Full name *</label>
+                <label className="label">{t("Full name *")}</label>
                 <input
                   type="text"
                   className="input"
-                  placeholder="Your full name"
+                  placeholder={t("Your full name")}
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                 />
               </div>
               <div>
-                <label className="label">Email *</label>
+                <label className="label">{t("Email *")}</label>
                 <input
                   type="email"
                   className="input"
@@ -465,14 +483,14 @@ export default function QuotationSigningClient({
                 />
                 {!emailValid && email.length > 0 && (
                   <p className="mt-1 text-xs text-danger-500">
-                    That doesn&apos;t look like a valid email.
+                    {t("That doesn't look like a valid email.")}
                   </p>
                 )}
               </div>
             </div>
 
             <div>
-              <label className="label">Confirm your acceptance *</label>
+              <label className="label">{t("Confirm your acceptance *")}</label>
               <div className="flex gap-2 mb-3">
                 <button
                   type="button"
@@ -483,7 +501,7 @@ export default function QuotationSigningClient({
                       : "stamp gap-1 border-line text-ink-muted"
                   }
                 >
-                  <PenLine size={13} /> Draw signature
+                  <PenLine size={13} /> {t("Draw signature")}
                 </button>
                 <button
                   type="button"
@@ -494,7 +512,7 @@ export default function QuotationSigningClient({
                       : "stamp gap-1 border-line text-ink-muted"
                   }
                 >
-                  <Upload size={13} /> Upload signed PDF
+                  <Upload size={13} /> {t("Upload signed PDF")}
                 </button>
               </div>
 
@@ -507,8 +525,9 @@ export default function QuotationSigningClient({
               ) : (
                 <div className="flex flex-col gap-2">
                   <p className="text-xs text-ink-muted">
-                    Download the quotation, print it, sign it, scan or photograph it back into a
-                    PDF, then upload it here.
+                    {t(
+                      "Download the quotation, print it, sign it, scan or photograph it back into a PDF, then upload it here."
+                    )}
                   </p>
                   {uploadedFileName ? (
                     <div className="flex items-center justify-between gap-3 rounded-xl border border-line bg-paper px-3 py-2.5">
@@ -522,7 +541,7 @@ export default function QuotationSigningClient({
                           setUploadedFileData(null);
                           setUploadedFileName(null);
                         }}
-                        aria-label="Remove file"
+                        aria-label={t("Remove file")}
                         className="text-ink-faint hover:text-danger-500 transition-colors shrink-0"
                       >
                         <X size={15} />
@@ -531,8 +550,8 @@ export default function QuotationSigningClient({
                   ) : (
                     <label className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line px-4 py-8 text-center cursor-pointer hover:border-brand-300 hover:bg-brand-50/30 transition-colors">
                       <Upload size={22} className="text-ink-faint" />
-                      <span className="text-sm text-ink-muted">Click to choose a PDF</span>
-                      <span className="text-xs text-ink-faint">PDF only, up to 15 MB</span>
+                      <span className="text-sm text-ink-muted">{t("Click to choose a PDF")}</span>
+                      <span className="text-xs text-ink-faint">{t("PDF only, up to 15 MB")}</span>
                       <input
                         type="file"
                         accept="application/pdf,.pdf"
@@ -542,17 +561,22 @@ export default function QuotationSigningClient({
                     </label>
                   )}
                   {uploadError && (
-                    <p className="text-xs text-danger-500">{uploadError}</p>
+                    <p className="text-xs text-danger-500">{t(uploadError)}</p>
                   )}
                 </div>
               )}
             </div>
 
             <p className="text-xs text-ink-faint">
-              By clicking &ldquo;Accept &amp; Sign&rdquo;, you confirm that you have reviewed
-              quotation {view.number} in full and agree to the terms and conditions stated above.
-              Your name, email, {method === "draw" ? "signature" : "uploaded document"}, and IP
-              address will be recorded with the timestamp of signing.
+              {method === "draw"
+                ? t(
+                    "By clicking \"Accept & Sign\", you confirm that you have reviewed quotation {number} in full and agree to the terms and conditions stated above. Your name, email, signature, and IP address will be recorded with the timestamp of signing.",
+                    { number: view.number }
+                  )
+                : t(
+                    "By clicking \"Accept & Sign\", you confirm that you have reviewed quotation {number} in full and agree to the terms and conditions stated above. Your name, email, uploaded document, and IP address will be recorded with the timestamp of signing.",
+                    { number: view.number }
+                  )}
             </p>
 
             <button
@@ -563,11 +587,11 @@ export default function QuotationSigningClient({
             >
               {submitting ? (
                 <>
-                  <Loader2 size={15} className="animate-spin" /> Submitting…
+                  <Loader2 size={15} className="animate-spin" /> {t("Submitting…")}
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={15} /> Accept &amp; Sign
+                  <ShieldCheck size={15} /> {t("Accept & Sign")}
                 </>
               )}
             </button>

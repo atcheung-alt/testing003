@@ -3,11 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BadgeCheck } from "lucide-react";
+import { useT } from "@/lib/i18n/client";
 
 /** Mirrors VerifyPaymentButton — a plain confirm + PATCH, same "staff
  *  verifies something a client/employee already did" pattern. Verifying
  *  also flips the employee's own status from Onboarding to Active. */
 export default function VerifyContractButton({ employeeId }: { employeeId: string }) {
+  const t = useT();
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,7 +17,7 @@ export default function VerifyContractButton({ employeeId }: { employeeId: strin
   async function handleVerify() {
     if (
       !window.confirm(
-        "Confirm the signed contract has been reviewed? This will mark the employee as Active."
+        t("Confirm the signed contract has been reviewed? This will mark the employee as Active.")
       )
     ) {
       return;
@@ -45,9 +47,9 @@ export default function VerifyContractButton({ employeeId }: { employeeId: strin
   return (
     <div className="flex flex-col items-end gap-1">
       <button type="button" onClick={handleVerify} disabled={busy} className="btn-primary">
-        <BadgeCheck size={15} /> {busy ? "Verifying…" : "Verify contract"}
+        <BadgeCheck size={15} /> {busy ? t("Verifying…") : t("Verify contract")}
       </button>
-      {error && <span className="text-xs text-danger-500 max-w-[220px] text-right">{error}</span>}
+      {error && <span className="text-xs text-danger-500 max-w-[220px] text-right">{t(error)}</span>}
     </div>
   );
 }

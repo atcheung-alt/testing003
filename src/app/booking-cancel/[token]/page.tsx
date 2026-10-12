@@ -3,10 +3,14 @@ import { notFound } from "next/navigation";
 import { getEffectiveCompany } from "@/lib/appSettings";
 import { getBookingByCancelToken } from "@/lib/bookings";
 import BookingCancelClient from "@/components/BookingCancelClient";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Cancel your booking" };
+export function generateMetadata(): Metadata {
+  const t = getT();
+  return { title: t("Cancel your booking") };
+}
 
 /**
  * A client's self-service "cancel my booking" link — see the cancelToken

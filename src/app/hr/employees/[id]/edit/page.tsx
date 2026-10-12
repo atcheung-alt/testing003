@@ -2,10 +2,12 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import EmployeeForm from "@/components/EmployeeForm";
 import { requireAdminPage } from "@/lib/auth";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export default async function EditEmployeePage({ params }: { params: { id: string } }) {
+  const t = getT();
   // Pre-fills every field, including HKID/bank/salary — admin-only.
   await requireAdminPage();
 
@@ -23,7 +25,9 @@ export default async function EditEmployeePage({ params }: { params: { id: strin
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink mb-1">Edit {employee.name}</h1>
+        <h1 className="font-display text-2xl font-semibold text-ink mb-1">
+          {t("Edit {name}", { name: employee.name })}
+        </h1>
       </div>
       <EmployeeForm
         contract={employee.contract}

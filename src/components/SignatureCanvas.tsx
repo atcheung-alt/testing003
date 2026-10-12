@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { Trash2 } from "lucide-react";
 import { SIGNATURE_CANVAS_WIDTH, SIGNATURE_CANVAS_HEIGHT } from "@/lib/signatureImage";
+import { useT } from "@/lib/i18n/client";
 
 type Props = {
   onCommit: (dataUrl: string | null) => void;
@@ -11,6 +12,7 @@ type Props = {
 
 /** A draw-with-mouse-or-touch signature canvas with a Clear control. */
 export default function SignatureCanvas({ onCommit, className }: Props) {
+  const t = useT();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const drawing = useRef(false);
   const dirty = useRef(false);
@@ -83,7 +85,7 @@ export default function SignatureCanvas({ onCommit, className }: Props) {
         style={{ aspectRatio: `${SIGNATURE_CANVAS_WIDTH} / ${SIGNATURE_CANVAS_HEIGHT}` }}
       />
       <button type="button" onClick={clear} className="btn-ghost mt-2 !px-2 text-xs">
-        <Trash2 size={13} /> Clear
+        <Trash2 size={13} /> {t("Clear")}
       </button>
     </div>
   );

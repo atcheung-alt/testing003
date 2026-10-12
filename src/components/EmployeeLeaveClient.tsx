@@ -6,6 +6,7 @@ import { formatDate } from "@/lib/calculations";
 import LeaveStatusBadge from "@/components/LeaveStatusBadge";
 import CompanyLogo from "@/components/CompanyLogo";
 import type { PublicEmployeeLeaveView } from "@/lib/publicEmployeeLeave";
+import { useT } from "@/lib/i18n/client";
 
 function CompanyHeader({ company }: { company: PublicEmployeeLeaveView["company"] }) {
   return (
@@ -40,6 +41,7 @@ export default function EmployeeLeaveClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSubmitted, setJustSubmitted] = useState(false);
+  const t = useT();
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -47,11 +49,11 @@ export default function EmployeeLeaveClient({
     setJustSubmitted(false);
 
     if (!startDate) {
-      setError("Please choose a start date.");
+      setError(t("Please choose a start date."));
       return;
     }
     if (endDate && endDate < startDate) {
-      setError("End date must be on or after the start date.");
+      setError(t("End date must be on or after the start date."));
       return;
     }
 
@@ -69,7 +71,7 @@ export default function EmployeeLeaveClient({
         }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong. Please try again."));
       setView(data);
       setStartDate("");
       setEndDate("");
@@ -89,33 +91,33 @@ export default function EmployeeLeaveClient({
       <CompanyHeader company={view.company} />
 
       <div>
-        <h1 className="font-display text-2xl font-semibold text-ink">Hi, {view.name}</h1>
-        <p className="text-sm text-ink-muted mt-0.5">Your annual leave balance and request history.</p>
+        <h1 className="font-display text-2xl font-semibold text-ink">{t("Hi, {name}", { name: view.name })}</h1>
+        <p className="text-sm text-ink-muted mt-0.5">{t("Your annual leave balance and request history.")}</p>
       </div>
 
       <div className="card p-5 grid grid-cols-3 gap-4 text-center">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-1">
-            Entitlement
+{t("Entitlement")}
           </p>
           <p className="font-mono text-xl font-semibold text-ink">{view.annualLeaveDays}</p>
-          <p className="text-xs text-ink-faint">days/year</p>
+          <p className="text-xs text-ink-faint">{t("days/year")}</p>
         </div>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-1">Used</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-1">{t("Used")}</p>
           <p className="font-mono text-xl font-semibold text-ink">{view.leaveUsed}</p>
-          <p className="text-xs text-ink-faint">days</p>
+          <p className="text-xs text-ink-faint">{t("days")}</p>
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted mb-1">
-            Remaining
+{t("Remaining")}
           </p>
           <p
             className={`font-mono text-xl font-semibold ${view.leaveRemaining < 0 ? "text-danger-500" : "text-brand-600"}`}
           >
             {view.leaveRemaining}
           </p>
-          <p className="text-xs text-ink-faint">days</p>
+          <p className="text-xs text-ink-faint">{t("days")}</p>
         </div>
       </div>
 
@@ -123,7 +125,7 @@ export default function EmployeeLeaveClient({
         <form onSubmit={submit} className="card p-5 flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <CalendarDays size={18} className="text-brand-600" />
-            <h2 className="font-display text-lg font-semibold">Request leave</h2>
+            <h2 className="font-display text-lg font-semibold">{t("Request leave")}</h2>
           </div>
 
           {error && (
@@ -134,13 +136,13 @@ export default function EmployeeLeaveClient({
           )}
           {justSubmitted && (
             <div className="bg-emerald-50 border border-emerald-500/30 text-emerald-700 text-sm rounded-xl px-3 py-2">
-              Request submitted — a staff member will review it soon.
+{t("Request submitted — a staff member will review it soon.")}
             </div>
           )}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="label">Start date *</label>
+              <label className="label">{t("Start date *")}</label>
               <input
                 type="date"
                 className="input"
@@ -150,7 +152,7 @@ export default function EmployeeLeaveClient({
               />
             </div>
             <div>
-              <label className="label">End date</label>
+              <label className="label">{t("End date")}</label>
               <input
                 type="date"
                 className="input"
@@ -159,7 +161,7 @@ export default function EmployeeLeaveClient({
                 disabled={isHalfDay}
                 onChange={(e) => setEndDate(e.target.value)}
               />
-              <p className="mt-1 text-xs text-ink-faint">Leave blank for a single day.</p>
+              <p className="mt-1 text-xs text-ink-faint">{t("Leave blank for a single day.")}</p>
             </div>
           </div>
 
@@ -173,7 +175,7 @@ export default function EmployeeLeaveClient({
                   if (e.target.checked) setEndDate("");
                 }}
               />
-              <span>Half day (counts as 0.5 day)</span>
+              <span>{t("Half day (counts as 0.5 day)")}</span>
             </label>
             {isHalfDay && (
               <div className="flex gap-4 pl-6">
@@ -184,7 +186,7 @@ export default function EmployeeLeaveClient({
                     checked={halfDayPeriod === "AM"}
                     onChange={() => setHalfDayPeriod("AM")}
                   />
-                  Morning (AM)
+{t("Morning (AM)")}
                 </label>
                 <label className="flex items-center gap-1.5 text-sm">
                   <input
@@ -193,37 +195,37 @@ export default function EmployeeLeaveClient({
                     checked={halfDayPeriod === "PM"}
                     onChange={() => setHalfDayPeriod("PM")}
                   />
-                  Afternoon (PM)
+{t("Afternoon (PM)")}
                 </label>
               </div>
             )}
           </div>
 
           <div>
-            <label className="label">Reason (optional)</label>
+            <label className="label">{t("Reason (optional)")}</label>
             <textarea
               className="input min-h-[80px]"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              placeholder="e.g. Family trip"
+placeholder={t("e.g. Family trip")}
             />
           </div>
 
           <button type="submit" disabled={submitting} className="btn-primary self-start">
             {submitting ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
-            {submitting ? "Submitting…" : "Submit request"}
+            {submitting ? t("Submitting…") : t("Submit request")}
           </button>
         </form>
       ) : (
         <div className="card p-5 text-sm text-ink-muted text-center">
-          This link is read-only — new leave requests can no longer be submitted.
+{t("This link is read-only — new leave requests can no longer be submitted.")}
         </div>
       )}
 
       <div className="card p-5">
-        <h2 className="font-display text-lg font-semibold mb-4">Request history</h2>
+        <h2 className="font-display text-lg font-semibold mb-4">{t("Request history")}</h2>
         {view.leaveRequests.length === 0 ? (
-          <p className="text-sm text-ink-muted">No leave requests yet.</p>
+          <p className="text-sm text-ink-muted">{t("No leave requests yet.")}</p>
         ) : (
           <div className="flex flex-col divide-y divide-line">
             {view.leaveRequests.map((r) => (
@@ -235,14 +237,14 @@ export default function EmployeeLeaveClient({
                     {r.isHalfDay && (
                       <span className="text-xs font-normal text-ink-muted">
                         {" "}
-                        ({r.halfDayPeriod} half-day · 0.5 day)
+                        ({t("{period} half-day · 0.5 day", { period: t(r.halfDayPeriod) })})
                       </span>
                     )}
                   </p>
                   <LeaveStatusBadge status={r.status} />
                 </div>
                 {r.reason && <p className="text-xs text-ink-muted">{r.reason}</p>}
-                {r.decidedNote && <p className="text-xs text-ink-faint italic">Note: {r.decidedNote}</p>}
+                {r.decidedNote && <p className="text-xs text-ink-faint italic">{t("Note: {note}", { note: r.decidedNote })}</p>}
               </div>
             ))}
           </div>

@@ -4,31 +4,33 @@ import { useState } from "react";
 import { FileDown, X, AlertCircle } from "lucide-react";
 import Portal from "@/components/Portal";
 import { currentPeriod } from "@/lib/payroll";
-import { PDF_DOWNLOAD_BUTTONS, type PdfDownloadLanguage } from "@/lib/pdf/language";
+import { useAppLanguage, useT } from "@/lib/i18n/client";
+import { appLanguageToPdf } from "@/lib/i18n/language";
 
 /** Opens a small "pick a date range" modal, then downloads a PDF salary
  *  report for this employee covering every payroll run in that range (see
- *  GET /api/employees/[id]/salary-report/pdf). Mirrors NewPayrollRunButton's
- *  modal shape, but the end action is a plain download rather than a POST —
- *  no server state changes here. */
+ *  GET /api/employees/[id]/salary-report/pdf). The PDF language follows the
+ *  Language button. Nothing is saved on the employee. */
 export default function SalaryReportButton({ employeeId }: { employeeId: string }) {
+  const t = useT();
+  const language = useAppLanguage();
   const [open, setOpen] = useState(false);
   const [from, setFrom] = useState(currentPeriod());
   const [to, setTo] = useState(currentPeriod());
   const [error, setError] = useState<string | null>(null);
 
-  function download(language: PdfDownloadLanguage) {
+  function download() {
     if (!from || !to) {
-      setError("Please choose both a start and end month.");
+      setError(t("Please choose both a start and end month."));
       return;
     }
     if (from > to) {
-      setError("The start month must be on or before the end month.");
+      setError(t("The start month must be on or before the end month."));
       return;
     }
     setError(null);
     window.open(
-      `/api/employees/${employeeId}/salary-report/pdf?from=${from}&to=${to}&lang=${language}`,
+      `/api/employees/${employeeId}/salary-report/pdf?from=${from}&to=${to}&lang=${appLanguageToPdf(language)}`,
       "_blank",
       "noopener,noreferrer"
     );
@@ -38,7 +40,7 @@ export default function SalaryReportButton({ employeeId }: { employeeId: string 
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="btn-secondary">
-        <FileDown size={15} /> Salary report
+        <FileDown size={15} /> {t("Salary report")}
       </button>
 
       {open && (
@@ -50,12 +52,12 @@ export default function SalaryReportButton({ employeeId }: { employeeId: string 
             />
             <div className="relative w-full max-w-sm card p-6 animate-scale-in">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="font-display text-lg font-semibold">Export salary report</h2>
+                <h2 className="font-display text-lg font-semibold">{t("Export salary report")}</h2>
                 <button
                   type="button"
                   onClick={() => setOpen(false)}
                   className="text-ink-faint hover:text-ink"
-                  aria-label="Close"
+                  aria-label={t("Close")}
                 >
                   <X size={18} />
                 </button>
@@ -70,34 +72,32 @@ export default function SalaryReportButton({ employeeId }: { employeeId: string 
 
               <div className="grid grid-cols-2 gap-3 mb-2">
                 <div>
-                  <label className="label">From</label>
+                  <label className="label">{t("From")}</label>
                   <input type="month" className="input" value={from} onChange={(e) => setFrom(e.target.value)} />
                 </div>
                 <div>
-                  <label className="label">To</label>
+                  <label className="label">{t("To")}</label>
                   <input type="month" className="input" value={to} onChange={(e) => setTo(e.target.value)} />
                 </div>
               </div>
               <p className="text-xs text-ink-faint mb-4">
-                Covers every payroll run in this range — income, bonus, and MPF (employee and employer) per month,
-                plus totals. Headings follow the button you pick.
+                {t(
+                  "Covers every payroll run in this range — income, bonus, and MPF (employee and employer) per month, plus totals."
+                )}
               </p>
 
               <div className="flex flex-wrap gap-2 justify-end">
                 <button type="button" onClick={() => setOpen(false)} className="btn-secondary">
-                  Cancel
+                  {t("Cancel")}
                 </button>
-                {PDF_DOWNLOAD_BUTTONS.map((option) => (
-                  <button
-                    key={option.lang}
-                    type="button"
-                    onClick={() => download(option.lang)}
-                    disabled={!from || !to}
-                    className="btn-secondary whitespace-nowrap"
-                  >
-                    <FileDown size={15} /> {option.label}
-                  </button>
-                ))}
+                <button
+                  type="button"
+                  onClick={download}
+                  disabled={!from || !to}
+                  className="btn-secondary whitespace-nowrap"
+                >
+                  <FileDown size={15} /> {t("Download PDF")}
+                </button>
               </div>
             </div>
           </div>

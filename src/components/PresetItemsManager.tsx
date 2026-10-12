@@ -6,6 +6,7 @@ import ItemImageUpload from "@/components/ItemImageUpload";
 import { formatCurrency } from "@/lib/calculations";
 import { matchesAnyField } from "@/lib/chineseSearch";
 import type { Multiplier, PresetItem } from "@/types";
+import { useT } from "@/lib/i18n/client";
 
 type Draft = {
   name: string;
@@ -44,6 +45,7 @@ function PresetForm({
   onCancel?: () => void;
   saveLabel: string;
 }) {
+  const t = useT();
   const [draft, setDraft] = useState<Draft>(initial);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,7 +62,7 @@ function PresetForm({
     <div className="flex flex-col gap-3">
       {error && (
         <div className="bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-md px-3 py-2">
-          {error}
+          {t(error)}
         </div>
       )}
       <div className="flex gap-3">
@@ -70,20 +72,20 @@ function PresetForm({
         />
         <div className="flex-1 flex flex-col gap-2 min-w-0">
           <div>
-            <label className="label">Item name *</label>
+            <label className="label">{t("Item name *")}</label>
             <input
               type="text"
               className="input"
-              placeholder="e.g. Website design"
+              placeholder={t("e.g. Website design")}
               value={draft.name}
               onChange={(e) => setDraft((d) => ({ ...d, name: e.target.value }))}
             />
           </div>
           <div>
-            <label className="label">Item description</label>
+            <label className="label">{t("Item description")}</label>
             <textarea
               className="input min-h-[54px]"
-              placeholder="Optional details shown under the item name"
+              placeholder={t("Optional details shown under the item name")}
               value={draft.description}
               onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
             />
@@ -92,17 +94,17 @@ function PresetForm({
       </div>
       <div className="grid grid-cols-2 gap-3 max-w-md">
         <div>
-          <label className="label">Unit</label>
+          <label className="label">{t("Unit")}</label>
           <input
             type="text"
             className="input"
-            placeholder="e.g. pcs, hrs"
+            placeholder={t("e.g. pcs, hrs")}
             value={draft.unit}
             onChange={(e) => setDraft((d) => ({ ...d, unit: e.target.value }))}
           />
         </div>
         <div>
-          <label className="label">Unit price</label>
+          <label className="label">{t("Unit price")}</label>
           <input
             type="number"
             step="any"
@@ -115,7 +117,7 @@ function PresetForm({
       </div>
 
       <div className="max-w-md">
-        <label className="label">Multipliers (optional)</label>
+        <label className="label">{t("Multipliers (optional)")}</label>
         {draft.multipliers.length > 0 && (
           <div className="flex flex-col gap-2 mb-2">
             {draft.multipliers.map((m, mi) => (
@@ -125,7 +127,7 @@ function PresetForm({
                   step="any"
                   min={0}
                   className="input text-right w-24"
-                  placeholder="e.g. 3"
+                  placeholder={t("e.g. 3")}
                   value={m.value}
                   onChange={(e) =>
                     setDraft((d) => ({
@@ -139,7 +141,7 @@ function PresetForm({
                 <input
                   type="text"
                   className="input flex-1"
-                  placeholder="e.g. persons, sessions"
+                  placeholder={t("e.g. persons, sessions")}
                   value={m.label}
                   onChange={(e) =>
                     setDraft((d) => ({
@@ -158,7 +160,7 @@ function PresetForm({
                       multipliers: d.multipliers.filter((_, i) => i !== mi),
                     }))
                   }
-                  aria-label="Remove multiplier"
+                  aria-label={t("Remove multiplier")}
                   className="text-ink-faint hover:text-danger-500 transition-colors shrink-0"
                 >
                   <Trash2 size={15} />
@@ -174,22 +176,22 @@ function PresetForm({
           }
           className="btn-ghost !px-2 text-xs"
         >
-          <Plus size={14} /> Add multiplier
+          <Plus size={14} /> {t("Add multiplier")}
         </button>
       </div>
 
       <p className="text-xs text-ink-muted max-w-md">
-        For rates like &ldquo;per hour × per person&rdquo;, set Unit to the rate&apos;s time unit
-        (e.g. &ldquo;hrs&rdquo;) and add a multiplier for each extra factor (e.g. 2 persons).
-        Amount = qty × unit price × every multiplier&apos;s value.
+        {t(
+          "For rates like \"per hour × per person\", set Unit to the rate's time unit (e.g. \"hrs\") and add a multiplier for each extra factor (e.g. 2 persons). Amount = qty × unit price × every multiplier's value."
+        )}
       </p>
       <div className="flex gap-2">
         <button type="button" onClick={submit} disabled={saving} className="btn-primary">
-          {saving ? "Saving…" : saveLabel}
+          {saving ? t("Saving…") : t(saveLabel)}
         </button>
         {onCancel && (
           <button type="button" onClick={onCancel} className="btn-secondary">
-            Cancel
+            {t("Cancel")}
           </button>
         )}
       </div>
@@ -198,6 +200,7 @@ function PresetForm({
 }
 
 export default function PresetItemsManager() {
+  const t = useT();
   const [items, setItems] = useState<PresetItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [adding, setAdding] = useState(false);
@@ -264,7 +267,7 @@ export default function PresetItemsManager() {
   }
 
   async function remove(item: PresetItem) {
-    if (!window.confirm(`Delete "${item.name}" from the item library?`)) return;
+    if (!window.confirm(t("Delete \"{name}\" from the item library?", { name: item.name }))) return;
     setError(null);
     try {
       const res = await fetch(`/api/preset-items/${item.id}`, { method: "DELETE" });
@@ -280,13 +283,13 @@ export default function PresetItemsManager() {
     <div className="flex flex-col gap-4">
       {error && (
         <div className="bg-danger-50 border border-danger-500/30 text-danger-600 text-sm rounded-md px-3 py-2">
-          {error}
+          {t(error)}
         </div>
       )}
 
       {adding ? (
         <div className="card p-5">
-          <h2 className="font-display text-lg font-semibold mb-4">New preset item</h2>
+          <h2 className="font-display text-lg font-semibold mb-4">{t("New preset item")}</h2>
           <PresetForm
             initial={emptyDraft}
             saving={saving}
@@ -298,7 +301,7 @@ export default function PresetItemsManager() {
       ) : (
         <div>
           <button type="button" onClick={() => setAdding(true)} className="btn-primary">
-            <Plus size={15} /> New preset item
+            <Plus size={15} /> {t("New preset item")}
           </button>
         </div>
       )}
@@ -309,7 +312,7 @@ export default function PresetItemsManager() {
           <input
             type="text"
             className="input pl-9"
-            placeholder="Search by name or description…"
+            placeholder={t("Search by name or description…")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -317,18 +320,19 @@ export default function PresetItemsManager() {
       )}
 
       {loading ? (
-        <p className="text-sm text-ink-muted">Loading…</p>
+        <p className="text-sm text-ink-muted">{t("Loading…")}</p>
       ) : items.length === 0 && !adding ? (
         <div className="card p-8 flex flex-col items-center text-center gap-2">
           <PackageOpen size={28} className="text-ink-faint" />
-          <p className="font-medium">No preset items yet</p>
+          <p className="font-medium">{t("No preset items yet")}</p>
           <p className="text-sm text-ink-muted max-w-sm">
-            Build a library of standardized items — each one can be picked from a dropdown when
-            creating quotations and invoices.
+            {t(
+              "Build a library of standardized items — each one can be picked from a dropdown when creating quotations and invoices."
+            )}
           </p>
         </div>
       ) : filteredItems.length === 0 ? (
-        <p className="text-sm text-ink-faint py-6 text-center">No items match &ldquo;{search}&rdquo;.</p>
+        <p className="text-sm text-ink-faint py-6 text-center">{t("No items match \"{query}\".", { query: search })}</p>
       ) : (
         <div className="card divide-y divide-line">
           {filteredItems.map((item) =>
@@ -369,7 +373,7 @@ export default function PresetItemsManager() {
                 </div>
                 <div className="text-right shrink-0">
                   <p className="font-mono text-sm">{formatCurrency(item.unitPrice)}</p>
-                  {item.unit && <p className="text-xs text-ink-muted">per {item.unit}</p>}
+                  {item.unit && <p className="text-xs text-ink-muted">{t("per {unit}", { unit: item.unit })}</p>}
                   {item.multipliers && item.multipliers.length > 0 && (
                     <p className="text-xs text-ink-muted">{multipliersSummary(item.multipliers)}</p>
                   )}
@@ -381,7 +385,7 @@ export default function PresetItemsManager() {
                       setAdding(false);
                       setEditingId(item.id);
                     }}
-                    aria-label={`Edit ${item.name}`}
+                    aria-label={t("Edit {name}", { name: item.name })}
                     className="p-2 text-ink-faint hover:text-brand-600 transition-colors"
                   >
                     <Pencil size={15} />
@@ -389,7 +393,7 @@ export default function PresetItemsManager() {
                   <button
                     type="button"
                     onClick={() => remove(item)}
-                    aria-label={`Delete ${item.name}`}
+                    aria-label={t("Delete {name}", { name: item.name })}
                     className="p-2 text-ink-faint hover:text-danger-500 transition-colors"
                   >
                     <Trash2 size={15} />

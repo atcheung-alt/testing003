@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UserPlus, Loader2, AlertCircle } from "lucide-react";
 import Portal from "@/components/Portal";
+import { useT } from "@/lib/i18n/client";
 
 /** Admin-only quick-add: just name + email, then immediately emails an
  *  onboarding link — see /api/employees/invite. The employee fills in
@@ -17,6 +18,7 @@ export default function InviteEmployeeButton() {
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const t = useT();
 
   function close() {
     if (busy) return;
@@ -37,7 +39,7 @@ export default function InviteEmployeeButton() {
         body: JSON.stringify({ name, email }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      if (!res.ok) throw new Error(data.error || t("Something went wrong."));
       router.push(`/hr/employees/${data.id}`);
       router.refresh();
     } catch (err: any) {
@@ -49,7 +51,7 @@ export default function InviteEmployeeButton() {
   return (
     <>
       <button type="button" onClick={() => setOpen(true)} className="btn-secondary shrink-0">
-        <UserPlus size={15} /> Invite employee
+        <UserPlus size={15} /> {t("Invite employee")}
       </button>
 
       {open && (
@@ -57,10 +59,9 @@ export default function InviteEmployeeButton() {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 backdrop-blur-sm px-4 animate-fade-in">
             <div className="card p-6 max-w-sm w-full flex flex-col gap-4 animate-scale-in">
               <div>
-                <h2 className="font-display text-lg font-semibold text-ink">Invite an employee</h2>
+                <h2 className="font-display text-lg font-semibold text-ink">{t("Invite an employee")}</h2>
                 <p className="text-sm text-ink-muted mt-1">
-                  Creates a record and emails them a link to fill in their own personal details —
-                  HKID, address, emergency contact, and bank info.
+                  {t("Creates a record and emails them a link to fill in their own personal details — HKID, address, emergency contact, and bank info.")}
                 </p>
               </div>
 
@@ -73,7 +74,7 @@ export default function InviteEmployeeButton() {
 
               <form onSubmit={submit} className="flex flex-col gap-3">
                 <div>
-                  <label className="label">Name</label>
+                  <label className="label">{t("Name")}</label>
                   <input
                     type="text"
                     className="input"
@@ -84,7 +85,7 @@ export default function InviteEmployeeButton() {
                   />
                 </div>
                 <div>
-                  <label className="label">Email address</label>
+                  <label className="label">{t("Email address")}</label>
                   <input
                     type="email"
                     className="input"
@@ -105,7 +106,7 @@ export default function InviteEmployeeButton() {
                     ) : (
                       <UserPlus size={15} className="shrink-0" />
                     )}
-                    <span className="truncate">{busy ? "Sending…" : "Create & send invite"}</span>
+                    <span className="truncate">{busy ? t("Sending…") : t("Create & send invite")}</span>
                   </button>
                   <button
                     type="button"
@@ -113,7 +114,7 @@ export default function InviteEmployeeButton() {
                     disabled={busy}
                     className="btn-secondary flex-1 min-w-0 justify-center"
                   >
-                    <span className="truncate">Cancel</span>
+                    <span className="truncate">{t("Cancel")}</span>
                   </button>
                 </div>
               </form>

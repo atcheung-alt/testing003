@@ -6,6 +6,7 @@ import { ArrowRight, X } from "lucide-react";
 import Portal from "@/components/Portal";
 import { formatDate, formatCurrency } from "@/lib/calculations";
 import { EMPLOYMENT_TYPE_LABELS, PAY_RATE_TYPE_LABELS, hasAnnualLeaveEntitlement } from "@/lib/employees";
+import { useT } from "@/lib/i18n/client";
 
 // Every field the row-click preview panel below wants to show, pre-serialized
 // (dates as ISO strings) and pre-computed (mpfReminder, contractActionLabel)
@@ -87,16 +88,17 @@ const EmployeeTable = memo(function EmployeeTable({
   employees: EmployeeListItem[];
   onSelect: (id: string) => void;
 }) {
+  const t = useT();
   return (
     <div className="card overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-line text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            <th className="px-5 py-3">Name</th>
-            <th className="hidden md:table-cell px-5 py-3">Title</th>
-            <th className="px-5 py-3">Status</th>
-            <th className="hidden sm:table-cell px-5 py-3">Onboard date</th>
-            <th className="px-5 py-3 text-right" aria-label="Notifications" />
+            <th className="px-5 py-3">{t("Name")}</th>
+            <th className="hidden md:table-cell px-5 py-3">{t("Title")}</th>
+            <th className="px-5 py-3">{t("Status")}</th>
+            <th className="hidden sm:table-cell px-5 py-3">{t("Onboard date")}</th>
+            <th className="px-5 py-3 text-right" aria-label={t("Notifications")} />
           </tr>
         </thead>
         <tbody>
@@ -110,15 +112,15 @@ const EmployeeTable = memo(function EmployeeTable({
                 <span className="font-medium text-brand-600 block">{displayName(e)}</span>
                 {e.employmentType && (
                   <span className="text-xs text-ink-muted block mt-0.5">
-                    {EMPLOYMENT_TYPE_LABELS[e.employmentType] || e.employmentType}
+                    {t(EMPLOYMENT_TYPE_LABELS[e.employmentType] || e.employmentType)}
                   </span>
                 )}
               </td>
               <td className="hidden md:table-cell px-5 py-3 text-ink-muted">
-                {e.title || "No title set"}
+                {e.title || t("No title set")}
               </td>
               <td className="px-5 py-3">
-                <span className={`stamp justify-center ${statusStampClass(e.status)}`}>{e.status}</span>
+                <span className={`stamp justify-center ${statusStampClass(e.status)}`}>{t(e.status)}</span>
               </td>
               <td className="hidden sm:table-cell px-5 py-3 text-ink-muted">
                 {e.startDate ? formatDate(e.startDate) : "—"}
@@ -132,17 +134,17 @@ const EmployeeTable = memo(function EmployeeTable({
                 <span className="flex items-center gap-2 flex-wrap justify-end">
                   {e.pendingLeaveCount > 0 && (
                     <span className="stamp border-accent-500 text-accent-600 bg-accent-100">
-                      {e.pendingLeaveCount} pending
+                      {t("{count} pending", { count: e.pendingLeaveCount })}
                     </span>
                   )}
                   {e.contractActionLabel && (
                     <span className="stamp border-amber-500 text-amber-600 bg-amber-50">
-                      {e.contractActionLabel}
+                      {t(e.contractActionLabel)}
                     </span>
                   )}
                   {e.onboardingSentAt && !e.onboardingCompletedAt && (
                     <span className="stamp border-cyan-500 text-cyan-600 bg-cyan-100">
-                      Onboarding pending
+                      {t("Onboarding pending")}
                     </span>
                   )}
                   {e.mpfReminder && (
@@ -168,6 +170,7 @@ const EmployeeTable = memo(function EmployeeTable({
 
 export default function EmployeeListClient({ employees }: { employees: EmployeeListItem[] }) {
   const router = useRouter();
+  const t = useT();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const selected = employees.find((e) => e.id === selectedId) || null;
 
@@ -191,20 +194,20 @@ export default function EmployeeListClient({ employees }: { employees: EmployeeL
               <button
                 type="button"
                 onClick={() => setSelectedId(null)}
-                aria-label="Close preview"
-                title="Close"
+                aria-label={t("Close preview")}
+                title={t("Close")}
                 className="shrink-0 p-1.5 -m-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-paper transition-colors"
               >
                 <X size={18} />
               </button>
               <div className="min-w-0 flex-1">
                 <p className="font-display text-lg font-semibold text-ink truncate">{displayName(selected)}</p>
-                <p className="text-sm text-ink-muted truncate mt-0.5">{selected.title || "No title set"}</p>
+                <p className="text-sm text-ink-muted truncate mt-0.5">{selected.title || t("No title set")}</p>
                 <div className="flex items-center gap-2 flex-wrap mt-2.5">
-                  <span className={`stamp ${statusStampClass(selected.status)}`}>{selected.status}</span>
+                  <span className={`stamp ${statusStampClass(selected.status)}`}>{t(selected.status)}</span>
                   {selected.employmentType && (
                     <span className="stamp border-line text-ink-muted">
-                      {EMPLOYMENT_TYPE_LABELS[selected.employmentType] || selected.employmentType}
+                      {t(EMPLOYMENT_TYPE_LABELS[selected.employmentType] || selected.employmentType)}
                     </span>
                   )}
                 </div>
@@ -212,8 +215,8 @@ export default function EmployeeListClient({ employees }: { employees: EmployeeL
               <button
                 type="button"
                 onClick={() => router.push(`/hr/employees/${selected.id}`)}
-                aria-label="Open full employee page"
-                title="Open full employee page"
+                aria-label={t("Open full employee page")}
+                title={t("Open full employee page")}
                 className="shrink-0 p-1.5 -m-1.5 rounded-lg text-ink-muted hover:text-ink hover:bg-paper transition-colors"
               >
                 <ArrowRight size={18} />
@@ -222,95 +225,98 @@ export default function EmployeeListClient({ employees }: { employees: EmployeeL
 
             <div className="flex-1 overflow-y-auto px-5 py-2 text-sm divide-y divide-line">
               <div className="py-4 flex flex-col gap-2.5 first:pt-1">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Contact</h3>
-                <Row label="Company email" value={selected.companyEmail} />
-                <Row label="Contact email" value={selected.email} />
-                <Row label="Personal email" value={selected.personalEmail} />
-                <Row label="Phone" value={selected.phone} />
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t("Contact")}</h3>
+                <Row label={t("Company email")} value={selected.companyEmail} />
+                <Row label={t("Contact email")} value={selected.email} />
+                <Row label={t("Personal email")} value={selected.personalEmail} />
+                <Row label={t("Phone")} value={selected.phone} />
               </div>
 
               <div className="py-4 flex flex-col gap-2.5">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Personal</h3>
-                <Row label="Gender" value={selected.gender} />
-                <Row label="Date of birth" value={formatDate(selected.birthday)} />
-                <Row label="HKID" value={selected.hkid} />
-                <Row label="Nationality" value={selected.nationality} />
-                <Row label="Address" value={selected.address} />
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t("Personal")}</h3>
+                <Row label={t("Gender")} value={selected.gender ? t(selected.gender) : selected.gender} />
+                <Row label={t("Date of birth")} value={formatDate(selected.birthday)} />
+                <Row label={t("HKID")} value={selected.hkid} />
+                <Row label={t("Nationality")} value={selected.nationality} />
+                <Row label={t("Address")} value={selected.address} />
               </div>
 
               <div className="py-4 flex flex-col gap-2.5">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Employment</h3>
-                <Row label="Start date" value={formatDate(selected.startDate)} />
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t("Employment")}</h3>
+                <Row label={t("Start date")} value={formatDate(selected.startDate)} />
                 {selected.status === "FORMER" && (
                   <>
-                    <Row label="Last day" value={formatDate(selected.lastDay)} />
-                    <Row label="Reason of leaving" value={selected.leavingReason} />
+                    <Row label={t("Last day")} value={formatDate(selected.lastDay)} />
+                    <Row label={t("Reason of leaving")} value={selected.leavingReason} />
                   </>
                 )}
                 {selected.payRateType ? (
                   <Row
-                    label={PAY_RATE_TYPE_LABELS[selected.payRateType] || "Pay rate"}
+                    label={t(PAY_RATE_TYPE_LABELS[selected.payRateType] || "Pay rate")}
                     value={
                       formatCurrency(selected.payRate) +
                       (selected.payRateType === "HOURLY"
-                        ? " /hour"
+                        ? t(" /hour")
                         : selected.payRateType === "DAILY"
-                        ? " /day"
+                        ? t(" /day")
                         : "")
                     }
                   />
                 ) : (
-                  <Row label="Salary" value={formatCurrency(selected.salary)} />
+                  <Row label={t("Salary")} value={formatCurrency(selected.salary)} />
                 )}
                 {hasAnnualLeaveEntitlement(selected.employmentType) && (
-                  <Row label="Annual leave entitlement" value={`${selected.annualLeaveDays} days`} />
+                  <Row
+                    label={t("Annual leave entitlement")}
+                    value={t("{count} days", { count: selected.annualLeaveDays })}
+                  />
                 )}
               </div>
 
               <div className="py-4 flex flex-col gap-2.5">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Bank</h3>
-                <Row label="Bank name" value={selected.bankName} />
-                <Row label="Bank code" value={selected.bankCode} />
-                <Row label="Account holder" value={selected.bankCardName} />
-                <Row label="Account number" value={selected.bankAccount} />
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t("Bank")}</h3>
+                <Row label={t("Bank name")} value={selected.bankName} />
+                <Row label={t("Bank code")} value={selected.bankCode} />
+                <Row label={t("Account holder")} value={selected.bankCardName} />
+                <Row label={t("Account number")} value={selected.bankAccount} />
               </div>
 
               <div className="py-4 flex flex-col gap-2.5">
                 <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                  Emergency contact
+                  {t("Emergency contact")}
                 </h3>
-                <Row label="Name" value={selected.emergencyContactName} />
-                <Row label="Relationship" value={selected.emergencyContactRelationship} />
-                <Row label="Phone" value={selected.emergencyContactPhone} />
+                <Row label={t("Name")} value={selected.emergencyContactName} />
+                <Row label={t("Relationship")} value={selected.emergencyContactRelationship} />
+                <Row label={t("Phone")} value={selected.emergencyContactPhone} />
               </div>
 
               <div className="py-4 flex flex-col gap-2.5 last:pb-1">
-                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Status</h3>
+                <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t("Status")}</h3>
                 <Row
-                  label="Onboarding"
+                  label={t("Onboarding")}
                   value={
                     selected.onboardingCompletedAt
-                      ? `Complete — ${formatDate(selected.onboardingCompletedAt)}`
+                      ? t("Complete — {date}", { date: formatDate(selected.onboardingCompletedAt) })
                       : selected.onboardingSentAt
-                      ? `Invite sent — ${formatDate(selected.onboardingSentAt)}`
-                      : "Not sent yet"
+                      ? t("Invite sent — {date}", { date: formatDate(selected.onboardingSentAt) })
+                      : t("Not sent yet")
                   }
                 />
                 {selected.employmentType === "FULL_TIME" && (
                   <Row
-                    label="MPF"
+                    label={t("MPF")}
                     value={
                       selected.mpfVerifiedAt
-                        ? `Verified — ${formatDate(selected.mpfVerifiedAt)}`
+                        ? t("Verified — {date}", { date: formatDate(selected.mpfVerifiedAt) })
                         : selected.mpfReminder
                         ? selected.mpfReminder.label
-                        : "Not yet verified"
+                        : t("Not yet verified")
                     }
                   />
                 )}
-                <Row label="Contract" value={selected.contractStatus || "Not created yet"} />
+                <Row label={t("Contract")} value={selected.contractStatus ? t(selected.contractStatus) : t("Not created yet")} />
                 {selected.pendingLeaveCount > 0 && (
-                  <Row label="Pending leave requests" value={String(selected.pendingLeaveCount)} />
+                  <Row label={t("Pending leave requests")} value={String(selected.pendingLeaveCount)} />
                 )}
               </div>
             </div>
