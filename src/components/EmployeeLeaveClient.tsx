@@ -237,7 +237,7 @@ placeholder={t("e.g. Family trip")}
                     {r.isHalfDay && (
                       <span className="text-xs font-normal text-ink-muted">
                         {" "}
-                        ({t("{period} half-day · 0.5 day", { period: t(r.halfDayPeriod) })})
+                        ({t("{period} half-day · 0.5 day", { period: t(r.halfDayPeriod || "") })})
                       </span>
                     )}
                   </p>

@@ -223,7 +223,7 @@ export default function MyLeaveClient({ initial }: { initial: MyProfileLeaveView
                     {r.isHalfDay && (
                       <span className="text-xs font-normal text-ink-muted">
                         {" "}
-                        {t("({period} half-day · 0.5 day)", { period: r.halfDayPeriod })}
+                        {t("({period} half-day · 0.5 day)", { period: r.halfDayPeriod || "" })}
                       </span>
                     )}
                   </p>

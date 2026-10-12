@@ -50,7 +50,7 @@ function RequestRow({
           {request.isHalfDay && (
             <span className="text-xs font-normal text-ink-muted">
               {" "}
-              ({t("{period} half-day · 0.5 day", { period: t(request.halfDayPeriod) })})
+              ({t("{period} half-day · 0.5 day", { period: t(request.halfDayPeriod || "") })})
             </span>
           )}
         </p>
